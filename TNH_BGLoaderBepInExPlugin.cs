@@ -1,10 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using FistVR;
 using BepInEx;
 using HarmonyLib;
 using UnityEngine;
 using BepInEx.Logging;
+using FMOD;
+using FMODUnity;
+using RootMotion.FinalIK;
+using Debug = UnityEngine.Debug;
 
 
 namespace TNH_BGLoader
@@ -30,18 +35,50 @@ namespace TNH_BGLoader
 			}
 			Harmony.CreateAndPatchAll(typeof(TNH_BGLoaderBepInExPlugin));
 		}
-		
-		[HarmonyPatch(typeof(FVRFMODController), "Initialize")]
+
+		[HarmonyPatch(typeof(RuntimeManager))]
+		[HarmonyPatch("LoadBank", new Type[]{typeof(string), typeof(bool)})]
 		[HarmonyPrefix]
-		public static bool FVRFMODControllerPatch_Initialize(FVRFMODController __instance)
+		public static bool FMODRuntimeManagerPatch_LoadBank(ref string bankName)
 		{
-			if (banks != null) {
-				if (banks.Length >= 1) {
-					Debug.Log("Injecting bank " + Path.GetFileName(banks[0]) + "into TNH!");
-					__instance.BankPreload = banks[0];
-				}
+			if (bankName == "MX_TAH")
+			{
+				Debug.Log("Injecting bank " + Path.GetFileName(banks[0]) + " into TNH!");
+				bankName = banks[0];
 			}
 			return true;
+		}
+
+		[HarmonyPatch(typeof(RuntimeUtils), "GetBankPath")]
+		[HarmonyPrefix]
+		public static bool FMODRuntimeUtilsPatch_GetBankPath(ref string bankName, ref string __result)
+		{
+			// 100% going to fucking strangle the person who didn't perchance even fucking THINk that
+			// sOMEONE WOULD INSERT A FUCKIGN ABSOLUTE PATH LOCATION. HOW STUPID ARE YOU???
+			// "waa waa the dev will only want banks to be loaded from streamingassets"
+			// ARE YOU FIFTH GRADE??? OF COURSE THERE'S GONNA BE AN EDGE CASE HAVE YOU NEVER PROGRAMMED BEFORE??
+			
+			string streamingAssetsPath = Application.streamingAssetsPath;
+			if (Path.GetExtension(bankName) != ".bank")
+			{
+				if (Path.IsPathRooted(bankName)){
+					__result = bankName + ".bank";
+					return false;
+				}
+				else {
+					__result = string.Format("{0}/{1}.bank", streamingAssetsPath, bankName);
+					return false;
+				}
+			}
+
+			if (Path.IsPathRooted(bankName)) {
+				__result = bankName;
+				return false;
+			}
+			else {
+				__result = string.Format("{0}/{1}", streamingAssetsPath, bankName);
+				return false;
+			}
 		}
 
 		public string[] GetBanks()
