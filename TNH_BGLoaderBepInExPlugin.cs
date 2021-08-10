@@ -83,7 +83,7 @@ namespace TNH_BGLoader
 
 		public string[] GetBanks()
 		{
-			Logger.LogInfo("Yoinking from" + PluginsDir);
+			Logger.LogInfo("Yoinking from " + PluginsDir);
 			// surely this won't throw an access error!
 			string[] banks = Directory.GetFiles(PluginsDir, "MX_TAH_*.bank", SearchOption.AllDirectories);
 			// i'm supposed to ignore any files thrown into the plugin folder, but idk how to do that. toodles!
@@ -93,8 +93,8 @@ namespace TNH_BGLoader
 
 	internal static class PluginDetails
 	{
-		public const string GUID = "dll.potatoes.tnhbgloader";
-		public const string NAME = "Potatoes' TnH BG Loader";
+		public const string GUID = "dll.potatoes.ptnhbgml";
+		public const string NAME = "Potatoes' Take And Hold Background Music Loader";
 		public const string VERS = "1.0.0"; //surely this will be release ready!
 	}
 }
