@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using BepInEx;
 using HarmonyLib;
 using BepInEx.Configuration;
@@ -16,12 +17,12 @@ namespace TNH_BGLoader
 {
 	[BepInPlugin(PluginDetails.GUID, PluginDetails.NAME, PluginDetails.VERS)]
 	[BepInDependency("nrgill28.Sodalite", BepInDependency.DependencyFlags.SoftDependency)]
-	[BepInDependency(StratumRoot.GUID, StratumRoot.Version)]
-	public class TNH_BGM_L : StratumPlugin
+	//[BepInDependency(StratumRoot.GUID, StratumRoot.Version)]
+	public class TNH_BGM_L : /*StratumPlugin*/ BaseUnityPlugin
 	{
 		public static ConfigEntry<float> bgmVolume;
 		public static string tnh_bank_loc;
-		public static List<string> banks;
+		public static List<string> banks = new List<string>();
 		public static int bankNum = 0;
 		public static string PluginsDir { get; } = Paths.PluginPath;
 		public static string relevantBank => banks[bankNum];
@@ -30,6 +31,9 @@ namespace TNH_BGLoader
 		public void Awake()
 		{
 			InitConfig();
+			//the loader patch just checks for MX_TAH, not the full root path so this should bypass the check
+			banks.Add(string.Format("{0}/{1}.bank", Application.streamingAssetsPath, "MX_TAH"));
+			banks = banks.Concat(GetBanks()).ToList();
 			Harmony.CreateAndPatchAll(typeof(Patcher_FMOD));
 			Harmony.CreateAndPatchAll(typeof(Patcher_FistVR));
 			try
@@ -44,25 +48,17 @@ namespace TNH_BGLoader
 
 		public void InitConfig()
 		{
-			bgmVolume = Config.Bind("General", "BGM Volume", 1f, "Changes the magnitude of the BGM volume. Must be between 0 and 1.");
-			bgmVolume.Value = Mathf.Clamp(bgmVolume.Value, 0, 1);
+			bgmVolume = Config.Bind("General", "BGM Volume", 1f, "Changes the magnitude of the BGM volume. Must be between 0 and 4.");
+			bgmVolume.Value = Mathf.Clamp(bgmVolume.Value, 0, 4);
 		}
 		
-		/*public string[] GetBanks()
+		public List<string> GetBanks()
 		{
 			Logger.LogInfo("Yoinking from " + PluginsDir);
 			// surely this won't throw an access error!
-			string[] banks = Directory.GetFiles(PluginsDir, "MX_TAH_*.bank", SearchOption.AllDirectories);
+			var banks = Directory.GetFiles(PluginsDir, "MX_TAH_*.bank", SearchOption.AllDirectories).ToList();
 			// i'm supposed to ignore any files thrown into the plugin folder, but idk how to do that. toodles!
 			return banks;
-		}*/
-
-		public static void SwapBanks(int newBankNum)
-		{
-			Debug.Log("Swapping bank " + Path.GetFileName(relevantBank) + " for " + Path.GetFileName(banks[newBankNum]));
-			UnloadBankHard(relevantBank);
-			bankNum = newBankNum;
-			RuntimeManager.LoadBank(relevantBank);
 		}
 		
 		//literal copy of RuntimeManager.UnloadBank but hard unloads
@@ -78,7 +74,7 @@ namespace TNH_BGLoader
 			}
 		}
 
-		public override void OnSetup(IStageContext<Empty> ctx)
+		/*public override void OnSetup(IStageContext<Empty> ctx)
 		{
 			ctx.Loaders.Add("tnhbankfile", LoadTNHBankFile);
 		}
@@ -92,13 +88,13 @@ namespace TNH_BGLoader
 
 		public override IEnumerator OnRuntime(IStageContext<IEnumerator> ctx) {
 			yield break;
-		}
+		}*/
 	}
 
 	internal static class PluginDetails
 	{
 		public const string GUID = "dll.potatoes.ptnhbgml";
 		public const string NAME = "Potatoes' Take And Hold Background Music Loader";
-		public const string VERS = "1.1.0"; //surely this will be release ready!
+		public const string VERS = "1.2.0"; //surely this will be release ready!
 	}
 }

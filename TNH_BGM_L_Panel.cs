@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using FistVR;
+using FMODUnity;
 using UnityEngine;
 using UnityEngine.UI;
 using Sodalite;
@@ -14,7 +15,7 @@ namespace TNH_BGLoader
 
 		public TNH_BGM_L_Panel()
 		{
-			WristMenuAPI.Buttons.Add(new WristMenuButton("Spawn Utils Panel", () => { SpawnPTNHBGMLPanel(); }));
+			WristMenuAPI.Buttons.Add(new WristMenuButton("TNH BGM Selector", () => { SpawnPTNHBGMLPanel(); }));
 
 			_PTNHBGMLpanel = new LockablePanel();
 			_PTNHBGMLpanel.Configure += ConfigurePTNHBGMLpanel;
@@ -64,7 +65,7 @@ namespace TNH_BGLoader
 
 				widget.AddChild((TextWidget text) =>
 				{
-					text.Text.text = "banknamehere!";
+					text.Text.text = Path.GetFileName(TNH_BGM_L.relevantBank);
 					bankText = text;
 					text.Text.alignment = TextAnchor.MiddleCenter;
 					text.Text.fontSize += 5;
@@ -82,8 +83,24 @@ namespace TNH_BGLoader
 		}
 		private void UpdateMusic(int cycleInc)
 		{
-			TNH_BGM_L.SwapBanks(TNH_BGM_L.bankNum += cycleInc);
+			if (GM.TNH_Manager != null)
+			{
+				WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
+				return;
+			}
+
+			int newBN = TNH_BGM_L.bankNum + cycleInc;
+			
+			//wrap around
+			if (newBN <  0) newBN = 0;
+			if (newBN >= TNH_BGM_L.banks.Count) newBN = TNH_BGM_L.banks.Count - 1;
+			TNH_BGM_L.UnloadBankHard(TNH_BGM_L.relevantBank); //force it to be unloaded
+			TNH_BGM_L.bankNum = newBN; //set banknum to new bank
 			bankText.Text.text = Path.GetFileName(TNH_BGM_L.relevantBank);
+			
+			//set FMOD controller if it exists, otherwise simply load it
+			
+			RuntimeManager.LoadBank("MX_TAH"); //load new bank
 		}
 		private void CycleUp() { UpdateMusic(1); }
 		private void CycleDown() { UpdateMusic(-1); }
