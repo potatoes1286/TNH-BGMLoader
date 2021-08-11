@@ -2,34 +2,39 @@
 using BepInEx;
 using HarmonyLib;
 using BepInEx.Configuration;
+using FMODUnity;
 using UnityEngine;
+using Stratum;
 
 
 namespace TNH_BGLoader
 {
 	[BepInPlugin(PluginDetails.GUID, PluginDetails.NAME, PluginDetails.VERS)]
+	[BepInDependency("nrgill28.Sodalite", BepInDependency.DependencyFlags.SoftDependency)]
 	public class TNH_BGM_L : BaseUnityPlugin
 	{
 		public static ConfigEntry<float> bgmVolume;
 		public static string tnh_bank_loc;
 		public static string[] banks;
+		public static int bankNum = 0;
 		public static string PluginsDir { get; } = Paths.PluginPath;
+		public static string relevantBank => banks[bankNum];
+		public static bool areBanksEmptyOrNull => (banks == null || banks.Length == 0);
 
 		public void Awake()
 		{
 			InitConfig();
-			//get all banks
-			banks = GetBanks();
-			if (banks.Length > 1)
-			{ // log if > 1 mod found
+			banks = GetBanks(); //get all banks
+			if (banks.Length > 1) { // log if > 1 mod found
 				Logger.LogError(banks.Length + " Take And Hold music replacers found! You can't play two BGs at once!");
 			}
-			foreach (var bank in banks)
-			{ // list all mods found
+			foreach (var bank in banks) { // list all mods found
 				Logger.LogInfo("Found TNH Music Replacer " + Path.GetFileName(bank));
 			}
 			Harmony.CreateAndPatchAll(typeof(Patcher_FMOD));
 			Harmony.CreateAndPatchAll(typeof(Patcher_FistVR));
+			
+			TNH_BGM_L_Panel uop = new TNH_BGM_L_Panel(); // dont do this
 		}
 
 		public void InitConfig()
@@ -45,6 +50,27 @@ namespace TNH_BGLoader
 			string[] banks = Directory.GetFiles(PluginsDir, "MX_TAH_*.bank", SearchOption.AllDirectories);
 			// i'm supposed to ignore any files thrown into the plugin folder, but idk how to do that. toodles!
 			return banks;
+		}
+
+		public static void SwapBanks(int newBankNum)
+		{
+			UnityEngine.Debug.Log("Swapping bank " + Path.GetFileName(relevantBank) + " for " + Path.GetFileName(banks[newBankNum]));
+			UnloadBankHard(relevantBank);
+			bankNum = newBankNum;
+			RuntimeManager.LoadBank(relevantBank);
+		}
+		
+		//literal copy of RuntimeManager.UnloadBank but hard unloads
+		public static void UnloadBankHard(string bankName)
+		{
+			UnityEngine.Debug.Log("Hard unloading " + Path.GetFileName(bankName));
+			RuntimeManager.LoadedBank value;
+			if (RuntimeManager.Instance.loadedBanks.TryGetValue(bankName, out value))
+			{
+				value.RefCount = 0;
+				value.Bank.unload();
+				RuntimeManager.Instance.loadedBanks.Remove(bankName);
+			}
 		}
 	}
 

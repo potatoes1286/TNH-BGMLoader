@@ -46,8 +46,11 @@ namespace TNH_BGLoader
 		{
 			if (bankName == "MX_TAH")
 			{
-				Debug.Log("Injecting bank " + Path.GetFileName(TNH_BGM_L.banks[0]) + " into TNH!");
-				bankName = TNH_BGM_L.banks[0];
+				if (!TNH_BGM_L.areBanksEmptyOrNull)
+				{
+					Debug.Log("Injecting bank " + Path.GetFileName(TNH_BGM_L.relevantBank) + " into TNH!");
+					bankName = TNH_BGM_L.relevantBank;
+				}
 			}
 			return true;
 		}
