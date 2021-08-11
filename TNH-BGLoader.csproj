@@ -105,7 +105,6 @@
         <Compile Include="TNH_BGM_L.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="TNH_BGM_L_Panel.cs" />
-        <Compile Include="YAMLparser.cs" />
     </ItemGroup>
     <ItemGroup>
       <None Include="packages.config" />
