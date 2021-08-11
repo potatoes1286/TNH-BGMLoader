@@ -16,14 +16,14 @@ namespace TNH_BGLoader
 			return true;
 		}
 
-		[HarmonyPatch(typeof(TNH_Manager), "Start")]
+		/*[HarmonyPatch(typeof(TNH_Manager), "Start")]
 		[HarmonyPrefix]
 		public static bool TNH_ManagerPatch_Start()
 		{
 			int nbn = TNH_BGM_L.bankNum + 1;
-			if (nbn > TNH_BGM_L.banks.Length) nbn = 0; //wrap around
+			if (nbn > TNH_BGM_L.banks.Count) nbn = 0; //wrap around
 			TNH_BGM_L.SwapBanks(nbn);
 			return true;
-		}
+		}*/
 	}
 }
