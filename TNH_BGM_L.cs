@@ -1,40 +1,45 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 using BepInEx;
 using HarmonyLib;
 using BepInEx.Configuration;
 using FMODUnity;
 using UnityEngine;
 using Stratum;
+using Stratum.Extensions;
+using UnityEngine.UI;
 
 
 namespace TNH_BGLoader
 {
 	[BepInPlugin(PluginDetails.GUID, PluginDetails.NAME, PluginDetails.VERS)]
 	[BepInDependency("nrgill28.Sodalite", BepInDependency.DependencyFlags.SoftDependency)]
-	public class TNH_BGM_L : BaseUnityPlugin
+	[BepInDependency(StratumRoot.GUID, StratumRoot.Version)]
+	public class TNH_BGM_L : StratumPlugin
 	{
 		public static ConfigEntry<float> bgmVolume;
 		public static string tnh_bank_loc;
-		public static string[] banks;
+		public static List<string> banks;
 		public static int bankNum = 0;
 		public static string PluginsDir { get; } = Paths.PluginPath;
 		public static string relevantBank => banks[bankNum];
-		public static bool areBanksEmptyOrNull => (banks == null || banks.Length == 0);
+		public static bool areBanksEmptyOrNull => (banks == null || banks.Count == 0);
 
 		public void Awake()
 		{
 			InitConfig();
-			banks = GetBanks(); //get all banks
-			if (banks.Length > 1) { // log if > 1 mod found
-				Logger.LogError(banks.Length + " Take And Hold music replacers found! You can't play two BGs at once!");
-			}
-			foreach (var bank in banks) { // list all mods found
-				Logger.LogInfo("Found TNH Music Replacer " + Path.GetFileName(bank));
-			}
 			Harmony.CreateAndPatchAll(typeof(Patcher_FMOD));
 			Harmony.CreateAndPatchAll(typeof(Patcher_FistVR));
-			
-			TNH_BGM_L_Panel uop = new TNH_BGM_L_Panel(); // dont do this
+			try
+			{
+				TNH_BGM_L_Panel uop = new TNH_BGM_L_Panel(); // dont do this
+			}
+			catch
+			{
+				Logger.LogWarning("Could not load PTNHBGML panel!");
+			}
 		}
 
 		public void InitConfig()
@@ -43,18 +48,18 @@ namespace TNH_BGLoader
 			bgmVolume.Value = Mathf.Clamp(bgmVolume.Value, 0, 1);
 		}
 		
-		public string[] GetBanks()
+		/*public string[] GetBanks()
 		{
 			Logger.LogInfo("Yoinking from " + PluginsDir);
 			// surely this won't throw an access error!
 			string[] banks = Directory.GetFiles(PluginsDir, "MX_TAH_*.bank", SearchOption.AllDirectories);
 			// i'm supposed to ignore any files thrown into the plugin folder, but idk how to do that. toodles!
 			return banks;
-		}
+		}*/
 
 		public static void SwapBanks(int newBankNum)
 		{
-			UnityEngine.Debug.Log("Swapping bank " + Path.GetFileName(relevantBank) + " for " + Path.GetFileName(banks[newBankNum]));
+			Debug.Log("Swapping bank " + Path.GetFileName(relevantBank) + " for " + Path.GetFileName(banks[newBankNum]));
 			UnloadBankHard(relevantBank);
 			bankNum = newBankNum;
 			RuntimeManager.LoadBank(relevantBank);
@@ -71,6 +76,22 @@ namespace TNH_BGLoader
 				value.Bank.unload();
 				RuntimeManager.Instance.loadedBanks.Remove(bankName);
 			}
+		}
+
+		public override void OnSetup(IStageContext<Empty> ctx)
+		{
+			ctx.Loaders.Add("tnhbankfile", LoadTNHBankFile);
+		}
+
+		public Empty LoadTNHBankFile(FileSystemInfo handle)
+		{
+			var file = handle.ConsumeFile();
+			banks.Add(file.FullName);
+			return new Empty();
+		}
+
+		public override IEnumerator OnRuntime(IStageContext<IEnumerator> ctx) {
+			yield break;
 		}
 	}
 
