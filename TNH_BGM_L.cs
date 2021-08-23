@@ -31,9 +31,9 @@ namespace TNH_BGLoader
 		public void Awake()
 		{
 			InitConfig();
+			banks = GetBanks();
 			//the loader patch just checks for MX_TAH, not the full root path so this should bypass the check
 			banks.Add(string.Format("{0}/{1}.bank", Application.streamingAssetsPath, "MX_TAH"));
-			banks = banks.Concat(GetBanks()).ToList();
 			Harmony.CreateAndPatchAll(typeof(Patcher_FMOD));
 			Harmony.CreateAndPatchAll(typeof(Patcher_FistVR));
 			try
