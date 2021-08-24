@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Globalization;
+using System.IO;
 using FistVR;
 using FMODUnity;
 using UnityEngine;
@@ -23,8 +24,12 @@ namespace TNH_BGLoader
 
 		private ButtonWidget CycleMusicUp;
 		private ButtonWidget CycleMusicDown;
-		private TextWidget   bankText;
-		
+		private TextWidget   BankText;
+
+		private ButtonWidget IncreaseVolume;
+		private ButtonWidget DecreaseVolume;
+		private TextWidget   VolumeText;
+
 		private void SpawnPTNHBGMLPanel()
 		{
 			FVRWristMenu wristMenu = WristMenuAPI.Instance;
@@ -38,45 +43,64 @@ namespace TNH_BGLoader
 			GameObject canvas = panel.transform.Find("OptionsCanvas_0_Main/Canvas").gameObject;
 			UiWidget.CreateAndConfigureWidget(canvas, (GridLayoutWidget widget) =>
 			{
-				// Fill our parent and set pivot to top middle
-				widget.RectTransform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
-				widget.RectTransform.localPosition = Vector3.zero;
-				widget.RectTransform.anchoredPosition = Vector2.zero;
-				widget.RectTransform.sizeDelta = new Vector2(37f / 0.07f, 24f / 0.07f);
-				widget.RectTransform.pivot = new Vector2(0.5f, 1f);
-				widget.RectTransform.localRotation = Quaternion.identity;
-				// Adjust our grid settings
-				widget.LayoutGroup.cellSize = new Vector2(171, 50);
-				widget.LayoutGroup.spacing = Vector2.one * 4;
-				widget.LayoutGroup.startCorner = GridLayoutGroup.Corner.UpperLeft;
-				widget.LayoutGroup.startAxis = GridLayoutGroup.Axis.Horizontal;
-				widget.LayoutGroup.childAlignment = TextAnchor.UpperCenter;
-				widget.LayoutGroup.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-				widget.LayoutGroup.constraintCount = 3;
+				//init panel; this if is to just let rider fuckign collapse this shit man
+				if(true){
+					// Fill our parent and set pivot to top middle
+					widget.RectTransform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
+					widget.RectTransform.localPosition = Vector3.zero;
+					widget.RectTransform.anchoredPosition = Vector2.zero;
+					widget.RectTransform.sizeDelta = new Vector2(37f / 0.07f, 24f / 0.07f);
+					widget.RectTransform.pivot = new Vector2(0.5f, 1f);
+					widget.RectTransform.localRotation = Quaternion.identity;
+					// Adjust our grid settings
+					widget.LayoutGroup.cellSize = new Vector2(171, 50);
+					widget.LayoutGroup.spacing = Vector2.one * 4;
+					widget.LayoutGroup.startCorner = GridLayoutGroup.Corner.UpperLeft;
+					widget.LayoutGroup.startAxis = GridLayoutGroup.Axis.Horizontal;
+					widget.LayoutGroup.childAlignment = TextAnchor.UpperCenter;
+					widget.LayoutGroup.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+					widget.LayoutGroup.constraintCount = 3;
+				}
 
 				//ROW ONE
-				widget.AddChild((ButtonWidget button) =>
-				{
+				/*Cycle bank up*/		widget.AddChild((ButtonWidget button) => {
 					button.ButtonText.text = "Cycle Up";
 					button.AddButtonListener(CycleUp);
-					CycleMusicUp = button;
+					IncreaseVolume = button;
 					button.RectTransform.localRotation = Quaternion.identity;
 				});
-
-				widget.AddChild((TextWidget text) =>
-				{
+				/*Show current bank*/	widget.AddChild((TextWidget text) => {
 					text.Text.text = Path.GetFileName(TNH_BGM_L.relevantBank);
-					bankText = text;
+					BankText = text;
 					text.Text.alignment = TextAnchor.MiddleCenter;
 					text.Text.fontSize += 5;
 					text.RectTransform.localRotation = Quaternion.identity;
 				});
-
-				widget.AddChild((ButtonWidget button) =>
-				{
+				/*Cycle bank down*/		widget.AddChild((ButtonWidget button) => {
 					button.ButtonText.text = "Cycle Down";
 					button.AddButtonListener(CycleDown);
 					CycleMusicDown = button;
+					button.RectTransform.localRotation = Quaternion.identity;
+				});
+				
+				//ROW TWO
+				/*Turn down volume*/	widget.AddChild((ButtonWidget button) => {
+					button.ButtonText.text = "Increase volume 5%";
+					button.AddButtonListener(TurnUpVolume);
+					CycleMusicUp = button;
+					button.RectTransform.localRotation = Quaternion.identity;
+				});
+				/*Current volume*/		widget.AddChild((TextWidget text) => {
+					text.Text.text = TNH_BGM_L.bgmVolume.Value.ToString(CultureInfo.InvariantCulture);
+					VolumeText = text;
+					text.Text.alignment = TextAnchor.MiddleCenter;
+					text.Text.fontSize += 5;
+					text.RectTransform.localRotation = Quaternion.identity;
+				});
+				/*Turn up volume*/		widget.AddChild((ButtonWidget button) => {
+					button.ButtonText.text = "Decrease volume 5%";
+					button.AddButtonListener(TurnDownVolume);
+					DecreaseVolume = button;
 					button.RectTransform.localRotation = Quaternion.identity;
 				});
 			});
@@ -90,19 +114,18 @@ namespace TNH_BGLoader
 			}
 
 			int newBN = TNH_BGM_L.bankNum + cycleInc;
-			
-			//wrap around
-			if (newBN <  0) newBN = 0;
-			if (newBN >= TNH_BGM_L.banks.Count) newBN = TNH_BGM_L.banks.Count - 1;
-			TNH_BGM_L.UnloadBankHard(TNH_BGM_L.relevantBank); //force it to be unloaded
-			TNH_BGM_L.bankNum = newBN; //set banknum to new bank
-			bankText.Text.text = Path.GetFileName(TNH_BGM_L.relevantBank);
-			
-			//set FMOD controller if it exists, otherwise simply load it
-			
-			RuntimeManager.LoadBank("MX_TAH"); //load new bank
+			TNH_BGM_L.SwapBank(newBN);
+			BankText.Text.text = Path.GetFileName(TNH_BGM_L.relevantBank);
 		}
 		private void CycleUp() { UpdateMusic(1); }
 		private void CycleDown() { UpdateMusic(-1); }
+
+		private void UpdateVolume(float inc)
+		{
+			TNH_BGM_L.bgmVolume.Value += inc;
+			VolumeText.Text.text = TNH_BGM_L.bgmVolume.Value.ToString(CultureInfo.InvariantCulture);
+		}
+		private void TurnUpVolume(){UpdateVolume(0.05f);}
+		private void TurnDownVolume(){UpdateVolume(-0.05f);}
 	}
 }

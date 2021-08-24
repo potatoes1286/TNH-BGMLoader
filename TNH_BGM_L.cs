@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using BepInEx;
@@ -17,10 +18,11 @@ namespace TNH_BGLoader
 {
 	[BepInPlugin(PluginDetails.GUID, PluginDetails.NAME, PluginDetails.VERS)]
 	[BepInDependency("nrgill28.Sodalite", BepInDependency.DependencyFlags.SoftDependency)]
-	//[BepInDependency(StratumRoot.GUID, StratumRoot.Version)]
-	public class TNH_BGM_L : /*StratumPlugin*/ BaseUnityPlugin
+	[BepInDependency(StratumRoot.GUID, StratumRoot.Version)]
+	public class TNH_BGM_L : StratumPlugin
 	{
 		public static ConfigEntry<float> bgmVolume;
+		public static ConfigEntry<string> lastLoadedBank;
 		public static string tnh_bank_loc;
 		public static List<string> banks = new List<string>();
 		public static int bankNum = 0;
@@ -31,17 +33,23 @@ namespace TNH_BGLoader
 		public void Awake()
 		{
 			InitConfig();
-			banks = GetBanks();
+			banks = GetLegacyBanks();
+			//nuke all duplicates
+			banks = banks.Distinct().ToList();
 			//the loader patch just checks for MX_TAH, not the full root path so this should bypass the check
 			banks.Add(string.Format("{0}/{1}.bank", Application.streamingAssetsPath, "MX_TAH"));
+			
+			//get the bank last loaded and set banknum to it; if it doesnt exist it just defaults to 0
+			for (int i = 0; i < banks.Count; i++)
+				if (banks[i] == lastLoadedBank.Value) { bankNum = i; break; }
+
+			//patch yo things
 			Harmony.CreateAndPatchAll(typeof(Patcher_FMOD));
 			Harmony.CreateAndPatchAll(typeof(Patcher_FistVR));
-			try
-			{
+			//launch panel using sodalite
+			try {
 				TNH_BGM_L_Panel uop = new TNH_BGM_L_Panel(); // dont do this
-			}
-			catch
-			{
+			} catch {
 				Logger.LogWarning("Could not load PTNHBGML panel!");
 			}
 		}
@@ -50,15 +58,31 @@ namespace TNH_BGLoader
 		{
 			bgmVolume = Config.Bind("General", "BGM Volume", 1f, "Changes the magnitude of the BGM volume. Must be between 0 and 4.");
 			bgmVolume.Value = Mathf.Clamp(bgmVolume.Value, 0, 4);
+			lastLoadedBank = Config.Bind("no touchy", "Saved Bank", "", "Not meant to be changed manually. This autosaves your last bank used, so you don't have to reset it every time you launch H3.");
 		}
 		
-		public List<string> GetBanks()
+		public List<string> GetLegacyBanks()
 		{
-			Logger.LogInfo("Yoinking from " + PluginsDir);
 			// surely this won't throw an access error!
 			var banks = Directory.GetFiles(PluginsDir, "MX_TAH_*.bank", SearchOption.AllDirectories).ToList();
+			Logger.LogDebug(banks.Count + " banks loaded via legacy bank loader!");
 			// i'm supposed to ignore any files thrown into the plugin folder, but idk how to do that. toodles!
 			return banks;
+		}
+
+		public static void SwapBank(int newBank)
+		{
+			//wrap around
+			if (newBank <  0) newBank = 0;
+			if (newBank >= banks.Count) newBank = banks.Count - 1;
+			
+			UnloadBankHard(relevantBank); //force it to be unloaded
+			bankNum = newBank; //set banknum to new bank
+			
+			//set FMOD controller if it exists, otherwise simply load it
+			RuntimeManager.LoadBank("MX_TAH"); //load new bank
+			
+			lastLoadedBank.Value = Path.GetFileName(relevantBank);
 		}
 		
 		//literal copy of RuntimeManager.UnloadBank but hard unloads
@@ -73,14 +97,13 @@ namespace TNH_BGLoader
 				RuntimeManager.Instance.loadedBanks.Remove(bankName);
 			}
 		}
-
-		/*public override void OnSetup(IStageContext<Empty> ctx)
-		{
+		
+		//stratum loading
+		public override void OnSetup(IStageContext<Empty> ctx) {
 			ctx.Loaders.Add("tnhbankfile", LoadTNHBankFile);
 		}
 
-		public Empty LoadTNHBankFile(FileSystemInfo handle)
-		{
+		public Empty LoadTNHBankFile(FileSystemInfo handle) {
 			var file = handle.ConsumeFile();
 			banks.Add(file.FullName);
 			return new Empty();
@@ -88,7 +111,7 @@ namespace TNH_BGLoader
 
 		public override IEnumerator OnRuntime(IStageContext<IEnumerator> ctx) {
 			yield break;
-		}*/
+		}
 	}
 
 	internal static class PluginDetails
