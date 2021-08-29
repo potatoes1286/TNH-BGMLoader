@@ -19,7 +19,7 @@ namespace TNH_BGLoader
 	[BepInPlugin(PluginDetails.GUID, PluginDetails.NAME, PluginDetails.VERS)]
 	[BepInDependency("nrgill28.Sodalite", BepInDependency.DependencyFlags.SoftDependency)]
 	[BepInDependency(StratumRoot.GUID, StratumRoot.Version)]
-	public class TNH_BGM_L : StratumPlugin
+	public class TNH_BGM_L : /*StratumPlugin*/ BaseUnityPlugin
 	{
 		public static ConfigEntry<float> bgmVolume;
 		public static ConfigEntry<string> lastLoadedBank;
@@ -98,7 +98,7 @@ namespace TNH_BGLoader
 			}
 		}
 		
-		//stratum loading
+		/*//stratum loading
 		public override void OnSetup(IStageContext<Empty> ctx) {
 			ctx.Loaders.Add("tnhbankfile", LoadTNHBankFile);
 		}
@@ -111,7 +111,7 @@ namespace TNH_BGLoader
 
 		public override IEnumerator OnRuntime(IStageContext<IEnumerator> ctx) {
 			yield break;
-		}
+		}*/
 	}
 
 	internal static class PluginDetails
