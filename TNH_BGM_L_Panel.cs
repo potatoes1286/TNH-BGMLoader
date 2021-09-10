@@ -84,25 +84,26 @@ namespace TNH_BGLoader
 				});
 				
 				//ROW TWO
-				/*Turn down volume*/	widget.AddChild((ButtonWidget button) => {
-					button.ButtonText.text = "Increase volume 5%";
-					button.AddButtonListener(TurnUpVolume);
-					CycleMusicUp = button;
-					button.RectTransform.localRotation = Quaternion.identity;
-				});
-				/*Current volume*/		widget.AddChild((TextWidget text) => {
-					text.Text.text = TNH_BGM_L.bgmVolume.Value.ToString(CultureInfo.InvariantCulture);
-					VolumeText = text;
-					text.Text.alignment = TextAnchor.MiddleCenter;
-					text.Text.fontSize += 5;
-					text.RectTransform.localRotation = Quaternion.identity;
-				});
 				/*Turn up volume*/		widget.AddChild((ButtonWidget button) => {
 					button.ButtonText.text = "Decrease volume 5%";
 					button.AddButtonListener(TurnDownVolume);
 					DecreaseVolume = button;
 					button.RectTransform.localRotation = Quaternion.identity;
 				});
+				/*Current volume*/		widget.AddChild((TextWidget text) => {
+					text.Text.text = GetVolumePercent();
+					VolumeText = text;
+					text.Text.alignment = TextAnchor.MiddleCenter;
+					text.Text.fontSize += 5;
+					text.RectTransform.localRotation = Quaternion.identity;
+				});
+				/*Turn down volume*/	widget.AddChild((ButtonWidget button) => {
+					button.ButtonText.text = "Increase volume 5%";
+					button.AddButtonListener(TurnUpVolume);
+					CycleMusicUp = button;
+					button.RectTransform.localRotation = Quaternion.identity;
+				});
+				
 			});
 		}
 		private void UpdateMusic(int cycleInc)
@@ -119,11 +120,23 @@ namespace TNH_BGLoader
 		}
 		private void CycleUp() { UpdateMusic(1); }
 		private void CycleDown() { UpdateMusic(-1); }
-
 		private void UpdateVolume(float inc)
 		{
 			TNH_BGM_L.bgmVolume.Value += inc;
-			VolumeText.Text.text = TNH_BGM_L.bgmVolume.Value.ToString(CultureInfo.InvariantCulture);
+			if (TNH_BGM_L.bgmVolume.Value < 0)
+			{
+				TNH_BGM_L.bgmVolume.Value = 0;
+				WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
+			} else if (TNH_BGM_L.bgmVolume.Value > 4)
+			{
+				TNH_BGM_L.bgmVolume.Value = 4;
+				WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
+			}
+			VolumeText.Text.text = GetVolumePercent();
+		}
+		private string GetVolumePercent()
+		{
+			return Mathf.Round(TNH_BGM_L.bgmVolume.Value * 100).ToString(CultureInfo.InvariantCulture) + "%";
 		}
 		private void TurnUpVolume(){UpdateVolume(0.05f);}
 		private void TurnDownVolume(){UpdateVolume(-0.05f);}

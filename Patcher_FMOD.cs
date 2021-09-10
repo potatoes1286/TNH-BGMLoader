@@ -46,8 +46,9 @@ namespace TNH_BGLoader
 		{
 			if (bankName == "MX_TAH")
 			{
-				if (!TNH_BGM_L.areBanksEmptyOrNull)
+				if (!TNH_BGM_L.areBanksEmptyOrNull) //i don't even think this is possible? it's not. i need to remove this sometime.
 				{
+					if (TNH_BGM_L.relevantBank == "Surprise Me!") return false;
 					Debug.Log("Injecting bank " + Path.GetFileName(TNH_BGM_L.relevantBank) + " into TNH!");
 					bankName = TNH_BGM_L.relevantBank;
 				}

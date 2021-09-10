@@ -1,8 +1,12 @@
 ﻿using FistVR;
+using System;
+using System.IO;
 using FMOD;
 using HarmonyLib;
 using UnityEngine;
 using Debug = FMOD.Debug;
+using Random = UnityEngine.Random;
+using System = FMOD.Studio.System;
 
 namespace TNH_BGLoader
 {
@@ -20,9 +24,13 @@ namespace TNH_BGLoader
 		[HarmonyPrefix]
 		public static bool TNH_ManagerPatch_Start()
 		{
-			int nbn = TNH_BGM_L.bankNum + 1;
-			if (nbn > TNH_BGM_L.banks.Count) nbn = 0; //wrap around
-			TNH_BGM_L.SwapBanks(nbn);
+			if (TNH_BGM_L.relevantBank == "Surprise Me!")
+			{
+				int bankNum = Random.Range(0, TNH_BGM_L.banks.Count);
+				TNH_BGM_L.SwapBank(bankNum);
+				TNH_BGM_L.relevantBank = "Surprise Me!";
+				TNH_BGM_L.lastLoadedBank.Value = "Surprise Me!";
+			}
 			return true;
 		}*/
 	}

@@ -7,6 +7,7 @@ using System.Linq;
 using BepInEx;
 using HarmonyLib;
 using BepInEx.Configuration;
+using FistVR;
 using FMODUnity;
 using UnityEngine;
 using Stratum;
@@ -38,10 +39,11 @@ namespace TNH_BGLoader
 			banks = banks.Distinct().ToList();
 			//the loader patch just checks for MX_TAH, not the full root path so this should bypass the check
 			banks.Add(string.Format("{0}/{1}.bank", Application.streamingAssetsPath, "MX_TAH"));
+			//banks.Add("Surprise Me!");
 			
 			//get the bank last loaded and set banknum to it; if it doesnt exist it just defaults to 0
 			for (int i = 0; i < banks.Count; i++)
-				if (banks[i] == lastLoadedBank.Value) { bankNum = i; break; }
+				if (Path.GetFileNameWithoutExtension(banks[i]) == lastLoadedBank.Value) { bankNum = i; break; }
 
 			//patch yo things
 			Harmony.CreateAndPatchAll(typeof(Patcher_FMOD));
@@ -82,7 +84,7 @@ namespace TNH_BGLoader
 			//set FMOD controller if it exists, otherwise simply load it
 			RuntimeManager.LoadBank("MX_TAH"); //load new bank
 			
-			lastLoadedBank.Value = Path.GetFileName(relevantBank);
+			lastLoadedBank.Value = Path.GetFileNameWithoutExtension(relevantBank);
 		}
 		
 		//literal copy of RuntimeManager.UnloadBank but hard unloads
