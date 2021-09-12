@@ -19,7 +19,7 @@ namespace TNH_BGLoader
 {
 	[BepInPlugin(PluginDetails.GUID, PluginDetails.NAME, PluginDetails.VERS)]
 	[BepInDependency("nrgill28.Sodalite", BepInDependency.DependencyFlags.SoftDependency)]
-	[BepInDependency(StratumRoot.GUID, StratumRoot.Version)]
+	//[BepInDependency(StratumRoot.GUID, StratumRoot.Version)]
 	public class TNH_BGM_L : /*StratumPlugin*/ BaseUnityPlugin
 	{
 		public static ConfigEntry<float> bgmVolume;
@@ -120,6 +120,6 @@ namespace TNH_BGLoader
 	{
 		public const string GUID = "dll.potatoes.ptnhbgml";
 		public const string NAME = "Potatoes' Take And Hold Background Music Loader";
-		public const string VERS = "1.3.0"; //surely this will be release ready!
+		public const string VERS = "1.3.1"; //surely this will be release ready!
 	}
 }
