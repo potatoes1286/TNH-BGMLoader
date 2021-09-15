@@ -1,5 +1,7 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using FistVR;
 using FMODUnity;
 using UnityEngine;
@@ -12,7 +14,7 @@ namespace TNH_BGLoader
 {
 	public class TNH_BGM_L_Panel : MonoBehaviour
 	{
-		private LockablePanel _PTNHBGMLpanel;
+		public LockablePanel _PTNHBGMLpanel;
 
 		public TNH_BGM_L_Panel()
 		{
@@ -70,7 +72,7 @@ namespace TNH_BGLoader
 					button.RectTransform.localRotation = Quaternion.identity;
 				});
 				/*Show current bank*/	widget.AddChild((TextWidget text) => {
-					text.Text.text = Path.GetFileName(TNH_BGM_L.relevantBank);
+					text.Text.text = SetMusicText();
 					BankText = text;
 					text.Text.alignment = TextAnchor.MiddleCenter;
 					text.Text.fontSize += 5;
@@ -108,15 +110,19 @@ namespace TNH_BGLoader
 		}
 		private void UpdateMusic(int cycleInc)
 		{
-			if (GM.TNH_Manager != null)
-			{
+			if (GM.TNH_Manager != null) {
 				WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
 				return;
 			}
 
 			int newBN = TNH_BGM_L.bankNum + cycleInc;
 			TNH_BGM_L.SwapBank(newBN);
-			BankText.Text.text = Path.GetFileName(TNH_BGM_L.relevantBank);
+			BankText.Text.text = SetMusicText();
+		}
+
+		private string SetMusicText()
+		{
+			 return Path.GetFileNameWithoutExtension(TNH_BGM_L.relevantBank).Split('_').Last();
 		}
 		private void CycleUp() { UpdateMusic(1); }
 		private void CycleDown() { UpdateMusic(-1); }
