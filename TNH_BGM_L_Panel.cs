@@ -265,10 +265,10 @@ namespace TNH_BGLoader
 		{
 			string bankpath = TNH_BGM_L.banks[index];
 			string bankname = Path.GetFileNameWithoutExtension(bankpath).Split('_').Last();
-			if (returnIndex) bankname = (index + 1) + ": " + bankname;
-			
 			if (bankname == "TAH")
 				bankname = "Default";
+			
+			if (returnIndex) bankname = (index + 1) + ": " + bankname;
 			return bankname;
 		}
 
