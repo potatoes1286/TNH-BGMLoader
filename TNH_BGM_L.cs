@@ -34,7 +34,7 @@ namespace TNH_BGLoader
 		public void Awake()
 		{
 			InitConfig();
-			banks = GetLegacyBanks();
+			banks = GetLegacyBanks().OrderBy(x => x).ToList();
 			//nuke all duplicates
 			banks = banks.Distinct().ToList();
 			//the loader patch just checks for MX_TAH, not the full root path so this should bypass the check

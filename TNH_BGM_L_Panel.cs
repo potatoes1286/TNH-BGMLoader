@@ -15,30 +15,38 @@ namespace TNH_BGLoader
 	public class TNH_BGM_L_Panel : MonoBehaviour
 	{
 		public LockablePanel _PTNHBGMLpanel;
-
+		
 		public TNH_BGM_L_Panel()
 		{
-			WristMenuAPI.Buttons.Add(new WristMenuButton("TNH BGM Selector", () => { SpawnPTNHBGMLPanel(); }));
+			//WristMenuAPI.Buttons.Add(new WristMenuButton("TNH BGM Selector", () => { SpawnPTNHBGMLPanel(); }));
 
 			_PTNHBGMLpanel = new LockablePanel();
 			_PTNHBGMLpanel.Configure += ConfigurePTNHBGMLpanel;
 		}
-
-		private ButtonWidget CycleMusicUp;
-		private ButtonWidget CycleMusicDown;
+		
 		private TextWidget   BankText;
-
-		private ButtonWidget IncreaseVolume;
-		private ButtonWidget DecreaseVolume;
 		private TextWidget   VolumeText;
 
-		private void SpawnPTNHBGMLPanel()
+		private ButtonWidget[] MusicButtons = new ButtonWidget[8];
+		
+		/*private ButtonWidget FirstMusicButton;
+		private ButtonWidget SecondMusicButton;
+		private ButtonWidget ThirdMusicButton;
+		private ButtonWidget FourthMusicButton;
+		private ButtonWidget FifthMusicButton;
+		private ButtonWidget SixthMusicButton;*/
+		
+		private int FirstMusicIndex;
+		
+		/*private void SpawnPTNHBGMLPanel()
 		{
 			FVRWristMenu wristMenu = WristMenuAPI.Instance;
 			if (wristMenu is null || !wristMenu) return;
 			GameObject panel = _PTNHBGMLpanel.GetOrCreatePanel();
-			wristMenu.m_currentHand.RetrieveObject(panel.GetComponent<FVRPhysicalObject>());
-		}
+			FVRPhysicalObject panelObj = panel.GetComponent<FVRPhysicalObject>();
+			wristMenu.m_currentHand.RetrieveObject(panelObj);
+			panelObj.SetIsKinematicLocked(true);
+		}*/
 
 		private void ConfigurePTNHBGMLpanel(GameObject panel)
 		{
@@ -63,69 +71,166 @@ namespace TNH_BGLoader
 					widget.LayoutGroup.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
 					widget.LayoutGroup.constraintCount = 3;
 				}
-
+				
 				//ROW ONE
-				/*Cycle bank up*/		widget.AddChild((ButtonWidget button) => {
-					button.ButtonText.text = "Cycle Up";
+				
+				/*Cycle mindex up*/		widget.AddChild((ButtonWidget button) => {
+					button.ButtonText.text = "Cycle List Up";
 					button.AddButtonListener(CycleUp);
-					IncreaseVolume = button;
 					button.RectTransform.localRotation = Quaternion.identity;
 				});
-				/*Show current bank*/	widget.AddChild((TextWidget text) => {
-					text.Text.text = SetMusicText();
+				/*First Music Slot*/	widget.AddChild((ButtonWidget button) => {
+					int index = 0;
+					button.ButtonText.text = GetBankNameWithOffset(index);
+					button.AddButtonListener(SetBankFirst);
+					MusicButtons[index] = button;
+					button.RectTransform.localRotation = Quaternion.identity;
+				});
+				/*Second Music Slot*/	widget.AddChild((ButtonWidget button) => {
+					int index = 1;
+					button.ButtonText.text = GetBankNameWithOffset(index);
+					button.AddButtonListener(SetBankSecond);
+					MusicButtons[index] = button;
+					button.RectTransform.localRotation = Quaternion.identity;
+				});
+				
+				//ROW TWO
+				
+				/*current mindex*/		widget.AddChild((TextWidget text) => {
+					text.Text.text = "Selected:\n" + GetCurrentBankName();
 					BankText = text;
 					text.Text.alignment = TextAnchor.MiddleCenter;
 					text.Text.fontSize += 5;
 					text.RectTransform.localRotation = Quaternion.identity;
 				});
-				/*Cycle bank down*/		widget.AddChild((ButtonWidget button) => {
-					button.ButtonText.text = "Cycle Down";
-					button.AddButtonListener(CycleDown);
-					CycleMusicDown = button;
+				/*Third Music Slot*/	widget.AddChild((ButtonWidget button) => {
+					int index = 2;
+					button.ButtonText.text = GetBankNameWithOffset(index);
+					button.AddButtonListener(SetBankThird);
+					MusicButtons[index] = button;
+					button.RectTransform.localRotation = Quaternion.identity;
+				});
+				/*Fourth Music Slot*/	widget.AddChild((ButtonWidget button) => {
+					int index = 3;
+					button.ButtonText.text = GetBankNameWithOffset(index);
+					button.AddButtonListener(SetBankFourth);
+					MusicButtons[index] = button;
 					button.RectTransform.localRotation = Quaternion.identity;
 				});
 				
-				//ROW TWO
-				/*Turn up volume*/		widget.AddChild((ButtonWidget button) => {
-					button.ButtonText.text = "Decrease volume 5%";
-					button.AddButtonListener(TurnDownVolume);
-					DecreaseVolume = button;
+				//ROW THREE
+
+				/*Cycle mindex down*/	widget.AddChild((ButtonWidget button) => {
+					button.ButtonText.text = "Cycle List Down";
+					button.AddButtonListener(CycleDown);
 					button.RectTransform.localRotation = Quaternion.identity;
 				});
-				/*Current volume*/		widget.AddChild((TextWidget text) => {
+				/*Fifth Music Slot*/	widget.AddChild((ButtonWidget button) => {
+					int index = 4;
+					button.ButtonText.text = GetBankNameWithOffset(index);
+					button.AddButtonListener(SetBankFifth);
+					MusicButtons[index] = button;
+					button.RectTransform.localRotation = Quaternion.identity;
+				});
+				/*Sixth Music Slot*/	widget.AddChild((ButtonWidget button) => {
+					int index = 5;
+					button.ButtonText.text = GetBankNameWithOffset(index);
+					button.AddButtonListener(SetBankSixth);
+					MusicButtons[index] = button;
+					button.RectTransform.localRotation = Quaternion.identity;
+				});
+				
+				//ROW FOUR
+				
+				/*None*/				widget.AddChild((TextWidget text) => {
+					text.Text.text = "";
+					text.Text.alignment = TextAnchor.MiddleCenter;
+					text.Text.fontSize += 5;
+					text.RectTransform.localRotation = Quaternion.identity;
+				});
+				/*Seventh Music Slot*/	widget.AddChild((ButtonWidget button) => {
+					int index = 6;
+					button.ButtonText.text = GetBankNameWithOffset(index);
+					button.AddButtonListener(SetBankSeventh);
+					MusicButtons[index] = button;
+					button.RectTransform.localRotation = Quaternion.identity;
+				});
+				/*Eighth Music Slot*/	widget.AddChild((ButtonWidget button) => {
+					int index = 7;
+					button.ButtonText.text = GetBankNameWithOffset(index);
+					button.AddButtonListener(SetBankEighth);
+					MusicButtons[index] = button;
+					button.RectTransform.localRotation = Quaternion.identity;
+				});
+				
+				//ROW FIVE
+				
+				/*None*/				widget.AddChild((TextWidget text) => {
+					text.Text.text = "";
+					text.Text.alignment = TextAnchor.MiddleCenter;
+					text.Text.fontSize += 5;
+					text.RectTransform.localRotation = Quaternion.identity;
+				});
+				/*None*/				widget.AddChild((TextWidget text) => {
+					text.Text.text = "";
+					text.Text.alignment = TextAnchor.MiddleCenter;
+					text.Text.fontSize += 5;
+					text.RectTransform.localRotation = Quaternion.identity;
+				});
+				/*None*/				widget.AddChild((TextWidget text) => {
+					text.Text.text = "";
+					text.Text.alignment = TextAnchor.MiddleCenter;
+					text.Text.fontSize += 5;
+					text.RectTransform.localRotation = Quaternion.identity;
+				});
+				
+				//ROW SIX
+				
+				/*Cycle volume down*/	widget.AddChild((ButtonWidget button) => {
+					button.ButtonText.text = "Decrease volume 5%";
+					button.AddButtonListener(TurnDownVolume);
+					button.RectTransform.localRotation = Quaternion.identity;
+				});
+				/*vol percent*/			widget.AddChild((TextWidget text) => {
 					text.Text.text = GetVolumePercent();
 					VolumeText = text;
 					text.Text.alignment = TextAnchor.MiddleCenter;
 					text.Text.fontSize += 5;
 					text.RectTransform.localRotation = Quaternion.identity;
 				});
-				/*Turn down volume*/	widget.AddChild((ButtonWidget button) => {
+				/*Cycle volume up*/		widget.AddChild((ButtonWidget button) => {
 					button.ButtonText.text = "Increase volume 5%";
 					button.AddButtonListener(TurnUpVolume);
-					CycleMusicUp = button;
 					button.RectTransform.localRotation = Quaternion.identity;
 				});
-				
 			});
 		}
-		private void UpdateMusic(int cycleInc)
+		
+		
+		//MIndex Updaters
+		private void UpdateMIndex(int cycleInc)
 		{
-			if (GM.TNH_Manager != null) {
+			int NewMIndex = FirstMusicIndex + cycleInc;
+			if (NewMIndex < 0)
+			{
 				WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
 				return;
 			}
-
-			int newBN = TNH_BGM_L.bankNum + cycleInc;
-			TNH_BGM_L.SwapBank(newBN);
-			BankText.Text.text = SetMusicText();
+			if (NewMIndex >= TNH_BGM_L.banks.Count)
+			{
+				WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
+				return;
+			}
+			FirstMusicIndex = NewMIndex;
+			for (int i = 0; i < MusicButtons.Length; i++)
+				MusicButtons[i].ButtonText.text = GetBankNameWithOffset(i);
 		}
-
-		private string SetMusicText()
-		{
-			 return Path.GetFileNameWithoutExtension(TNH_BGM_L.relevantBank).Split('_').Last();
-		}
-		private void CycleUp() { UpdateMusic(1); }
-		private void CycleDown() { UpdateMusic(-1); }
+		private void CycleUp() { UpdateMIndex(-4); }
+		private void CycleDown() { UpdateMIndex(4); }
+		
+		//Volume Updaters
+		private void TurnUpVolume(){UpdateVolume(0.05f);}
+		private void TurnDownVolume(){UpdateVolume(-0.05f);}
 		private void UpdateVolume(float inc)
 		{
 			TNH_BGM_L.bgmVolume.Value += inc;
@@ -138,13 +243,67 @@ namespace TNH_BGLoader
 				TNH_BGM_L.bgmVolume.Value = 4;
 				WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
 			}
-			VolumeText.Text.text = GetVolumePercent();
+			SetVolume();
+		}
+
+		//Text Getters
+		private string GetBankNameWithOffset(int offset)
+		{
+			if (FirstMusicIndex + offset < TNH_BGM_L.banks.Count)
+			{
+				string bankname = GetBankName(FirstMusicIndex + offset, true);
+				return bankname;
+			}
+			return "";
+		}
+		private string GetCurrentBankName()
+		{
+			return GetBankName(TNH_BGM_L.bankNum, true);
+		}
+
+		private string GetBankName(int index, bool returnIndex = false)
+		{
+			string bankpath = TNH_BGM_L.banks[index];
+			string bankname = Path.GetFileNameWithoutExtension(bankpath).Split('_').Last();
+			if (returnIndex) bankname = (index + 1) + ": " + bankname;
+			
+			if (bankname == "TAH")
+				bankname = "Default";
+			return bankname;
+		}
+
+		private string GetMIndex()
+		{
+			return FirstMusicIndex.ToString();
 		}
 		private string GetVolumePercent()
 		{
 			return Mathf.Round(TNH_BGM_L.bgmVolume.Value * 100).ToString(CultureInfo.InvariantCulture) + "%";
 		}
-		private void TurnUpVolume(){UpdateVolume(0.05f);}
-		private void TurnDownVolume(){UpdateVolume(-0.05f);}
+
+		//Text Setters
+		private void SetVolume() { VolumeText.Text.text = GetVolumePercent(); }
+
+		private void SetCurrentBank() { BankText.Text.text = "Selected:\n" + GetCurrentBankName();}
+
+		//Bank Setting
+		private void SetBankFirst()  { SetBank(FirstMusicIndex); }
+		private void SetBankSecond() { SetBank(FirstMusicIndex + 1); }
+		private void SetBankThird()  { SetBank(FirstMusicIndex + 2); }
+		private void SetBankFourth() { SetBank(FirstMusicIndex + 3); }
+		private void SetBankFifth() { SetBank(FirstMusicIndex + 4); }
+		private void SetBankSixth() { SetBank(FirstMusicIndex + 5); }
+		private void SetBankSeventh() { SetBank(FirstMusicIndex + 6); }
+		private void SetBankEighth() { SetBank(FirstMusicIndex + 7); }
+		private void SetBank(int newBank)
+		{
+			if (GM.TNH_Manager != null) {
+				WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
+				return;
+			}
+			
+			TNH_BGM_L.SwapBank(newBank);
+			SetCurrentBank();
+		}
 	}
 }
