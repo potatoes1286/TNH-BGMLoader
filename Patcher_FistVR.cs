@@ -24,8 +24,8 @@ namespace TNHBGLoader
 		[HarmonyPostfix]
 		public static void TNH_UIManagerPatch_SpawnPanel()
 		{
-			TNHBackgroundMusicLoaderPanel BGMpanel = new TNHBackgroundMusicLoaderPanel();
-			GameObject panel = BGMpanel.Panel.GetOrCreatePanel();
+			var bgmpanel = new TNHBackgroundMusicLoaderPanel();
+			GameObject panel = bgmpanel.Panel.GetOrCreatePanel();
 			panel.transform.position = new Vector3(0.0561f, 1f, 7.1821f);
 			panel.transform.localEulerAngles = new Vector3(315, 0, 0);
 			panel.GetComponent<FVRPhysicalObject>().SetIsKinematicLocked(true);

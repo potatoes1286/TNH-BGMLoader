@@ -40,7 +40,7 @@ namespace TNHBGLoader
 		}
 		
 		[HarmonyPatch(typeof(RuntimeManager))]
-		[HarmonyPatch("LoadBank", new Type[]{typeof(string), typeof(bool)})]
+		[HarmonyPatch("LoadBank", new Type[] { typeof(string), typeof(bool) })]
 		[HarmonyPrefix]
 		public static bool FMODRuntimeManagerPatch_LoadBank(ref string bankName)
 		{

@@ -51,7 +51,7 @@ namespace TNHBGLoader
 			//launch panel using sodalite
 			try 
 			{
-				TNHBackgroundMusicLoaderPanel uop = new TNHBackgroundMusicLoaderPanel(); // dont do this
+				var panel = new TNHBackgroundMusicLoaderPanel(); // dont do this
 			} catch 
 			{
 				Logger.LogWarning("Could not load PTNHBGML panel!");
