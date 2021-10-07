@@ -113,9 +113,9 @@
     <ItemGroup>
         <Compile Include="Patcher_FistVR.cs" />
         <Compile Include="Patcher_FMOD.cs" />
-        <Compile Include="TNH_BGM_L.cs" />
+        <Compile Include="TNHBackgroundMusicLoader.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
-        <Compile Include="TNH_BGM_L_Panel.cs" />
+        <Compile Include="TNHBackgroundMusicLoaderPanel.cs" />
     </ItemGroup>
     <ItemGroup>
       <None Include="Nuget.config" />

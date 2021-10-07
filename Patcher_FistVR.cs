@@ -8,7 +8,7 @@ using Debug = FMOD.Debug;
 using Random = UnityEngine.Random;
 using System = FMOD.Studio.System;
 
-namespace TNH_BGLoader
+namespace TNHBGLoader
 {
 	public class Patcher_FistVR
 	{
@@ -16,7 +16,7 @@ namespace TNH_BGLoader
 		[HarmonyPrefix]
 		public static bool FVRFMODControllerPatch_SetMasterVolume(ref float i)
 		{
-			i *= TNH_BGM_L.bgmVolume.Value;
+			i *= TNHBackgroundMusicLoader.BackgroundMusicVolume.Value;
 			return true;
 		}
 		
@@ -24,8 +24,8 @@ namespace TNH_BGLoader
 		[HarmonyPostfix]
 		public static void TNH_UIManagerPatch_SpawnPanel()
 		{
-			TNH_BGM_L_Panel BGMpanel = new TNH_BGM_L_Panel();
-			GameObject panel = BGMpanel._PTNHBGMLpanel.GetOrCreatePanel();
+			var bgmpanel = new TNHBackgroundMusicLoaderPanel();
+			GameObject panel = bgmpanel.Panel.GetOrCreatePanel();
 			panel.transform.position = new Vector3(0.0561f, 1f, 7.1821f);
 			panel.transform.localEulerAngles = new Vector3(315, 0, 0);
 			panel.GetComponent<FVRPhysicalObject>().SetIsKinematicLocked(true);

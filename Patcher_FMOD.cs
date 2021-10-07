@@ -4,7 +4,7 @@ using FMODUnity;
 using HarmonyLib;
 using UnityEngine;
 
-namespace TNH_BGLoader
+namespace TNHBGLoader
 {
 	public class Patcher_FMOD
 	{
@@ -40,17 +40,17 @@ namespace TNH_BGLoader
 		}
 		
 		[HarmonyPatch(typeof(RuntimeManager))]
-		[HarmonyPatch("LoadBank", new Type[]{typeof(string), typeof(bool)})]
+		[HarmonyPatch("LoadBank", new Type[] { typeof(string), typeof(bool) })]
 		[HarmonyPrefix]
 		public static bool FMODRuntimeManagerPatch_LoadBank(ref string bankName)
 		{
 			if (bankName == "MX_TAH")
 			{
-				if (!TNH_BGM_L.areBanksEmptyOrNull) //i don't even think this is possible? it's not. i need to remove this sometime.
+				if (!TNHBackgroundMusicLoader.BanksEmptyOrNull) //i don't even think this is possible? it's not. i need to remove this sometime.
 				{
-					if (TNH_BGM_L.relevantBank == "Surprise Me!") return false;
-					Debug.Log("Injecting bank " + Path.GetFileName(TNH_BGM_L.relevantBank) + " into TNH!");
-					bankName = TNH_BGM_L.relevantBank;
+					if (TNHBackgroundMusicLoader.RelevantBank == "Surprise Me!") return false;
+					Debug.Log("Injecting bank " + Path.GetFileName(TNHBackgroundMusicLoader.RelevantBank) + " into TNH!");
+					bankName = TNHBackgroundMusicLoader.RelevantBank;
 				}
 			}
 			return true;
