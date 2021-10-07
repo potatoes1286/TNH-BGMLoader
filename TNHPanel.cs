@@ -12,14 +12,12 @@ using Sodalite.UiWidgets;
 
 namespace TNHBGLoader
 {
-	public class TNHBackgroundMusicLoaderPanel : MonoBehaviour
+	public class TNHPanel : MonoBehaviour
 	{
 		public LockablePanel Panel;
 		
-		public TNHBackgroundMusicLoaderPanel()
+		public TNHPanel()
 		{
-			//WristMenuAPI.Buttons.Add(new WristMenuButton("TNH BGM Selector", () => { SpawnPTNHBGMLPanel(); }));
-
 			Panel = new LockablePanel();
 			Panel.Configure += ConfigurePanel;
 		}
@@ -28,25 +26,8 @@ namespace TNHBGLoader
 		private TextWidget   _volumeText;
 
 		private ButtonWidget[] _musicButtons = new ButtonWidget[8];
-		
-		/*private ButtonWidget FirstMusicButton;
-		private ButtonWidget SecondMusicButton;
-		private ButtonWidget ThirdMusicButton;
-		private ButtonWidget FourthMusicButton;
-		private ButtonWidget FifthMusicButton;
-		private ButtonWidget SixthMusicButton;*/
-		
+
 		private int _firstMusicIndex;
-		
-		/*private void SpawnPTNHBGMLPanel()
-		{
-			FVRWristMenu wristMenu = WristMenuAPI.Instance;
-			if (wristMenu is null || !wristMenu) return;
-			GameObject panel = _PTNHBGMLpanel.GetOrCreatePanel();
-			FVRPhysicalObject panelObj = panel.GetComponent<FVRPhysicalObject>();
-			wristMenu.m_currentHand.RetrieveObject(panelObj);
-			panelObj.SetIsKinematicLocked(true);
-		}*/
 
 		private void ConfigurePanel(GameObject panel)
 		{
@@ -165,8 +146,7 @@ namespace TNHBGLoader
 				
 				//ROW FIVE
 				
-				/*None*/				widget.AddChild((TextWidget text) =>
-				{
+				/*None*/				widget.AddChild((TextWidget text) => {
 					text.Text.text = "";
 					text.Text.alignment = TextAnchor.MiddleCenter;
 					text.Text.fontSize += 5;
@@ -217,7 +197,7 @@ namespace TNHBGLoader
 				WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
 				return;
 			}
-			if (NewMIndex >= TNHBackgroundMusicLoader.BankList.Count)
+			if (NewMIndex >= PluginMain.BankList.Count)
 			{
 				WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
 				return;
@@ -234,36 +214,27 @@ namespace TNHBGLoader
 		private void TurnDownVolume() => UpdateVolume(-0.05f);
 		private void UpdateVolume(float inc)
 		{
-			TNHBackgroundMusicLoader.BackgroundMusicVolume.Value += inc;
-			if (TNHBackgroundMusicLoader.BackgroundMusicVolume.Value < 0)
-			{
-				TNHBackgroundMusicLoader.BackgroundMusicVolume.Value = 0;
+			PluginMain.BackgroundMusicVolume.Value += inc;
+			if (PluginMain.BackgroundMusicVolume.Value < 0 || PluginMain.BackgroundMusicVolume.Value > 4)
 				WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
-			} else if (TNHBackgroundMusicLoader.BackgroundMusicVolume.Value > 4)
-			{
-				TNHBackgroundMusicLoader.BackgroundMusicVolume.Value = 4;
-				WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
-			}
+			PluginMain.BackgroundMusicVolume.Value = Mathf.Clamp(PluginMain.BackgroundMusicVolume.Value, 0, 4);
 			SetVolume();
 		}
 
-		//Text Getters
+		//Text Get / Set
 		private string GetBankNameWithOffset(int offset)
 		{
-			if (_firstMusicIndex + offset < TNHBackgroundMusicLoader.BankList.Count)
+			if (_firstMusicIndex + offset < PluginMain.BankList.Count)
 			{
 				string bankname = GetBankName(_firstMusicIndex + offset, true);
 				return bankname;
 			}
 			return "";
 		}
-
-		private string CurrentBankName => GetBankName(TNHBackgroundMusicLoader.BankIndex, true);
-
-
+		private string CurrentBankName => GetBankName(PluginMain.BankIndex, true);
 		private string GetBankName(int index, bool returnIndex = false)
 		{
-			string bankpath = TNHBackgroundMusicLoader.BankList[index];
+			string bankpath = PluginMain.BankList[index];
 			string bankname = Path.GetFileNameWithoutExtension(bankpath).Split('_').Last();
 			if (bankname == "TAH")
 				bankname = "Default";
@@ -271,52 +242,26 @@ namespace TNHBGLoader
 			if (returnIndex) bankname = (index + 1) + ": " + bankname;
 			return bankname;
 		}
-
 		private string GetMIndex()
 		{
 			return _firstMusicIndex.ToString();
 		}
 		private string GetVolumePercent()
 		{
-			return Mathf.Round(TNHBackgroundMusicLoader.BackgroundMusicVolume.Value * 100).ToString(CultureInfo.InvariantCulture) + "%";
+			return Mathf.Round(PluginMain.BackgroundMusicVolume.Value * 100).ToString(CultureInfo.InvariantCulture) + "%";
 		}
-
-		//Text Setters
+		
 		private void SetVolume() { _volumeText.Text.text = GetVolumePercent(); }
-
 		private void SetCurrentBank() { _bankText.Text.text = "Selected:\n" + CurrentBankName;}
 
 		private Action SetBank(int index) => () =>
-			{
-				if (GM.TNH_Manager != null)
-				{
-					WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
-					return;
-				}
-
-				TNHBackgroundMusicLoader.SwapBank(index);
-				SetCurrentBank();
-			};
-		
-		
-		//Bank Setting
-		// private void SetBankFirst()  { SetBank(FirstMusicIndex); }
-		// private void SetBankSecond() { SetBank(FirstMusicIndex + 1); }
-		// private void SetBankThird()  { SetBank(FirstMusicIndex + 2); }
-		// private void SetBankFourth() { SetBank(FirstMusicIndex + 3); }
-		// private void SetBankFifth() { SetBank(FirstMusicIndex + 4); }
-		// private void SetBankSixth() { SetBank(FirstMusicIndex + 5); }
-		// private void SetBankSeventh() { SetBank(FirstMusicIndex + 6); }
-		// private void SetBankEighth() { SetBank(FirstMusicIndex + 7); }
-		// private void SetBank(int newBank)
-		// {
-		// 	if (GM.TNH_Manager != null) {
-		// 		WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
-		// 		return;
-		// 	}
-		// 	
-		// 	TNH_BGM_L.SwapBank(newBank);
-		// 	SetCurrentBank();
-		// }
+		{
+			if (GM.TNH_Manager != null) {
+				WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
+				return;
+			}
+			PluginMain.SwapBank(index);
+			SetCurrentBank();
+		};
 	}
 }

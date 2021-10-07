@@ -20,7 +20,7 @@ namespace TNHBGLoader
 	[BepInPlugin(PluginDetails.GUID, PluginDetails.NAME, PluginDetails.VERS)]
 	[BepInDependency("nrgill28.Sodalite", BepInDependency.DependencyFlags.SoftDependency)]
 	//[BepInDependency(StratumRoot.GUID, StratumRoot.Version)]
-	public class TNHBackgroundMusicLoader : /*StratumPlugin*/ BaseUnityPlugin
+	public class PluginMain : /*StratumPlugin*/ BaseUnityPlugin
 	{
 		public static ConfigEntry<float> BackgroundMusicVolume;
 		public static ConfigEntry<string> LastLoadedBank;
@@ -51,7 +51,7 @@ namespace TNHBGLoader
 			//launch panel using sodalite
 			try 
 			{
-				var panel = new TNHBackgroundMusicLoaderPanel(); // dont do this
+				var panel = new TNHPanel(); // dont do this
 			} catch 
 			{
 				Logger.LogWarning("Could not load PTNHBGML panel!");

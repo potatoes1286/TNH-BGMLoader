@@ -16,7 +16,7 @@ namespace TNHBGLoader
 		[HarmonyPrefix]
 		public static bool FVRFMODControllerPatch_SetMasterVolume(ref float i)
 		{
-			i *= TNHBackgroundMusicLoader.BackgroundMusicVolume.Value;
+			i *= PluginMain.BackgroundMusicVolume.Value;
 			return true;
 		}
 		
@@ -24,7 +24,7 @@ namespace TNHBGLoader
 		[HarmonyPostfix]
 		public static void TNH_UIManagerPatch_SpawnPanel()
 		{
-			var bgmpanel = new TNHBackgroundMusicLoaderPanel();
+			var bgmpanel = new TNHPanel();
 			GameObject panel = bgmpanel.Panel.GetOrCreatePanel();
 			panel.transform.position = new Vector3(0.0561f, 1f, 7.1821f);
 			panel.transform.localEulerAngles = new Vector3(315, 0, 0);

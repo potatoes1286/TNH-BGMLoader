@@ -46,11 +46,11 @@ namespace TNHBGLoader
 		{
 			if (bankName == "MX_TAH")
 			{
-				if (!TNHBackgroundMusicLoader.BanksEmptyOrNull) //i don't even think this is possible? it's not. i need to remove this sometime.
+				if (!PluginMain.BanksEmptyOrNull) //i don't even think this is possible? it's not. i need to remove this sometime.
 				{
-					if (TNHBackgroundMusicLoader.RelevantBank == "Surprise Me!") return false;
-					Debug.Log("Injecting bank " + Path.GetFileName(TNHBackgroundMusicLoader.RelevantBank) + " into TNH!");
-					bankName = TNHBackgroundMusicLoader.RelevantBank;
+					if (PluginMain.RelevantBank == "Surprise Me!") return false;
+					Debug.Log("Injecting bank " + Path.GetFileName(PluginMain.RelevantBank) + " into TNH!");
+					bankName = PluginMain.RelevantBank;
 				}
 			}
 			return true;
