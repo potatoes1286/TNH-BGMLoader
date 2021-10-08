@@ -63,7 +63,7 @@ namespace TNHBGLoader
 				// surely this won't throw an access error!
 				var banks = Directory.GetFiles(PLUGINS_DIR, "MX_TAH_*.bank", SearchOption.AllDirectories).ToList();
 				// removes all files with parent dir "resources"
-				foreach (var bank in BankList) if (Path.GetFileName(Path.GetDirectoryName(bank))?.ToLower() == "resources") BankList.Remove(bank);
+				foreach (var bank in banks) if (Path.GetFileName(Path.GetDirectoryName(bank))?.ToLower() == "resources") BankList.Remove(bank);
 				Logger.LogDebug(banks.Count + " banks loaded via legacy bank loader!");
 				// i'm supposed to ignore any files thrown into the plugin folder, but idk how to do that. toodles!
 				return banks;
@@ -113,6 +113,6 @@ namespace TNHBGLoader
 	{
 		public const string GUID = "dll.potatoes.ptnhbgml";
 		public const string NAME = "Potatoes' Take And Hold Background Music Loader";
-		public const string VERS = "1.4.1"; //surely this will be release ready!
+		public const string VERS = "1.4.2"; //surely this will be release ready!
 	}
 }
