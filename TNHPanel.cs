@@ -24,7 +24,7 @@ namespace TNHBGLoader
 			Panel = new LockablePanel();
 			Panel.Configure += ConfigurePanel;
 			
-			Panel.TextureOverride = SodaliteUtils.LoadTextureFromBytes(Assembly.GetExecutingAssembly().GetResource("UtilsPanel.png"));
+			Panel.TextureOverride = SodaliteUtils.LoadTextureFromBytes(Assembly.GetExecutingAssembly().GetResource("panel.png"));
 		}
 		
 		private TextWidget   _bankText;
@@ -63,18 +63,21 @@ namespace TNHBGLoader
 				/*Cycle mindex up*/		widget.AddChild((ButtonWidget button) => {
 					button.ButtonText.text = "Cycle List Up";
 					button.AddButtonListener((_,__) => UpdateMusicList(-1));
+					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				/*First Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 0;
 					button.ButtonText.text = GetBankNameWithOffset(index);
 					button.AddButtonListener(SetBank);
 					_musicButtons[index] = button;
+					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				/*Second Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 1;
 					button.ButtonText.text = GetBankNameWithOffset(index);
 					button.AddButtonListener(SetBank);
 					_musicButtons[index] = button;
+					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				
 				//ROW TWO
@@ -90,12 +93,14 @@ namespace TNHBGLoader
 					int index = 2;
 					button.ButtonText.text = GetBankNameWithOffset(index);
 					button.AddButtonListener(SetBank);
+					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				/*Fourth Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 3;
 					button.ButtonText.text = GetBankNameWithOffset(index);
 					button.AddButtonListener(SetBank);
 					_musicButtons[index] = button;
+					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				
 				//ROW THREE
@@ -109,12 +114,14 @@ namespace TNHBGLoader
 					button.ButtonText.text = GetBankNameWithOffset(index);
 					button.AddButtonListener(SetBank);
 					_musicButtons[index] = button;
+					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				/*Sixth Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 5;
 					button.ButtonText.text = GetBankNameWithOffset(index);
 					button.AddButtonListener(SetBank);
 					_musicButtons[index] = button;
+					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				
 				//ROW FOUR
@@ -129,12 +136,14 @@ namespace TNHBGLoader
 					button.ButtonText.text = GetBankNameWithOffset(index);
 					button.AddButtonListener(SetBank);
 					_musicButtons[index] = button;
+					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				/*Eighth Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 7;
 					button.ButtonText.text = GetBankNameWithOffset(index);
 					button.AddButtonListener(SetBank);
 					_musicButtons[index] = button;
+					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				
 				//ROW FIVE
@@ -160,6 +169,7 @@ namespace TNHBGLoader
 				/*Cycle volume down*/	widget.AddChild((ButtonWidget button) => {
 					button.ButtonText.text = "Decrease volume 5%";
 					button.AddButtonListener((_, __) => UpdateVolume(-0.05f));
+					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				/*vol percent*/			widget.AddChild((TextWidget text) => {
 					text.Text.text = GetVolumePercent();
@@ -170,6 +180,7 @@ namespace TNHBGLoader
 				/*Cycle volume up*/		widget.AddChild((ButtonWidget button) => {
 					button.ButtonText.text = "Increase volume 5%";
 					button.AddButtonListener((_, __) => UpdateVolume(0.05f));
+					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 			});
 		}

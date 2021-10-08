@@ -118,7 +118,7 @@
       <Analyzer Include="packages\BepInEx.Analyzers.1.0.4\analyzers\dotnet\cs\BepInEx.Analyzers.dll" />
     </ItemGroup>
     <ItemGroup>
-      <Content Include="panel.png" />
+      <EmbeddedResource Include="panel.png" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <Import Project="packages\BepInEx.Core.5.4.16\build\BepInEx.Core.targets" Condition="Exists('packages\BepInEx.Core.5.4.16\build\BepInEx.Core.targets')" />
