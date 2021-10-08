@@ -108,6 +108,7 @@ namespace TNHBGLoader
 				/*Cycle mindex down*/	widget.AddChild((ButtonWidget button) => {
 					button.ButtonText.text = "Cycle List Down";
 					button.AddButtonListener((_, __) => UpdateMusicList(1));
+					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				/*Fifth Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 4;
