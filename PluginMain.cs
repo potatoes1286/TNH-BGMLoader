@@ -113,6 +113,6 @@ namespace TNHBGLoader
 	{
 		public const string GUID = "dll.potatoes.ptnhbgml";
 		public const string NAME = "Potatoes' Take And Hold Background Music Loader";
-		public const string VERS = "1.4.0"; //surely this will be release ready!
+		public const string VERS = "1.4.1"; //surely this will be release ready!
 	}
 }
