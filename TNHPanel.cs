@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using FistVR;
 using FMODUnity;
 using UnityEngine;
@@ -9,6 +10,7 @@ using UnityEngine.UI;
 using Sodalite;
 using Sodalite.Api;
 using Sodalite.UiWidgets;
+using Sodalite.Utilities;
 using Valve.Newtonsoft.Json.Utilities;
 
 namespace TNHBGLoader
@@ -21,6 +23,8 @@ namespace TNHBGLoader
 		{
 			Panel = new LockablePanel();
 			Panel.Configure += ConfigurePanel;
+			
+			Panel.TextureOverride = SodaliteUtils.LoadTextureFromBytes(Assembly.GetExecutingAssembly().GetResource("UtilsPanel.png"));
 		}
 		
 		private TextWidget   _bankText;
