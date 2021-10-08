@@ -100,7 +100,10 @@ namespace TNHBGLoader
 
 		public Empty LoadTNHBankFile(FileSystemInfo handle) {
 			var file = handle.ConsumeFile();
-			BankList.Add(file.FullName);
+			if (!BankList.Contains(file.FullName))
+			{
+				BankList.Add(file.FullName);
+			}
 			return new Empty();
 		}
 
