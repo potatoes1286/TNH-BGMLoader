@@ -39,27 +39,25 @@ namespace TNHBGLoader
 			GameObject canvas = panel.transform.Find("OptionsCanvas_0_Main/Canvas").gameObject;
 			UiWidget.CreateAndConfigureWidget(canvas, (GridLayoutWidget widget) =>
 			{
-				//init panel; this if is to just let rider fuckign collapse this shit man
-				if(true){
-					// Fill our parent and set pivot to top middle
-					widget.RectTransform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
-					widget.RectTransform.localPosition = Vector3.zero;
-					widget.RectTransform.anchoredPosition = Vector2.zero;
-					widget.RectTransform.sizeDelta = new Vector2(37f / 0.07f, 24f / 0.07f);
-					widget.RectTransform.pivot = new Vector2(0.5f, 1f);
-					widget.RectTransform.localRotation = Quaternion.identity;
-					// Adjust our grid settings
-					widget.LayoutGroup.cellSize = new Vector2(171, 50);
-					widget.LayoutGroup.spacing = Vector2.one * 4;
-					widget.LayoutGroup.startCorner = GridLayoutGroup.Corner.UpperLeft;
-					widget.LayoutGroup.startAxis = GridLayoutGroup.Axis.Horizontal;
-					widget.LayoutGroup.childAlignment = TextAnchor.UpperCenter;
-					widget.LayoutGroup.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-					widget.LayoutGroup.constraintCount = 3;
-				}
+				#region Initialize Panel
+				// Fill our parent and set pivot to top middle
+				widget.RectTransform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
+				widget.RectTransform.localPosition = Vector3.zero;
+				widget.RectTransform.anchoredPosition = Vector2.zero;
+				widget.RectTransform.sizeDelta = new Vector2(37f / 0.07f, 24f / 0.07f);
+				widget.RectTransform.pivot = new Vector2(0.5f, 1f);
+				widget.RectTransform.localRotation = Quaternion.identity;
+				// Adjust our grid settings
+				widget.LayoutGroup.cellSize = new Vector2(171, 50);
+				widget.LayoutGroup.spacing = Vector2.one * 4;
+				widget.LayoutGroup.startCorner = GridLayoutGroup.Corner.UpperLeft;
+				widget.LayoutGroup.startAxis = GridLayoutGroup.Axis.Horizontal;
+				widget.LayoutGroup.childAlignment = TextAnchor.UpperCenter;
+				widget.LayoutGroup.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+				widget.LayoutGroup.constraintCount = 3;
+				#endregion
 				
-				//ROW ONE
-				
+				#region Row One
 				/*Cycle mindex up*/		widget.AddChild((ButtonWidget button) => {
 					button.ButtonText.text = "Cycle List Up";
 					button.AddButtonListener((_,__) => UpdateMusicList(-1));
@@ -79,9 +77,8 @@ namespace TNHBGLoader
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
-				
-				//ROW TWO
-				
+				#endregion
+				#region Row Two
 				/*current mindex*/		widget.AddChild((TextWidget text) => {
 					text.Text.text = "Selected:\n" + GetCurrentBankName;
 					_bankText = text;
@@ -102,9 +99,8 @@ namespace TNHBGLoader
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
-				
-				//ROW THREE
-
+				#endregion
+				#region Row Three
 				/*Cycle mindex down*/	widget.AddChild((ButtonWidget button) => {
 					button.ButtonText.text = "Cycle List Down";
 					button.AddButtonListener((_, __) => UpdateMusicList(1));
@@ -124,9 +120,8 @@ namespace TNHBGLoader
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
-				
-				//ROW FOUR
-				
+				#endregion
+				#region Row Four
 				/*None*/				widget.AddChild((TextWidget text) => {
 					text.Text.text = "";
 					text.Text.alignment = TextAnchor.MiddleCenter;
@@ -146,9 +141,8 @@ namespace TNHBGLoader
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
-				
-				//ROW FIVE
-				
+				#endregion
+				#region Row Five
 				/*None*/				widget.AddChild((TextWidget text) => {
 					text.Text.text = "";
 					text.Text.alignment = TextAnchor.MiddleCenter;
@@ -164,9 +158,8 @@ namespace TNHBGLoader
 					text.Text.alignment = TextAnchor.MiddleCenter;
 					text.Text.fontSize += 5;
 				});
-				
-				//ROW SIX
-				
+				#endregion
+				#region Row Six
 				/*Cycle volume down*/	widget.AddChild((ButtonWidget button) => {
 					button.ButtonText.text = "Decrease volume 5%";
 					button.AddButtonListener((_, __) => UpdateVolume(-0.05f));
@@ -183,6 +176,7 @@ namespace TNHBGLoader
 					button.AddButtonListener((_, __) => UpdateVolume(0.05f));
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
+				#endregion
 			});
 		}
 		
