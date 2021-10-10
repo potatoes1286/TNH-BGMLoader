@@ -32,6 +32,9 @@ namespace TNHBGLoader
 
 		private ButtonWidget[] _musicButtons = new ButtonWidget[8];
 
+		private ButtonWidget[] _volControls = new ButtonWidget[2];
+		private ButtonWidget[] _cycleControls = new ButtonWidget[2];
+
 		private int _firstMusicIndex;
 
 		private void ConfigurePanel(GameObject panel)
@@ -39,31 +42,30 @@ namespace TNHBGLoader
 			GameObject canvas = panel.transform.Find("OptionsCanvas_0_Main/Canvas").gameObject;
 			UiWidget.CreateAndConfigureWidget(canvas, (GridLayoutWidget widget) =>
 			{
-				//init panel; this if is to just let rider fuckign collapse this shit man
-				if(true){
-					// Fill our parent and set pivot to top middle
-					widget.RectTransform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
-					widget.RectTransform.localPosition = Vector3.zero;
-					widget.RectTransform.anchoredPosition = Vector2.zero;
-					widget.RectTransform.sizeDelta = new Vector2(37f / 0.07f, 24f / 0.07f);
-					widget.RectTransform.pivot = new Vector2(0.5f, 1f);
-					widget.RectTransform.localRotation = Quaternion.identity;
-					// Adjust our grid settings
-					widget.LayoutGroup.cellSize = new Vector2(171, 50);
-					widget.LayoutGroup.spacing = Vector2.one * 4;
-					widget.LayoutGroup.startCorner = GridLayoutGroup.Corner.UpperLeft;
-					widget.LayoutGroup.startAxis = GridLayoutGroup.Axis.Horizontal;
-					widget.LayoutGroup.childAlignment = TextAnchor.UpperCenter;
-					widget.LayoutGroup.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-					widget.LayoutGroup.constraintCount = 3;
-				}
+				#region Initialize Panel
+				// Fill our parent and set pivot to top middle
+				widget.RectTransform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
+				widget.RectTransform.localPosition = Vector3.zero;
+				widget.RectTransform.anchoredPosition = Vector2.zero;
+				widget.RectTransform.sizeDelta = new Vector2(37f / 0.07f, 24f / 0.07f);
+				widget.RectTransform.pivot = new Vector2(0.5f, 1f);
+				widget.RectTransform.localRotation = Quaternion.identity;
+				// Adjust our grid settings
+				widget.LayoutGroup.cellSize = new Vector2(171, 50);
+				widget.LayoutGroup.spacing = Vector2.one * 4;
+				widget.LayoutGroup.startCorner = GridLayoutGroup.Corner.UpperLeft;
+				widget.LayoutGroup.startAxis = GridLayoutGroup.Axis.Horizontal;
+				widget.LayoutGroup.childAlignment = TextAnchor.UpperCenter;
+				widget.LayoutGroup.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+				widget.LayoutGroup.constraintCount = 3;
+				#endregion
 				
-				//ROW ONE
-				
+				#region Row One
 				/*Cycle mindex up*/		widget.AddChild((ButtonWidget button) => {
 					button.ButtonText.text = "Cycle List Up";
-					button.AddButtonListener((_,__) => UpdateMusicList(-1));
+					button.AddButtonListener(UpdateMusicList);
 					button.ButtonText.transform.localRotation = Quaternion.identity;
+					_cycleControls[0] = button;
 				});
 				/*First Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 0;
@@ -79,9 +81,8 @@ namespace TNHBGLoader
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
-				
-				//ROW TWO
-				
+				#endregion
+				#region Row Two
 				/*current mindex*/		widget.AddChild((TextWidget text) => {
 					text.Text.text = "Selected:\n" + GetCurrentBankName;
 					_bankText = text;
@@ -93,6 +94,7 @@ namespace TNHBGLoader
 					int index = 2;
 					button.ButtonText.text = GetBankNameWithOffset(index);
 					button.AddButtonListener(SetBank);
+					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				/*Fourth Music Slot*/	widget.AddChild((ButtonWidget button) => {
@@ -102,13 +104,13 @@ namespace TNHBGLoader
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
-				
-				//ROW THREE
-
+				#endregion
+				#region Row Three
 				/*Cycle mindex down*/	widget.AddChild((ButtonWidget button) => {
 					button.ButtonText.text = "Cycle List Down";
-					button.AddButtonListener((_, __) => UpdateMusicList(1));
+					button.AddButtonListener(UpdateMusicList);
 					button.ButtonText.transform.localRotation = Quaternion.identity;
+					_cycleControls[1] = button;
 				});
 				/*Fifth Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 4;
@@ -124,9 +126,8 @@ namespace TNHBGLoader
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
-				
-				//ROW FOUR
-				
+				#endregion
+				#region Row Four
 				/*None*/				widget.AddChild((TextWidget text) => {
 					text.Text.text = "";
 					text.Text.alignment = TextAnchor.MiddleCenter;
@@ -146,9 +147,8 @@ namespace TNHBGLoader
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
-				
-				//ROW FIVE
-				
+				#endregion
+				#region Row Five
 				/*None*/				widget.AddChild((TextWidget text) => {
 					text.Text.text = "";
 					text.Text.alignment = TextAnchor.MiddleCenter;
@@ -164,13 +164,13 @@ namespace TNHBGLoader
 					text.Text.alignment = TextAnchor.MiddleCenter;
 					text.Text.fontSize += 5;
 				});
-				
-				//ROW SIX
-				
+				#endregion
+				#region Row Six
 				/*Cycle volume down*/	widget.AddChild((ButtonWidget button) => {
 					button.ButtonText.text = "Decrease volume 5%";
-					button.AddButtonListener((_, __) => UpdateVolume(-0.05f));
+					button.AddButtonListener(UpdateVolume);
 					button.ButtonText.transform.localRotation = Quaternion.identity;
+					_volControls[0] = button;
 				});
 				/*vol percent*/			widget.AddChild((TextWidget text) => {
 					text.Text.text = GetVolumePercent();
@@ -180,15 +180,20 @@ namespace TNHBGLoader
 				});
 				/*Cycle volume up*/		widget.AddChild((ButtonWidget button) => {
 					button.ButtonText.text = "Increase volume 5%";
-					button.AddButtonListener((_, __) => UpdateVolume(0.05f));
+					button.AddButtonListener(UpdateVolume);
 					button.ButtonText.transform.localRotation = Quaternion.identity;
+					_volControls[1] = button;
 				});
+				#endregion
 			});
 		}
 		
 		//Updates and changes the BGMs shown
-		private Action<object, ButtonClickEventArgs> UpdateMusicList(int cycleInc) => (_, __) =>
+		private void UpdateMusicList(object sender, ButtonClickEventArgs args)
 		{
+			int cycleInc = 0;
+			if		(sender as ButtonWidget == _cycleControls[0]) { cycleInc = -1; }
+			else if (sender as ButtonWidget == _cycleControls[1]) { cycleInc = 1; }
 			int mult = 4;
 			cycleInc = mult * cycleInc;
 			int NewFirstMusicIndex = _firstMusicIndex + cycleInc;
@@ -201,17 +206,20 @@ namespace TNHBGLoader
 			_firstMusicIndex = NewFirstMusicIndex;
 			//update music buttons
 			for (int i = 0; i < _musicButtons.Length; i++) _musicButtons[i].ButtonText.text = GetBankNameWithOffset(i);
-		};
+		}
 		
 		//Updates and changes the volume amount
-		private Action<object, ButtonClickEventArgs> UpdateVolume(float inc) => (_, __) =>
+		private void UpdateVolume(object sender, ButtonClickEventArgs args)
 		{
+			float inc = 0f;
+			if		(sender as ButtonWidget == _volControls[0]) { inc = -0.05f; } 
+			else if (sender as ButtonWidget == _volControls[1]) { inc = 0.05f; }
 			PluginMain.BackgroundMusicVolume.Value += inc;
 			if (PluginMain.BackgroundMusicVolume.Value < 0 || PluginMain.BackgroundMusicVolume.Value > 4)
 				WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
 			PluginMain.BackgroundMusicVolume.Value = Mathf.Clamp(PluginMain.BackgroundMusicVolume.Value, 0, 4);
 			_volumeText.Text.text = GetVolumePercent();  //set volume
-		};
+		}
 
 		//Text Getters
 		private string GetBankNameWithOffset(int offset)
