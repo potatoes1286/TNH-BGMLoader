@@ -9,6 +9,7 @@ namespace TNH_BGLoader
 	public class PlaySongSnippet : MonoBehaviour
 	{
 		public EventInstance snippet;
+		public Bus mbus;
 		public float maxVol = 0.5f;
 		public float maxVolLength = 6f;
 		public float audoffset = 44f;
@@ -34,17 +35,19 @@ namespace TNH_BGLoader
 		
 		public void Start()
 		{
-			var MasterBus = RuntimeManager.GetBus("bus:/Music");
-			MasterBus.setVolume(0.25f);
+			mbus = RuntimeManager.GetBus("bus:/Music");
+			mbus.setVolume(0.25f * PluginMain.BackgroundMusicVolume.Value);
 			snippet = RuntimeManager.CreateInstance("event:/MX/TAH/Fake Meat Must Die");
-			snippet.start();
 			snippet.setTimelinePosition((int)(audoffset * 1000f));
+			snippet.start();
 			snippet.setParameterValue("Intensity", 2);
+			snippet.setTimelinePosition((int)(audoffset * 1000f));
 			PluginMain.OnBankSwapped += OnBankChanged;
 		}
 
 		public void Update()
 		{
+			mbus.setVolume(0.25f * PluginMain.BackgroundMusicVolume.Value);
 			curLength += Time.deltaTime; //tick forwards the time
 			curVol = GetVol(); //get the volume
 			snippet.setVolume(curVol); //set the volume
@@ -59,6 +62,7 @@ namespace TNH_BGLoader
 
 		public float GetVol()
 		{
+			float vol = 0;
 			if (curLength < windUpTime) //if winding up
 			{
 				return Mathf.Sin((curLength * (Mathf.PI / 2)) / windUpTime) * maxVol;
@@ -66,7 +70,7 @@ namespace TNH_BGLoader
 			if (curLength < windUpTime + maxVolLength) //during maxvolplay time
 			{
 				return maxVol;
-			} 
+			}
 			//if winding down
 			return Mathf.Sin(((curLength + windUpTime) * (Mathf.PI / 2)) / windUpTime) * maxVol;
 		}
