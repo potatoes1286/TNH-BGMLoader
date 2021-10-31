@@ -11,6 +11,7 @@ using Sodalite;
 using Sodalite.Api;
 using Sodalite.UiWidgets;
 using Sodalite.Utilities;
+using TNH_BGLoader;
 using Valve.Newtonsoft.Json.Utilities;
 
 namespace TNHBGLoader
@@ -253,6 +254,8 @@ namespace TNHBGLoader
 			{
 				PluginMain.SwapBank(index);
 				_bankText.Text.text = "Selected:\n" + GetCurrentBankName; //set new bank
+				GameObject go = new GameObject();
+				go.AddComponent(typeof(PlaySongSnippet));
 			}
 		}
 	}

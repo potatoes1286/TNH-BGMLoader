@@ -69,13 +69,16 @@ namespace TNHBGLoader
 				return banks;
 			}
 		}
-
+		
+		public delegate void bevent();
+		public static event bevent OnBankSwapped;
 		public static void SwapBank(int newBank)
 		{
 			//wrap around
 			newBank = Mathf.Clamp(newBank, 0, BankList.Count - 1);
 			UnloadBankHard(RelevantBank); //force it to be unloaded
 			BankIndex = newBank; //set banknum to new bank
+			if (OnBankSwapped != null) OnBankSwapped(); //null moment! don't check the sender pls
 			RuntimeManager.LoadBank("MX_TAH"); //load new bank (MX_TAH sets off the patcher)
 			LastLoadedBank.Value = Path.GetFileNameWithoutExtension(RelevantBank); //set last loaded bank
 		}
