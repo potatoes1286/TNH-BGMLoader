@@ -88,7 +88,7 @@ namespace TNHBGLoader
 					text.Text.text = "Selected:\n" + GetCurrentBankName;
 					_bankText = text;
 					text.Text.alignment = TextAnchor.MiddleCenter;
-					text.Text.fontSize += 5;
+					text.Text.fontSize += 3;
 					text.RectTransform.localRotation = Quaternion.identity;
 				});
 				/*Third Music Slot*/	widget.AddChild((ButtonWidget button) => {
