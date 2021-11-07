@@ -78,9 +78,14 @@ namespace TNHBGLoader
 			newBank = Mathf.Clamp(newBank, 0, BankList.Count - 1);
 			UnloadBankHard(RelevantBank); //force it to be unloaded
 			BankIndex = newBank; //set banknum to new bank
-			if (OnBankSwapped != null) OnBankSwapped(); //null moment! don't check the sender pls
+			NukeSongSnippets();
 			RuntimeManager.LoadBank("MX_TAH"); //load new bank (MX_TAH sets off the patcher)
 			LastLoadedBank.Value = Path.GetFileNameWithoutExtension(RelevantBank); //set last loaded bank
+		}
+
+		public static void NukeSongSnippets()
+		{
+			if (OnBankSwapped != null) OnBankSwapped(); //null moment!
 		}
 		
 		//literal copy of RuntimeManager.UnloadBank but hard unloads

@@ -30,6 +30,15 @@ namespace TNHBGLoader
 			panel.transform.localEulerAngles = new Vector3(315, 0, 0);
 			panel.GetComponent<FVRPhysicalObject>().SetIsKinematicLocked(true);
 		}
+		
+		[HarmonyPatch(typeof(TNH_Manager), "Start")]
+		[HarmonyPrefix]
+		public static bool TNH_ManagerPatch_Start()
+		{
+			PluginMain.NukeSongSnippets();
+			return true;
+		}
+		
 
 		/*[HarmonyPatch(typeof(TNH_Manager), "Start")]
 		[HarmonyPrefix]
