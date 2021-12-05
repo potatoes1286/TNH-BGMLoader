@@ -91,18 +91,18 @@ namespace TNH_BGLoader
 			{
 				if (File.Exists(path))
 				{
-					Debug.Log("Loading from " + path);
+					//Debug.Log("Loading from " + path);
 					//var tex = new WWW("file:///" + pbase + "iconhq.png").texture;
 					byte[] byteArray = File.ReadAllBytes(path);
 					Texture2D tex = new Texture2D(1,1);
 					tex.LoadImage(byteArray);
 					if (tex != null)
 					{
-						Debug.Log("Loaded fine!");
+						//Debug.Log("Loaded fine!");
 						return tex;
 					}
-					else Debug.Log("Failed lo load!");
-				} else Debug.Log(path + " does not exist!");
+					//else Debug.Log("Failed lo load!");
+				} //else Debug.Log(path + " does not exist!");
 			}
 			return null;
 		}
