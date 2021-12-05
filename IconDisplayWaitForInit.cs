@@ -28,7 +28,7 @@ namespace TNH_BGLoader
 				gameObject.transform.localScale = new Vector3(0.15f, 0.15f, 0.15f);
 				bgmpanel.icondisplay = rawimagecomp;
 				
-				rawimagecomp.texture = BankAPI.LoadIconForBank(BankAPI.loadedBank);
+				rawimagecomp.texture = BankAPI.LoadIconForBank(BankAPI.LoadedBankLocation);
 				Destroy(this);
 			}
 			catch

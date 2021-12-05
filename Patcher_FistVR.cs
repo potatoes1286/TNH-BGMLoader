@@ -1,8 +1,12 @@
 ﻿using FistVR;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using FMOD;
 using HarmonyLib;
+using Microsoft.Win32;
 using TNH_BGLoader;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,7 +20,7 @@ namespace TNHBGLoader
 	{
 		[HarmonyPatch(typeof(FVRFMODController), "SetMasterVolume")]
 		[HarmonyPrefix]
-		public static bool FVRFMODControllerPatch_SetMasterVolume(ref float i)
+		public static bool FVRFMODController_SetMasterVolume_IncludeBGMVol(ref float i)
 		{
 			i *= PluginMain.BackgroundMusicVolume.Value;
 			return true;
@@ -24,7 +28,7 @@ namespace TNHBGLoader
 		
 		[HarmonyPatch(typeof(TNH_UIManager), "Start")]
 		[HarmonyPostfix]
-		public static void TNH_UIManagerPatch_SpawnPanel()
+		public static void TNH_UIManager_SpawnPanel()
 		{
 			var bgmpanel = new TNHPanel();
 			GameObject panel = bgmpanel.Panel.GetOrCreatePanel();
@@ -38,14 +42,91 @@ namespace TNHBGLoader
 			wait.bgmpanel = bgmpanel;
 		}
 		
+		//Removes all remaining song snippets if game starts while a snippet is playing
 		[HarmonyPatch(typeof(TNH_Manager), "Start")]
 		[HarmonyPrefix]
-		public static bool TNH_ManagerPatch_Start()
+		public static bool TNH_Manager_Start_NukeSongSnippets()
 		{
 			BankAPI.NukeSongSnippets();
 			return true;
 		}
 		
+		//Loads all announcer lines into the DB. this should probably be couroutined... maybe????
+		[HarmonyPatch(typeof(TNH_Manager), "InitLibraries")]
+		[HarmonyPostfix]
+		public static void TNH_Manager_InitLibraries_LoadAnnouncers(TNH_Manager __instance)
+		{
+			Stopwatch sw = new Stopwatch();
+			sw.Start();
+			var announcer = AnnouncerAPI.CurrentAnnouncer;
+			if (announcer.GUID == "h3vr.default") return; //skip all this schtuff if default announcer
+			TNH_VoiceDatabase db = ScriptableObject.CreateInstance<TNH_VoiceDatabase>();
+			db.Lines = new List<TNH_VoiceDatabase.TNH_VoiceLine>();
+			foreach (var line in announcer.VoiceLines)
+			{
+				UnityEngine.Debug.Log("Loading ID " + line.ID);
+				AudioClip sa = null;
+				AudioClip ca = null;
+				//i know there's a special place in hell for my naming scheme. dont care
+				if (!string.IsNullOrEmpty(line.StandardAudioClipPath))
+					sa = AnnouncerAPI.GetAudioFromFile(line.StandardAudioClipPath);
+				if (!string.IsNullOrEmpty(line.CorruptedAudioClipPath))
+					ca = AnnouncerAPI.GetAudioFromFile(line.CorruptedAudioClipPath);
+				if(sa == null) UnityEngine.Debug.Log("SA is missing!");
+				if(ca == null) UnityEngine.Debug.Log("CA is missing!");
+				var vl = new TNH_VoiceDatabase.TNH_VoiceLine();
+				vl.ID = line.ID;
+				vl.Clip_Standard = sa;
+				vl.Clip_Corrupted = ca;
+				db.Lines.Add(vl);
+			}
+			UnityEngine.Debug.Log("Finished loading!");
+			
+			//if the announcermaker left out an ID, instead of leaving it blank, insert base game lines
+			foreach (int vlid in Enum.GetValues(typeof(TNH_VoiceLineID)))
+			{
+				var linesofid = db.Lines.FindAll(line => line.ID == (TNH_VoiceLineID)vlid);
+				if (linesofid.Count == 0)
+				{
+					var baselinesofid = __instance.VoiceDB.Lines.FindAll(line => line.ID == (TNH_VoiceLineID)vlid);
+					db.Lines = db.Lines.Concat(baselinesofid).ToList();
+				}
+			}
+			sw.Stop();
+			__instance.VoiceDB = db;
+			UnityEngine.Debug.Log(sw.ElapsedMilliseconds + "ms to load all voicelines!");
+
+			__instance.voiceDic_Standard = new Dictionary<TNH_VoiceLineID, List<AudioClip>>();
+			__instance.voiceDic_Corrupted = new Dictionary<TNH_VoiceLineID, List<AudioClip>>();
+			for (int l = 0; l < __instance.VoiceDB.Lines.Count; l++)
+			{
+				if (__instance.voiceDic_Standard.ContainsKey(__instance.VoiceDB.Lines[l].ID))
+				{
+					__instance.voiceDic_Standard[__instance.VoiceDB.Lines[l].ID].Add(__instance.VoiceDB.Lines[l].Clip_Standard);
+				}
+				else
+				{
+					List<AudioClip> list = new List<AudioClip>();
+					list.Add(__instance.VoiceDB.Lines[l].Clip_Standard);
+					__instance.voiceDic_Standard.Add(__instance.VoiceDB.Lines[l].ID, list);
+				}
+				if (__instance.voiceDic_Corrupted.ContainsKey(__instance.VoiceDB.Lines[l].ID))
+				{
+					__instance.voiceDic_Corrupted[__instance.VoiceDB.Lines[l].ID].Add(__instance.VoiceDB.Lines[l].Clip_Corrupted);
+				}
+				else
+				{
+					List<AudioClip> list2 = new List<AudioClip>();
+					list2.Add(__instance.VoiceDB.Lines[l].Clip_Corrupted);
+					__instance.voiceDic_Corrupted.Add(__instance.VoiceDB.Lines[l].ID, list2);
+				}
+			}
+
+			/*for(int i=0; i < __instance.VoiceDB.Lines.Count; i++)
+			{
+				SavWav.Save("G:/exp/" + i + ".wav", __instance.VoiceDB.Lines[i].Clip_Standard);
+			}*/
+		}
 
 		/*[HarmonyPatch(typeof(TNH_Manager), "Start")]
 		[HarmonyPrefix]

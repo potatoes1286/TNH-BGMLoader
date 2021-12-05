@@ -7,7 +7,6 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     </PropertyGroup>
-    
     <ItemGroup>       
       <PackageReference Include="BepInEx.Core" Version="5.4.16" />
       <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />

@@ -11,19 +11,18 @@ namespace TNH_BGLoader
 	public class BankAPI
 	{
 		//Bank Index, Bank Name, Bank Location
-		public static List<string> BankList = new List<string>();
-		public static int BankIndex = 0;
-		private static readonly string PLUGINS_DIR = Paths.PluginPath;
-		public static string loadedBank => BankList[BankIndex];
-		public static bool BanksEmptyOrNull => (BankList == null || BankList.Count == 0);
+		public static List<string> BankListLocation = new List<string>();
+		public static int LoadedBankIndex = 0;
+		public static string LoadedBankLocation => BankListLocation[LoadedBankIndex];
+		public static bool BanksEmptyOrNull => (BankListLocation == null || BankListLocation.Count == 0);
 		public static List<string> LegacyBanks
 		{
 			get
 			{
 				// surely this won't throw an access error!
-				var banks = Directory.GetFiles(PLUGINS_DIR, "MX_TAH_*.bank", SearchOption.AllDirectories).ToList();
+				var banks = Directory.GetFiles(Paths.PluginPath, "MX_TAH_*.bank", SearchOption.AllDirectories).ToList();
 				// removes all files with parent dir "resources"
-				foreach (var bank in banks) if (Path.GetFileName(Path.GetDirectoryName(bank))?.ToLower() == "resources") BankList.Remove(bank);
+				foreach (var bank in banks) if (Path.GetFileName(Path.GetDirectoryName(bank))?.ToLower() == "resources") BankListLocation.Remove(bank);
 				Debug.Log(banks.Count + " banks loaded via legacy bank loader! - PTNHBGML");
 				// i'm supposed to ignore any files thrown into the plugin folder, but idk how to do that. toodles!
 				return banks;
@@ -31,7 +30,7 @@ namespace TNH_BGLoader
 		}
 		public static string BankIndexToName(int index, bool returnWithIndex = false)
 		{
-			string bankpath = BankAPI.BankList[index];
+			string bankpath = BankAPI.BankListLocation[index];
 			string bankname = Path.GetFileNameWithoutExtension(bankpath).Split('_').Last();
 			if (bankname == "TAH") bankname = "Default";
 			if (returnWithIndex) bankname = (index + 1) + ": " + bankname;
@@ -41,12 +40,12 @@ namespace TNH_BGLoader
 		public static void SwapBank(int newBank)
 		{
 			//wrap around
-			newBank = Mathf.Clamp(newBank, 0, BankList.Count - 1);
-			UnloadBankHard(loadedBank); //force it to be unloaded
-			BankIndex = newBank; //set banknum to new bank
+			newBank = Mathf.Clamp(newBank, 0, BankListLocation.Count - 1);
+			UnloadBankHard(LoadedBankLocation); //force it to be unloaded
+			LoadedBankIndex = newBank; //set banknum to new bank
 			NukeSongSnippets();
 			RuntimeManager.LoadBank("MX_TAH"); //load new bank (MX_TAH sets off the patcher)
-			PluginMain.LastLoadedBank.Value = Path.GetFileNameWithoutExtension(loadedBank); //set last loaded bank
+			PluginMain.LastLoadedBank.Value = Path.GetFileNameWithoutExtension(LoadedBankLocation); //set last loaded bank
 		}
 		public static void NukeSongSnippets()
 		{
@@ -69,10 +68,12 @@ namespace TNH_BGLoader
 		//granted it's 256x256 (usually), how hard can it be to load that?
 		public static Texture2D LoadIconForBank(string bankName)
 		{
-			Debug.Log("Loading image for " + bankName);
+			//Debug.Log("Loading image for " + bankName);
+			//get the name and base path of the bank
 			var pbase = Path.GetDirectoryName(bankName) + "/";
 			var name = Path.GetFileNameWithoutExtension(bankName).Split('_').Last();
-			string[] paths = new string[]
+			//assembles all the potential locations for the icon, in descending order of importance.
+			string[] paths = new string[] //this is fucking terrible. less so than the announcer one tho
 			{
 				pbase + name + ".png",
 				Directory.GetParent(pbase) + name + ".png",
@@ -81,14 +82,11 @@ namespace TNH_BGLoader
 				pbase + "icon.png",
 				Directory.GetParent(pbase) + "icon.png"
 			};
+			//get default bank loc
 			if (bankName == Path.Combine(Application.streamingAssetsPath, "MX_TAH.bank"))
-			{
-				paths = new string[]
-				{
-					PluginMain.AssemblyDirectory + "/defaulticonhq.png"
-				};
-			}
-			
+				paths = new string[] {PluginMain.AssemblyDirectory + "/defaulticonhq.png"};
+
+			//iterate through all paths, get the first one that exists
 			foreach(var path in paths)
 			{
 				if (File.Exists(path))
