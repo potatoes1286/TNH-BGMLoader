@@ -226,7 +226,7 @@ namespace TNHBGLoader
 			cycleInc = mult * cycleInc;
 			int NewFirstMusicIndex = _firstMusicIndex + cycleInc;
 			bool oob = NewFirstMusicIndex < 0;
-			if ((NewFirstMusicIndex >= BankAPI.BankListLocation.Count) && TNHPstate == TNHPstates.BGM ||
+			if ((NewFirstMusicIndex >= BankAPI.BankLocations.Count) && TNHPstate == TNHPstates.BGM ||
 			    (NewFirstMusicIndex >= AnnouncerAPI.Announcers.Count) && TNHPstate == TNHPstates.Announcer)
 				oob = true;
 			if (oob) {
@@ -263,7 +263,7 @@ namespace TNHBGLoader
 			int index = _firstMusicIndex + offset;
 			if (TNHPstate == TNHPstates.BGM)
 			{
-				if (index < BankAPI.BankListLocation.Count)
+				if (index < BankAPI.BankLocations.Count)
 					return BankAPI.BankIndexToName(index, true);
 			}
 			else if (TNHPstate == TNHPstates.Announcer)
@@ -298,7 +298,7 @@ namespace TNHBGLoader
 					GameObject go = new GameObject();
 					go.AddComponent(typeof(PlaySongSnippet));
 				} else if (TNHPstate == TNHPstates.Announcer) {
-					AnnouncerAPI.SwapAnnouncer(AnnouncerAPI.Announcers[index]);
+					AnnouncerAPI.SwapAnnouncer(AnnouncerAPI.Announcers[index].GUID);
 				}
 				SetIcon(index);
 				_bankText.Text.text = "Selected:\n" + GetCurrentBankName; //set new bank

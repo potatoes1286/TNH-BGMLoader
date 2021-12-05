@@ -23,12 +23,13 @@ using YamlDotNet.Serialization.NamingConventions;
 namespace TNHBGLoader
 {
 	[BepInPlugin(PluginDetails.GUID, PluginDetails.NAME, PluginDetails.VERS)]
-	[BepInDependency("nrgill28.Sodalite", BepInDependency.DependencyFlags.SoftDependency)]
+	[BepInDependency("nrgill28.Sodalite", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInDependency(StratumRoot.GUID, StratumRoot.Version)]
 	public class PluginMain : StratumPlugin
 	{
 		public static ConfigEntry<float> BackgroundMusicVolume;
 		public static ConfigEntry<string> LastLoadedBank;
+		public static ConfigEntry<string> LastLoadedAnnouncer;
 		public static string AssemblyDirectory { get {
 				string codeBase = Assembly.GetExecutingAssembly().CodeBase;
 				UriBuilder uri = new UriBuilder(codeBase);
@@ -39,20 +40,21 @@ namespace TNHBGLoader
 
 		public void Awake()
 		{
-			_deserializer = new DeserializerBuilder().WithNamingConvention(UnderscoredNamingConvention.Instance).Build();
 			InitConfig();
-			BankAPI.BankListLocation = BankAPI.LegacyBanks.OrderBy(x => x).ToList();
+			
+			//bank stuff
+			BankAPI.BankLocations = BankAPI.LegacyBanks.OrderBy(x => x).ToList();
 			//nuke all duplicates
-			BankAPI.BankListLocation = BankAPI.BankListLocation.Distinct().ToList();
+			BankAPI.BankLocations = BankAPI.BankLocations.Distinct().ToList();
 			//the loader patch just checks for MX_TAH, not the full root path so this should bypass the check
-			BankAPI.BankListLocation.Add(Path.Combine(Application.streamingAssetsPath, "MX_TAH.bank"));
+			BankAPI.BankLocations.Add(Path.Combine(Application.streamingAssetsPath, "MX_TAH.bank"));
 			//banks.Add("Surprise Me!");
+			
+			//announcer schtuff
+			_deserializer = new DeserializerBuilder().WithNamingConvention(UnderscoredNamingConvention.Instance).Build();
 			AnnouncerAPI.Announcers.Add(AnnouncerManifest.DefaultAnnouncer);
 			
-			//get the bank last loaded and set banknum to it; if it doesnt exist it just defaults to 0
-			for (int i = 0; i < BankAPI.BankListLocation.Count; i++)
-				if (Path.GetFileNameWithoutExtension(BankAPI.BankListLocation[i]) == LastLoadedBank.Value) { BankAPI.LoadedBankIndex = i; break; }
-
+			
 			//patch yo things
 			Harmony.CreateAndPatchAll(typeof(Patcher_FMOD));
 			Harmony.CreateAndPatchAll(typeof(Patcher_FistVR));
@@ -63,6 +65,7 @@ namespace TNHBGLoader
 			BackgroundMusicVolume = Config.Bind("General", "BGM Volume", 1f, "Changes the magnitude of the BGM volume. Must be between 0 and 4.");
 			BackgroundMusicVolume.Value = Mathf.Clamp(BackgroundMusicVolume.Value, 0, 4);
 			LastLoadedBank = Config.Bind("no touchy", "Saved Bank", "", "Not meant to be changed manually. This autosaves your last bank used, so you don't have to reset it every time you launch H3.");
+			LastLoadedAnnouncer = Config.Bind("no touchy", "Saved Announcer", "", "Not meant to be changed manually. This autosaves your last announcer used, so you don't have to reset it every time you launch H3.");
 		}
 		
 		//stratum loading
@@ -72,8 +75,8 @@ namespace TNHBGLoader
 		}
 		public Empty LoadTNHBankFile(FileSystemInfo handle) {
 			var file = handle.ConsumeFile();
-			if (!BankAPI.BankListLocation.Contains(file.FullName))
-				BankAPI.BankListLocation.Add(file.FullName);
+			if (!BankAPI.BankLocations.Contains(file.FullName))
+				BankAPI.BankLocations.Add(file.FullName);
 			return new Empty();
 		}
 

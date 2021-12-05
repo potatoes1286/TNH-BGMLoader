@@ -40,6 +40,12 @@ namespace TNHBGLoader
 			var wait = rawimage.AddComponent<IconDisplayWaitForInit>();
 			wait.panel = panel;
 			wait.bgmpanel = bgmpanel;
+			
+			//get the bank last loaded and set banknum to it; if it doesnt exist it just defaults to 0
+			for (int i = 0; i < BankAPI.BankLocations.Count; i++)
+				if (Path.GetFileNameWithoutExtension(BankAPI.BankLocations[i]) == PluginMain.LastLoadedBank.Value) { BankAPI.LoadedBankIndex = i; break; }
+			//set last loaded announcer
+			AnnouncerAPI.LoadedAnnouncerIndex = AnnouncerAPI.GetAnnouncerIndexFromGUID(PluginMain.LastLoadedAnnouncer.Value);
 		}
 		
 		//Removes all remaining song snippets if game starts while a snippet is playing

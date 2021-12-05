@@ -11,18 +11,17 @@ namespace TNH_BGLoader
 {
 	public class AnnouncerAPI
 	{
-		//Announcer Manifests and Announcer Index - USE MANIFESTS!
+		//Announcer Manifests, Announcer GUIDs, and Announcer Index - USE GUIDS!
 		public static List<AnnouncerManifest> Announcers = new List<AnnouncerManifest>();
 		public static int LoadedAnnouncerIndex = 0;
 		public static AnnouncerManifest CurrentAnnouncer => Announcers[LoadedAnnouncerIndex];
 
-		public static void SwapAnnouncer(AnnouncerManifest announcer)
-		{
-			LoadedAnnouncerIndex = GetAnnouncerIndex(announcer);
-		}
-
-		public static int GetAnnouncerIndex(AnnouncerManifest announcer) => Announcers.IndexOf(announcer);
-
+		public static void SwapAnnouncer(string GUID) => LoadedAnnouncerIndex = GetAnnouncerIndexFromGUID(GUID);
+		
+		public static int GetAnnouncerIndexFromGUID(string GUID) => Announcers.IndexOf(GetManifestFromGUID(GUID));
+		public static int GetAnnouncerIndexFromManifest(AnnouncerManifest manifest) => Announcers.IndexOf(manifest);
+		public static AnnouncerManifest GetManifestFromGUID(string GUID) => Announcers.FindAll(a => a.GUID == GUID).First();
+		
 		//I should probably also co-routine this, but co-routine throws a hissyfit whenever i do for some reason.
 		public static Texture2D GetAnnouncerTexture(AnnouncerManifest announcer)
 		{
