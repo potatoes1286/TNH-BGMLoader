@@ -27,20 +27,20 @@ namespace TNH_BGLoader
 		public static Texture2D GetAnnouncerTexture(AnnouncerManifest announcer)
 		{
 			//Debug.Log("Loading image for " + bankName);
-			var pbase = Path.GetDirectoryName(announcer.Location) + "/";
+			var pbase = Path.GetDirectoryName(announcer.Location);
 			//assembles all the potential locations for the icon, in descending order of importance.
 			string[] paths = new string[] //this is fucking terrible.
 			{
 				//announcer-specific icon
-				pbase + announcer.GUID + ".png",
+				pbase + "/" + announcer.GUID + ".png",
 				//hq icon for all announcers- should be based of TS image
-				pbase + "iconhq.png",
-				Directory.GetParent(pbase) + "iconhq.png",
-				Directory.GetParent(Directory.GetParent(pbase).ToString()) + "iconhq.png",
+				pbase + "/iconhq.png",
+				Directory.GetParent(pbase) + "/iconhq.png",
+				Directory.GetParent(Directory.GetParent(pbase).ToString()) + "/iconhq.png",
 				//TS images
-				pbase + "icon.png",
-				Directory.GetParent(pbase) + "icon.png",
-				Directory.GetParent(Directory.GetParent(pbase).ToString()) + "icon.png",
+				pbase + "/icon.png",
+				Directory.GetParent(pbase) + "/icon.png",
+				Directory.GetParent(Directory.GetParent(pbase).ToString()) + "/icon.png",
 			};
 			if (announcer.GUID == "h3vr.default")
 				paths = new string[] {PluginMain.AssemblyDirectory + "/defaultannouncericonhq.png"};
@@ -62,11 +62,10 @@ namespace TNH_BGLoader
 						//Debug.Log("Loaded fine!");
 						return tex;
 					}
-
 					//else Debug.Log("Failed lo load!");
 				} //else Debug.Log(path + " does not exist!");
 			}
-
+			Debug.LogWarning("Cannot find icon for " + announcer.GUID + "!");
 			return null;
 		}
 
@@ -86,10 +85,8 @@ namespace TNH_BGLoader
 			vl.Clip_Corrupted = ca;
 			db.Lines.Add(vl);
 		}*/
-
-		public static AudioClip GetAudioFromFile(string path)
-		{
-			return WavUtility.ToAudioClip(path);
-		}
+		
+		//why does this field even exist lol
+		public static AudioClip GetAudioFromFile(string path) => WavUtility.ToAudioClip(path);
 	}
 }
