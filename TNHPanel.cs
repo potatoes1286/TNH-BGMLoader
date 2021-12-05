@@ -201,6 +201,14 @@ namespace TNHBGLoader
 			UpdateMusicList(null, null); //always use null as an arg, kids
 			UpdateVolume(null, null);
 			_bankText.Text.text = "Selected:\n" + GetCurrentBankName;
+			int index = 0;
+			if (TNHPstate == TNHPstates.BGM) {
+				index = BankAPI.LoadedBankIndex;
+			}
+			if (TNHPstate == TNHPstates.Announcer) {
+				index = AnnouncerAPI.LoadedAnnouncerIndex;
+			}
+			SetIcon(index);
 		}
 		
 		//Updates and changes the BGMs shown
@@ -285,18 +293,26 @@ namespace TNHBGLoader
 			if (GM.TNH_Manager != null) WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
 			else
 			{
-				if (TNHPstate == TNHPstates.BGM)
-				{
+				if (TNHPstate == TNHPstates.BGM) {
 					BankAPI.SwapBank(index);
-					if (icondisplay != null) icondisplay.texture = BankAPI.LoadIconForBank(BankAPI.LoadedBankLocation);
 					GameObject go = new GameObject();
 					go.AddComponent(typeof(PlaySongSnippet));
-				} else if (TNHPstate == TNHPstates.Announcer)
-				{
+				} else if (TNHPstate == TNHPstates.Announcer) {
 					AnnouncerAPI.SwapAnnouncer(AnnouncerAPI.Announcers[index]);
-					if (icondisplay != null) icondisplay.texture = AnnouncerAPI.GetAnnouncerTexture(AnnouncerAPI.Announcers[index]);
 				}
+				SetIcon(index);
 				_bankText.Text.text = "Selected:\n" + GetCurrentBankName; //set new bank
+			}
+		}
+
+		private void SetIcon(int index)
+		{
+			if (TNHPstate == TNHPstates.BGM)
+			{
+				if (icondisplay != null) icondisplay.texture = BankAPI.LoadIconForBank(BankAPI.LoadedBankLocation);
+			} else if (TNHPstate == TNHPstates.Announcer)
+			{
+				if (icondisplay != null) icondisplay.texture = AnnouncerAPI.GetAnnouncerTexture(AnnouncerAPI.Announcers[index]);
 			}
 		}
 	}
