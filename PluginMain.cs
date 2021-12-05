@@ -16,7 +16,9 @@ using Stratum.Extensions;
 using TNH_BGLoader;
 using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
-
+using YamlDotNet;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace TNHBGLoader
 {
@@ -37,17 +39,19 @@ namespace TNHBGLoader
 
 		public void Awake()
 		{
+			_deserializer = new DeserializerBuilder().WithNamingConvention(UnderscoredNamingConvention.Instance).Build();
 			InitConfig();
-			BankAPI.BankList = BankAPI.LegacyBanks.OrderBy(x => x).ToList();
+			BankAPI.BankListLocation = BankAPI.LegacyBanks.OrderBy(x => x).ToList();
 			//nuke all duplicates
-			BankAPI.BankList = BankAPI.BankList.Distinct().ToList();
+			BankAPI.BankListLocation = BankAPI.BankListLocation.Distinct().ToList();
 			//the loader patch just checks for MX_TAH, not the full root path so this should bypass the check
-			BankAPI.BankList.Add(Path.Combine(Application.streamingAssetsPath, "MX_TAH.bank"));
+			BankAPI.BankListLocation.Add(Path.Combine(Application.streamingAssetsPath, "MX_TAH.bank"));
 			//banks.Add("Surprise Me!");
+			AnnouncerAPI.Announcers.Add(AnnouncerManifest.DefaultAnnouncer);
 			
 			//get the bank last loaded and set banknum to it; if it doesnt exist it just defaults to 0
-			for (int i = 0; i < BankAPI.BankList.Count; i++)
-				if (Path.GetFileNameWithoutExtension(BankAPI.BankList[i]) == LastLoadedBank.Value) { BankAPI.BankIndex = i; break; }
+			for (int i = 0; i < BankAPI.BankListLocation.Count; i++)
+				if (Path.GetFileNameWithoutExtension(BankAPI.BankListLocation[i]) == LastLoadedBank.Value) { BankAPI.LoadedBankIndex = i; break; }
 
 			//patch yo things
 			Harmony.CreateAndPatchAll(typeof(Patcher_FMOD));
@@ -60,24 +64,42 @@ namespace TNHBGLoader
 			BackgroundMusicVolume.Value = Mathf.Clamp(BackgroundMusicVolume.Value, 0, 4);
 			LastLoadedBank = Config.Bind("no touchy", "Saved Bank", "", "Not meant to be changed manually. This autosaves your last bank used, so you don't have to reset it every time you launch H3.");
 		}
-
-		
 		
 		//stratum loading
 		public override void OnSetup(IStageContext<Empty> ctx) {
 			ctx.Loaders.Add("tnhbankfile", LoadTNHBankFile);
+			ctx.Loaders.Add("tnhannouncer", LoadAnnouncer);
 		}
 		public Empty LoadTNHBankFile(FileSystemInfo handle) {
 			var file = handle.ConsumeFile();
-			if (!BankAPI.BankList.Contains(file.FullName))
-			{
-				BankAPI.BankList.Add(file.FullName);
-			}
+			if (!BankAPI.BankListLocation.Contains(file.FullName))
+				BankAPI.BankListLocation.Add(file.FullName);
 			return new Empty();
 		}
-		public override IEnumerator OnRuntime(IStageContext<IEnumerator> ctx) {
-			yield break;
+
+		private IDeserializer _deserializer;
+		public Empty LoadAnnouncer(FileSystemInfo handle)
+		{
+			var file = handle.ConsumeFile();
+			var manifest = new AnnouncerManifest();
+			manifest = _deserializer.Deserialize<AnnouncerManifest>(File.ReadAllText(file.FullName));
+			manifest.Location = file.FullName;
+			foreach (var vl in manifest.VoiceLines) {
+				vl.StandardAudioClipPath = Path.GetDirectoryName(file.FullName) +"/"+ vl.StandardAudioClipPath;
+				if(vl.CorruptedAudioClipPath != null)
+					vl.CorruptedAudioClipPath = Path.GetDirectoryName(file.FullName) +"/"+ vl.CorruptedAudioClipPath;
+				if(!File.Exists(vl.StandardAudioClipPath)) Debug.LogWarning("Path " + vl.StandardAudioClipPath + " does not exist for announcer " + manifest.GUID + "!");
+			}
+			
+			/*for(int i=0; i < manifest.VoiceLines.Length; i++)
+			{
+				SavWav.Save("G:/exp/" + i + ".wav", AnnouncerAPI.GetAudioFromFile(manifest.VoiceLines[i].StandardAudioClipPath));
+			}*/
+			UnityEngine.Debug.Log("Loaded announcer file " + manifest.GUID);
+			AnnouncerAPI.Announcers.Add(manifest);
+			return new Empty();
 		}
+		public override IEnumerator OnRuntime(IStageContext<IEnumerator> ctx) { yield break; }
 	}
 
 	internal static class PluginDetails

@@ -19,6 +19,8 @@ namespace TNHBGLoader
 	public class TNHPanel : MonoBehaviour
 	{
 		public LockablePanel Panel;
+		public enum TNHPstates { BGM, Announcer }
+		public TNHPstates TNHPstate = TNHPstates.BGM;
 
 		public TNHPanel()
 		{
@@ -32,9 +34,9 @@ namespace TNHBGLoader
 		private TextWidget   _volumeText;
 
 		private ButtonWidget[] _musicButtons = new ButtonWidget[8];
-
 		private ButtonWidget[] _volControls = new ButtonWidget[2];
 		private ButtonWidget[] _cycleControls = new ButtonWidget[2];
+		private ButtonWidget _switchstate;
 
 		private int _firstMusicIndex;
 
@@ -72,14 +74,14 @@ namespace TNHBGLoader
 				});
 				/*First Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 0;
-					button.ButtonText.text = GetBankNameWithOffset(index);
+					button.ButtonText.text = GetNameWithOffset(index);
 					button.AddButtonListener(SetBank);
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				/*Second Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 1;
-					button.ButtonText.text = GetBankNameWithOffset(index);
+					button.ButtonText.text = GetNameWithOffset(index);
 					button.AddButtonListener(SetBank);
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
@@ -95,14 +97,14 @@ namespace TNHBGLoader
 				});
 				/*Third Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 2;
-					button.ButtonText.text = GetBankNameWithOffset(index);
+					button.ButtonText.text = GetNameWithOffset(index);
 					button.AddButtonListener(SetBank);
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				/*Fourth Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 3;
-					button.ButtonText.text = GetBankNameWithOffset(index);
+					button.ButtonText.text = GetNameWithOffset(index);
 					button.AddButtonListener(SetBank);
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
@@ -117,14 +119,14 @@ namespace TNHBGLoader
 				});
 				/*Fifth Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 4;
-					button.ButtonText.text = GetBankNameWithOffset(index);
+					button.ButtonText.text = GetNameWithOffset(index);
 					button.AddButtonListener(SetBank);
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				/*Sixth Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 5;
-					button.ButtonText.text = GetBankNameWithOffset(index);
+					button.ButtonText.text = GetNameWithOffset(index);
 					button.AddButtonListener(SetBank);
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
@@ -138,14 +140,14 @@ namespace TNHBGLoader
 				});
 				/*Seventh Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 6;
-					button.ButtonText.text = GetBankNameWithOffset(index);
+					button.ButtonText.text = GetNameWithOffset(index);
 					button.AddButtonListener(SetBank);
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				/*Eighth Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 7;
-					button.ButtonText.text = GetBankNameWithOffset(index);
+					button.ButtonText.text = GetNameWithOffset(index);
 					button.AddButtonListener(SetBank);
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
@@ -157,10 +159,11 @@ namespace TNHBGLoader
 					text.Text.alignment = TextAnchor.MiddleCenter;
 					text.Text.fontSize += 5;
 				});
-				/*None*/				widget.AddChild((TextWidget text) => {
-					text.Text.text = "";
-					text.Text.alignment = TextAnchor.MiddleCenter;
-					text.Text.fontSize += 5;
+				/*Switch State*/		widget.AddChild((ButtonWidget button) => {
+					button.ButtonText.text = "Goto Announcer/BGM";
+					button.AddButtonListener(SwitchState);
+					button.ButtonText.transform.localRotation = Quaternion.identity;
+					_switchstate = button;
 				});
 				/*None*/				widget.AddChild((TextWidget text) => {
 					text.Text.text = "";
@@ -190,34 +193,55 @@ namespace TNHBGLoader
 				#endregion
 			});
 		}
+
+		public void SwitchState(object sender, ButtonClickEventArgs args)
+		{
+				 if (TNHPstate == TNHPstates.BGM) TNHPstate = TNHPstates.Announcer;
+			else if (TNHPstate == TNHPstates.Announcer) TNHPstate = TNHPstates.BGM;
+			UpdateMusicList(null, null); //always use null as an arg, kids
+			UpdateVolume(null, null);
+			_bankText.Text.text = "Selected:\n" + GetCurrentBankName;
+		}
 		
-		#region BankHandler
 		//Updates and changes the BGMs shown
 		private void UpdateMusicList(object sender, ButtonClickEventArgs args)
 		{
 			int cycleInc = 0;
-			if		(sender as ButtonWidget == _cycleControls[0]) { cycleInc = -1; }
-			else if (sender as ButtonWidget == _cycleControls[1]) { cycleInc = 1; }
+			if (sender != null)
+			{
+				if (sender as ButtonWidget == _cycleControls[0])
+					cycleInc = -1;
+				else if (sender as ButtonWidget == _cycleControls[1])
+					cycleInc = 1;
+			}
 			int mult = 4;
 			cycleInc = mult * cycleInc;
 			int NewFirstMusicIndex = _firstMusicIndex + cycleInc;
-			
-			if (NewFirstMusicIndex < 0 || NewFirstMusicIndex >= BankAPI.BankList.Count)
-			{
+			bool oob = NewFirstMusicIndex < 0;
+			if ((NewFirstMusicIndex >= BankAPI.BankListLocation.Count) && TNHPstate == TNHPstates.BGM ||
+			    (NewFirstMusicIndex >= AnnouncerAPI.Announcers.Count) && TNHPstate == TNHPstates.Announcer)
+				oob = true;
+			if (oob) {
 				WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err); //play error audio if ran out of music to play
 				return;
 			}
 			_firstMusicIndex = NewFirstMusicIndex;
 			//update music buttons
-			for (int i = 0; i < _musicButtons.Length; i++) _musicButtons[i].ButtonText.text = GetBankNameWithOffset(i);
+			for (int i = 0; i < _musicButtons.Length; i++) _musicButtons[i].ButtonText.text = GetNameWithOffset(i);
 		}
 		
 		//Updates and changes the volume amount
 		private void UpdateVolume(object sender, ButtonClickEventArgs args)
 		{
 			float inc = 0f;
-			if		(sender as ButtonWidget == _volControls[0]) { inc = -0.05f; } 
-			else if (sender as ButtonWidget == _volControls[1]) { inc = 0.05f; }
+			if (sender != null)
+			{
+				if (sender as ButtonWidget == _volControls[0])
+					inc = -0.05f;
+				else if (sender as ButtonWidget == _volControls[1])
+					inc = 0.05f;
+			}
+
 			PluginMain.BackgroundMusicVolume.Value += inc;
 			if (PluginMain.BackgroundMusicVolume.Value < 0 || PluginMain.BackgroundMusicVolume.Value > 4)
 				WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
@@ -226,17 +250,32 @@ namespace TNHBGLoader
 		}
 
 		//Text Getters
-		private string GetBankNameWithOffset(int offset)
+		private string GetNameWithOffset(int offset)
 		{
-			if (_firstMusicIndex + offset < BankAPI.BankList.Count)
+			int index = _firstMusicIndex + offset;
+			if (TNHPstate == TNHPstates.BGM)
 			{
-				string bankname = BankAPI.BankIndexToName(_firstMusicIndex + offset, true);
-				return bankname;
+				if (index < BankAPI.BankListLocation.Count)
+					return BankAPI.BankIndexToName(index, true);
+			}
+			else if (TNHPstate == TNHPstates.Announcer)
+			{
+				if (index < AnnouncerAPI.Announcers.Count)
+				{
+					//index: mybankname
+					string bankname = (index + 1) + ": " + AnnouncerAPI.Announcers[index].Name;
+					return bankname;
+				}
 			}
 			return "";
 		}
 
-		private string GetCurrentBankName => BankAPI.BankIndexToName(BankAPI.BankIndex, true);
+		private string GetCurrentBankName { get {
+				if (TNHPstate == TNHPstates.BGM)
+					return BankAPI.BankIndexToName(BankAPI.LoadedBankIndex, true);
+				if (TNHPstate == TNHPstates.Announcer)
+					return AnnouncerAPI.Announcers[AnnouncerAPI.LoadedAnnouncerIndex].Name;
+				return ""; } } 
 		private string GetVolumePercent() => Mathf.Round(PluginMain.BackgroundMusicVolume.Value * 100).ToString(CultureInfo.InvariantCulture) + "%";
 		
 		//Sets new bank
@@ -246,17 +285,19 @@ namespace TNHBGLoader
 			if (GM.TNH_Manager != null) WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
 			else
 			{
-				BankAPI.SwapBank(index);
-				_bankText.Text.text = "Selected:\n" + GetCurrentBankName; //set new bank
-				if (icondisplay != null)
+				if (TNHPstate == TNHPstates.BGM)
 				{
-					icondisplay.texture = BankAPI.LoadIconForBank(BankAPI.loadedBank);
+					BankAPI.SwapBank(index);
+					if (icondisplay != null) icondisplay.texture = BankAPI.LoadIconForBank(BankAPI.LoadedBankLocation);
+					GameObject go = new GameObject();
+					go.AddComponent(typeof(PlaySongSnippet));
+				} else if (TNHPstate == TNHPstates.Announcer)
+				{
+					AnnouncerAPI.SwapAnnouncer(AnnouncerAPI.Announcers[index]);
+					if (icondisplay != null) icondisplay.texture = AnnouncerAPI.GetAnnouncerTexture(AnnouncerAPI.Announcers[index]);
 				}
-				else Debug.Log("What's a icon displayer?");
-				GameObject go = new GameObject();
-				go.AddComponent(typeof(PlaySongSnippet));
+				_bankText.Text.text = "Selected:\n" + GetCurrentBankName; //set new bank
 			}
 		}
-		#endregion
 	}
 }
