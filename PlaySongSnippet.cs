@@ -22,7 +22,7 @@ namespace TNH_BGLoader
 
 		public void CleanUp()
 		{
-			PluginMain.OnBankSwapped -= OnBankChanged;
+			BankAPI.OnBankSwapped -= OnBankChanged;
 			snippet.stop(STOP_MODE.IMMEDIATE);
 			snippet.release();
 			Destroy(gameObject);
@@ -42,7 +42,7 @@ namespace TNH_BGLoader
 			snippet.start();
 			snippet.setParameterValue("Intensity", 2);
 			snippet.setTimelinePosition((int)(audoffset * 1000f));
-			PluginMain.OnBankSwapped += OnBankChanged;
+			BankAPI.OnBankSwapped += OnBankChanged;
 		}
 
 		public void Update()

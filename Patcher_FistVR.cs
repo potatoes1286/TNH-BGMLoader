@@ -42,7 +42,7 @@ namespace TNHBGLoader
 		[HarmonyPrefix]
 		public static bool TNH_ManagerPatch_Start()
 		{
-			PluginMain.NukeSongSnippets();
+			BankAPI.NukeSongSnippets();
 			return true;
 		}
 		

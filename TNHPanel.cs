@@ -202,7 +202,7 @@ namespace TNHBGLoader
 			cycleInc = mult * cycleInc;
 			int NewFirstMusicIndex = _firstMusicIndex + cycleInc;
 			
-			if (NewFirstMusicIndex < 0 || NewFirstMusicIndex >= PluginMain.BankList.Count)
+			if (NewFirstMusicIndex < 0 || NewFirstMusicIndex >= BankAPI.BankList.Count)
 			{
 				WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err); //play error audio if ran out of music to play
 				return;
@@ -228,17 +228,17 @@ namespace TNHBGLoader
 		//Text Getters
 		private string GetBankNameWithOffset(int offset)
 		{
-			if (_firstMusicIndex + offset < PluginMain.BankList.Count)
+			if (_firstMusicIndex + offset < BankAPI.BankList.Count)
 			{
 				string bankname = GetBankName(_firstMusicIndex + offset, true);
 				return bankname;
 			}
 			return "";
 		}
-		private string GetCurrentBankName => GetBankName(PluginMain.BankIndex, true);
+		private string GetCurrentBankName => GetBankName(BankAPI.BankIndex, true);
 		public static string GetBankName(int index, bool returnIndex = false)
 		{
-			string bankpath = PluginMain.BankList[index];
+			string bankpath = BankAPI.BankList[index];
 			string bankname = Path.GetFileNameWithoutExtension(bankpath).Split('_').Last();
 			if (bankname == "TAH")
 				bankname = "Default";
@@ -255,11 +255,11 @@ namespace TNHBGLoader
 			if (GM.TNH_Manager != null) WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
 			else
 			{
-				PluginMain.SwapBank(index);
+				BankAPI.SwapBank(index);
 				_bankText.Text.text = "Selected:\n" + GetCurrentBankName; //set new bank
 				if (icondisplay != null)
 				{
-					icondisplay.texture = PluginMain.LoadIconForBank(PluginMain.loadedBank);
+					icondisplay.texture = BankAPI.LoadIconForBank(BankAPI.loadedBank);
 				}
 				else Debug.Log("What's a icon displayer?");
 				GameObject go = new GameObject();

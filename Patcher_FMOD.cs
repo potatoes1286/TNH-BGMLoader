@@ -2,6 +2,7 @@
 using System.IO;
 using FMODUnity;
 using HarmonyLib;
+using TNH_BGLoader;
 using UnityEngine;
 
 namespace TNHBGLoader
@@ -46,11 +47,11 @@ namespace TNHBGLoader
 		{
 			if (bankName == "MX_TAH")
 			{
-				if (!PluginMain.BanksEmptyOrNull) //i don't even think this is possible? it's not. i need to remove this sometime.
+				if (!BankAPI.BanksEmptyOrNull) //i don't even think this is possible? it's not. i need to remove this sometime.
 				{
-					if (PluginMain.loadedBank == "Surprise Me!") return false;
-					Debug.Log("Injecting bank " + Path.GetFileName(PluginMain.loadedBank) + " into TNH!");
-					bankName = PluginMain.loadedBank;
+					if (BankAPI.loadedBank == "Surprise Me!") return false;
+					Debug.Log("Injecting bank " + Path.GetFileName(BankAPI.loadedBank) + " into TNH!");
+					bankName = BankAPI.loadedBank;
 				}
 			}
 			return true;
