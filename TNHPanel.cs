@@ -236,7 +236,7 @@ namespace TNHBGLoader
 			return "";
 		}
 		private string GetCurrentBankName => GetBankName(PluginMain.BankIndex, true);
-		private string GetBankName(int index, bool returnIndex = false)
+		public static string GetBankName(int index, bool returnIndex = false)
 		{
 			string bankpath = PluginMain.BankList[index];
 			string bankname = Path.GetFileNameWithoutExtension(bankpath).Split('_').Last();

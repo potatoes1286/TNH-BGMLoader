@@ -130,8 +130,11 @@ namespace TNHBGLoader
 		{
 			Debug.Log("Loading image for " + bankName);
 			var pbase = Path.GetDirectoryName(bankName);
+			var name = Path.GetFileNameWithoutExtension(bankName).Split('_').Last();
 			string[] paths = new string[]
 			{
+				pbase + "/" + name + ".png",
+				Directory.GetParent(pbase) + "/" + name + ".png",
 				pbase + "/iconhq.png",
 				Directory.GetParent(pbase) + "/iconhq.png",
 				pbase + "/icon.png",
