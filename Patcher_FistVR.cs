@@ -64,7 +64,7 @@ namespace TNHBGLoader
 			db.Lines = new List<TNH_VoiceDatabase.TNH_VoiceLine>();
 			foreach (var line in announcer.VoiceLines)
 			{
-				UnityEngine.Debug.Log("Loading ID " + line.ID);
+				//UnityEngine.Debug.Log("Loading ID " + line.ID);
 				AudioClip sa = null;
 				AudioClip ca = null;
 				//i know there's a special place in hell for my naming scheme. dont care
@@ -72,15 +72,15 @@ namespace TNHBGLoader
 					sa = AnnouncerAPI.GetAudioFromFile(line.StandardAudioClipPath);
 				if (!string.IsNullOrEmpty(line.CorruptedAudioClipPath))
 					ca = AnnouncerAPI.GetAudioFromFile(line.CorruptedAudioClipPath);
-				if(sa == null) UnityEngine.Debug.Log("SA is missing!");
-				if(ca == null) UnityEngine.Debug.Log("CA is missing!");
+				if(sa == null) UnityEngine.Debug.LogWarning("SA is missing!");
+				if(ca == null && announcer.HasCorruptedVer) UnityEngine.Debug.LogWarning("CA is missing!");
 				var vl = new TNH_VoiceDatabase.TNH_VoiceLine();
 				vl.ID = line.ID;
 				vl.Clip_Standard = sa;
 				vl.Clip_Corrupted = ca;
 				db.Lines.Add(vl);
 			}
-			UnityEngine.Debug.Log("Finished loading!");
+			//UnityEngine.Debug.Log("Finished loading!");
 			
 			//if the announcermaker left out an ID, instead of leaving it blank, insert base game lines
 			foreach (int vlid in Enum.GetValues(typeof(TNH_VoiceLineID)))
