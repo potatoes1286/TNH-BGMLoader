@@ -19,7 +19,7 @@ namespace TNHBGLoader
 	public class TNHPanel : MonoBehaviour
 	{
 		public LockablePanel Panel;
-		
+
 		public TNHPanel()
 		{
 			Panel = new LockablePanel();
@@ -37,6 +37,8 @@ namespace TNHBGLoader
 		private ButtonWidget[] _cycleControls = new ButtonWidget[2];
 
 		private int _firstMusicIndex;
+
+		public RawImage icondisplay;
 
 		private void ConfigurePanel(GameObject panel)
 		{
@@ -189,6 +191,7 @@ namespace TNHBGLoader
 			});
 		}
 		
+		#region BankHandler
 		//Updates and changes the BGMs shown
 		private void UpdateMusicList(object sender, ButtonClickEventArgs args)
 		{
@@ -254,9 +257,15 @@ namespace TNHBGLoader
 			{
 				PluginMain.SwapBank(index);
 				_bankText.Text.text = "Selected:\n" + GetCurrentBankName; //set new bank
+				if (icondisplay != null)
+				{
+					icondisplay.texture = PluginMain.LoadIconForBank(PluginMain.loadedBank);
+				}
+				else Debug.Log("What's a icon displayer?");
 				GameObject go = new GameObject();
 				go.AddComponent(typeof(PlaySongSnippet));
 			}
 		}
+		#endregion
 	}
 }

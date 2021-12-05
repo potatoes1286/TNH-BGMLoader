@@ -103,6 +103,7 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="IconDisplayWaitForInit.cs" />
         <Compile Include="Patcher_FistVR.cs" />
         <Compile Include="Patcher_FMOD.cs" />
         <Compile Include="PlaySongSnippet.cs" />

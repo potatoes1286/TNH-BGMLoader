@@ -3,7 +3,9 @@ using System;
 using System.IO;
 using FMOD;
 using HarmonyLib;
+using TNH_BGLoader;
 using UnityEngine;
+using UnityEngine.UI;
 using Debug = FMOD.Debug;
 using Random = UnityEngine.Random;
 using System = FMOD.Studio.System;
@@ -29,6 +31,11 @@ namespace TNHBGLoader
 			panel.transform.position = new Vector3(0.0561f, 1f, 7.1821f);
 			panel.transform.localEulerAngles = new Vector3(315, 0, 0);
 			panel.GetComponent<FVRPhysicalObject>().SetIsKinematicLocked(true);
+			//make rawimage ui thing
+			var rawimage = new GameObject();
+			var wait = rawimage.AddComponent<IconDisplayWaitForInit>();
+			wait.panel = panel;
+			wait.bgmpanel = bgmpanel;
 		}
 		
 		[HarmonyPatch(typeof(TNH_Manager), "Start")]

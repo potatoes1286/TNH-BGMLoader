@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using BepInEx;
 using HarmonyLib;
 using BepInEx.Configuration;
@@ -13,6 +14,7 @@ using UnityEngine;
 using Stratum;
 using Stratum.Extensions;
 using UnityEngine.UI;
+using Debug = UnityEngine.Debug;
 
 
 namespace TNHBGLoader
@@ -27,8 +29,15 @@ namespace TNHBGLoader
 		public static List<string> BankList = new List<string>();
 		public static int BankIndex = 0;
 		private static readonly string PLUGINS_DIR = Paths.PluginPath;
-		public static string RelevantBank => BankList[BankIndex];
+		public static string loadedBank => BankList[BankIndex];
 		public static bool BanksEmptyOrNull => (BankList == null || BankList.Count == 0);
+		public static string AssemblyDirectory { get {
+				string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+				UriBuilder uri = new UriBuilder(codeBase);
+				string path = Uri.UnescapeDataString(uri.Path);
+				return Path.GetDirectoryName(path);
+			}
+		}
 
 		public void Awake()
 		{
@@ -76,11 +85,11 @@ namespace TNHBGLoader
 		{
 			//wrap around
 			newBank = Mathf.Clamp(newBank, 0, BankList.Count - 1);
-			UnloadBankHard(RelevantBank); //force it to be unloaded
+			UnloadBankHard(loadedBank); //force it to be unloaded
 			BankIndex = newBank; //set banknum to new bank
 			NukeSongSnippets();
 			RuntimeManager.LoadBank("MX_TAH"); //load new bank (MX_TAH sets off the patcher)
-			LastLoadedBank.Value = Path.GetFileNameWithoutExtension(RelevantBank); //set last loaded bank
+			LastLoadedBank.Value = Path.GetFileNameWithoutExtension(loadedBank); //set last loaded bank
 		}
 
 		public static void NukeSongSnippets()
@@ -113,6 +122,47 @@ namespace TNHBGLoader
 				BankList.Add(file.FullName);
 			}
 			return new Empty();
+		}
+		
+		//please co-routine this. doing this on the main thread is just asking for a freeze
+		//granted it's 256x256 (usually), how hard can it be to load that?
+		public static Texture2D LoadIconForBank(string bankName)
+		{
+			Debug.Log("Loading image for " + bankName);
+			var pbase = Path.GetDirectoryName(bankName);
+			string[] paths = new string[]
+			{
+				pbase + "/iconhq.png",
+				Directory.GetParent(pbase) + "/iconhq.png",
+				pbase + "/icon.png",
+				Directory.GetParent(pbase) + "/icon.png"
+			};
+			if (bankName == Path.Combine(Application.streamingAssetsPath, "MX_TAH.bank"))
+			{
+				paths = new string[]
+				{
+					AssemblyDirectory + "/defaulticonhq.png"
+				};
+			}
+			
+			foreach(var path in paths)
+			{
+				if (File.Exists(path))
+				{
+					Debug.Log("Loading from " + path);
+					//var tex = new WWW("file:///" + pbase + "iconhq.png").texture;
+					byte[] byteArray = File.ReadAllBytes(path);
+					Texture2D tex = new Texture2D(1,1);
+					tex.LoadImage(byteArray);
+					if (tex != null)
+					{
+						Debug.Log("Loaded fine!");
+						return tex;
+					}
+					else Debug.Log("Failed lo load!");
+				} else Debug.Log(path + " does not exist!");
+			}
+			return null;
 		}
 
 		public override IEnumerator OnRuntime(IStageContext<IEnumerator> ctx) {

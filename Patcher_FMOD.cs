@@ -48,9 +48,9 @@ namespace TNHBGLoader
 			{
 				if (!PluginMain.BanksEmptyOrNull) //i don't even think this is possible? it's not. i need to remove this sometime.
 				{
-					if (PluginMain.RelevantBank == "Surprise Me!") return false;
-					Debug.Log("Injecting bank " + Path.GetFileName(PluginMain.RelevantBank) + " into TNH!");
-					bankName = PluginMain.RelevantBank;
+					if (PluginMain.loadedBank == "Surprise Me!") return false;
+					Debug.Log("Injecting bank " + Path.GetFileName(PluginMain.loadedBank) + " into TNH!");
+					bankName = PluginMain.loadedBank;
 				}
 			}
 			return true;

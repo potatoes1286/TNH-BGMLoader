@@ -53,7 +53,7 @@ namespace TNH_BGLoader
 			snippet.setVolume(curVol); //set the volume
 			int pos = -6;
 			snippet.getTimelinePosition(out pos);
-			Debug.Log(pos);
+			//Debug.Log(pos);
 			if (curLength >= maxVolLength + (windUpTime * 2)) //if volume = 0; we finished. clean up!
 			{
 				CleanUp();
