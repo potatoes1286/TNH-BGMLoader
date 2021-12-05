@@ -129,16 +129,16 @@ namespace TNHBGLoader
 		public static Texture2D LoadIconForBank(string bankName)
 		{
 			Debug.Log("Loading image for " + bankName);
-			var pbase = Path.GetDirectoryName(bankName);
+			var pbase = Path.GetDirectoryName(bankName) + "/";
 			var name = Path.GetFileNameWithoutExtension(bankName).Split('_').Last();
 			string[] paths = new string[]
 			{
-				pbase + "/" + name + ".png",
-				Directory.GetParent(pbase) + "/" + name + ".png",
-				pbase + "/iconhq.png",
-				Directory.GetParent(pbase) + "/iconhq.png",
-				pbase + "/icon.png",
-				Directory.GetParent(pbase) + "/icon.png"
+				pbase + name + ".png",
+				Directory.GetParent(pbase) + name + ".png",
+				pbase + "iconhq.png",
+				Directory.GetParent(pbase) + "iconhq.png",
+				pbase + "icon.png",
+				Directory.GetParent(pbase) + "icon.png"
 			};
 			if (bankName == Path.Combine(Application.streamingAssetsPath, "MX_TAH.bank"))
 			{
@@ -177,6 +177,6 @@ namespace TNHBGLoader
 	{
 		public const string GUID = "dll.potatoes.ptnhbgml";
 		public const string NAME = "Potatoes' Take And Hold Background Music Loader";
-		public const string VERS = "1.4.4"; //surely this will be release ready!
+		public const string VERS = "1.5.4"; //surely this will be release ready!
 	}
 }
