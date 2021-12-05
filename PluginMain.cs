@@ -67,7 +67,6 @@ namespace TNHBGLoader
 		public override void OnSetup(IStageContext<Empty> ctx) {
 			ctx.Loaders.Add("tnhbankfile", LoadTNHBankFile);
 		}
-
 		public Empty LoadTNHBankFile(FileSystemInfo handle) {
 			var file = handle.ConsumeFile();
 			if (!BankAPI.BankList.Contains(file.FullName))
@@ -76,9 +75,6 @@ namespace TNHBGLoader
 			}
 			return new Empty();
 		}
-		
-		
-
 		public override IEnumerator OnRuntime(IStageContext<IEnumerator> ctx) {
 			yield break;
 		}

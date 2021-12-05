@@ -230,22 +230,13 @@ namespace TNHBGLoader
 		{
 			if (_firstMusicIndex + offset < BankAPI.BankList.Count)
 			{
-				string bankname = GetBankName(_firstMusicIndex + offset, true);
+				string bankname = BankAPI.BankIndexToName(_firstMusicIndex + offset, true);
 				return bankname;
 			}
 			return "";
 		}
-		private string GetCurrentBankName => GetBankName(BankAPI.BankIndex, true);
-		public static string GetBankName(int index, bool returnIndex = false)
-		{
-			string bankpath = BankAPI.BankList[index];
-			string bankname = Path.GetFileNameWithoutExtension(bankpath).Split('_').Last();
-			if (bankname == "TAH")
-				bankname = "Default";
-			
-			if (returnIndex) bankname = (index + 1) + ": " + bankname;
-			return bankname;
-		}
+
+		private string GetCurrentBankName => BankAPI.BankIndexToName(BankAPI.BankIndex, true);
 		private string GetVolumePercent() => Mathf.Round(PluginMain.BackgroundMusicVolume.Value * 100).ToString(CultureInfo.InvariantCulture) + "%";
 		
 		//Sets new bank

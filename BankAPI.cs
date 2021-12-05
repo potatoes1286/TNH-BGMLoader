@@ -10,13 +10,12 @@ namespace TNH_BGLoader
 {
 	public class BankAPI
 	{
-		
+		//Bank Index, Bank Name, Bank Location
 		public static List<string> BankList = new List<string>();
 		public static int BankIndex = 0;
 		private static readonly string PLUGINS_DIR = Paths.PluginPath;
 		public static string loadedBank => BankList[BankIndex];
 		public static bool BanksEmptyOrNull => (BankList == null || BankList.Count == 0);
-		
 		public static List<string> LegacyBanks
 		{
 			get
@@ -30,9 +29,15 @@ namespace TNH_BGLoader
 				return banks;
 			}
 		}
-		
-		public delegate void bevent();
-		public static event bevent OnBankSwapped;
+		public static string BankIndexToName(int index, bool returnWithIndex = false)
+		{
+			string bankpath = BankAPI.BankList[index];
+			string bankname = Path.GetFileNameWithoutExtension(bankpath).Split('_').Last();
+			if (bankname == "TAH") bankname = "Default";
+			if (returnWithIndex) bankname = (index + 1) + ": " + bankname;
+			return bankname;
+		}
+		public delegate void bevent(); public static event bevent OnBankSwapped;
 		public static void SwapBank(int newBank)
 		{
 			//wrap around
@@ -43,12 +48,10 @@ namespace TNH_BGLoader
 			RuntimeManager.LoadBank("MX_TAH"); //load new bank (MX_TAH sets off the patcher)
 			PluginMain.LastLoadedBank.Value = Path.GetFileNameWithoutExtension(loadedBank); //set last loaded bank
 		}
-
 		public static void NukeSongSnippets()
 		{
 			if (OnBankSwapped != null) OnBankSwapped(); //null moment!
 		}
-		
 		//literal copy of RuntimeManager.UnloadBank but hard unloads
 		public static void UnloadBankHard(string bankName)
 		{
