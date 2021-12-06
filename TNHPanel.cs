@@ -26,7 +26,6 @@ namespace TNHBGLoader
 		{
 			Panel = new LockablePanel();
 			Panel.Configure += ConfigurePanel;
-			_enableCorruption.gameObject.SetActive(false);
 			Panel.TextureOverride = SodaliteUtils.LoadTextureFromBytes(Assembly.GetExecutingAssembly().GetResource("panel.png"));
 		}
 		
@@ -37,7 +36,7 @@ namespace TNHBGLoader
 		private ButtonWidget[] _volControls = new ButtonWidget[2];
 		private ButtonWidget[] _cycleControls = new ButtonWidget[2];
 		private ButtonWidget _switchstate;
-		private ButtonWidget _enableCorruption;
+		public ButtonWidget _enableCorruption;
 
 		private int _firstMusicIndex;
 
@@ -168,7 +167,7 @@ namespace TNHBGLoader
 				});
 				/*Enable Corrupted*/	widget.AddChild((ButtonWidget button) => {
 					button.ButtonText.text = "Enable Corrupted Version";
-					button.AddButtonListener(SwitchState);
+					button.AddButtonListener(SetCorruptedVer);
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 					_enableCorruption = button;
 				});
@@ -251,12 +250,21 @@ namespace TNHBGLoader
 				else if (sender as ButtonWidget == _volControls[1])
 					inc = 0.05f;
 			}
-
-			PluginMain.BackgroundMusicVolume.Value += inc;
-			if (PluginMain.BackgroundMusicVolume.Value < 0 || PluginMain.BackgroundMusicVolume.Value > 4)
-				WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
-			PluginMain.BackgroundMusicVolume.Value = Mathf.Clamp(PluginMain.BackgroundMusicVolume.Value, 0, 4);
-			_volumeText.Text.text = GetVolumePercent();  //set volume
+			
+			//hahaha spaghet
+			//this just updates and sets the volume n all that pizzaz. TODO: rewrite that.
+			if (TNHPstate == TNHPstates.BGM) {
+				PluginMain.BackgroundMusicVolume.Value += inc;
+				if (PluginMain.BackgroundMusicVolume.Value < 0 || PluginMain.BackgroundMusicVolume.Value > 4)
+					WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
+				PluginMain.BackgroundMusicVolume.Value = Mathf.Clamp(PluginMain.BackgroundMusicVolume.Value, 0, 4);
+			} else if (TNHPstate == TNHPstates.Announcer) {
+				PluginMain.AnnouncerMusicVolume.Value += inc;
+				if (PluginMain.BackgroundMusicVolume.Value < 0 || PluginMain.BackgroundMusicVolume.Value > 20)
+					WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
+				PluginMain.BackgroundMusicVolume.Value = Mathf.Clamp(PluginMain.BackgroundMusicVolume.Value, 0, 20);
+			}
+			_volumeText.Text.text = GetVolumePercent();
 		}
 
 		//Text Getters

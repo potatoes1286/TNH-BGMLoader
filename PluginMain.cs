@@ -28,6 +28,7 @@ namespace TNHBGLoader
 	public class PluginMain : StratumPlugin
 	{
 		public static ConfigEntry<float> BackgroundMusicVolume;
+		public static ConfigEntry<float> AnnouncerMusicVolume;
 		public static ConfigEntry<string> LastLoadedBank;
 		public static ConfigEntry<string> LastLoadedAnnouncer;
 		public static ConfigEntry<bool> EnableCorruptedAnnouncer;
@@ -65,6 +66,8 @@ namespace TNHBGLoader
 		{
 			BackgroundMusicVolume = Config.Bind("General", "BGM Volume", 1f, "Changes the magnitude of the BGM volume. Must be between 0 and 4.");
 			BackgroundMusicVolume.Value = Mathf.Clamp(BackgroundMusicVolume.Value, 0, 4);
+			AnnouncerMusicVolume = Config.Bind("General", "Announcer Volume", 1f, "Changes the magnitude of the Announcer volume. Must be between 0 and 20. (Please don't set the volume to 2000%.)");
+			AnnouncerMusicVolume.Value = Mathf.Clamp(BackgroundMusicVolume.Value, 0, 20);
 			LastLoadedBank = Config.Bind("no touchy", "Saved Bank", "", "Not meant to be changed manually. This autosaves your last bank used, so you don't have to reset it every time you launch H3.");
 			LastLoadedAnnouncer = Config.Bind("no touchy", "Saved Announcer", "", "Not meant to be changed manually. This autosaves your last announcer used, so you don't have to reset it every time you launch H3.");
 			EnableCorruptedAnnouncer = Config.Bind("no touchy", "Enable Corrupted Announcer", false, "Not meant to be changed manually. This autosaves whether you selected corrupted announcer, so you don't have to reset it every time you launch H3.");

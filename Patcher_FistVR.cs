@@ -26,6 +26,15 @@ namespace TNHBGLoader
 			return true;
 		}
 		
+		[HarmonyPatch(typeof(SM), "PlayCoreSoundDelayed")]
+		[HarmonyPrefix]
+		public static bool SM_PlayCoreSoundDelayed_IncludeAnnouncerVol(ref AudioEvent ClipSet)
+		{
+			ClipSet.VolumeRange.x *= PluginMain.BackgroundMusicVolume.Value;
+			ClipSet.VolumeRange.y *= PluginMain.BackgroundMusicVolume.Value;
+			return true;
+		}
+		
 		[HarmonyPatch(typeof(TNH_UIManager), "Start")]
 		[HarmonyPostfix]
 		public static void TNH_UIManager_SpawnPanel()
