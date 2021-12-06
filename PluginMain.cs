@@ -31,7 +31,6 @@ namespace TNHBGLoader
 		public static ConfigEntry<float> AnnouncerMusicVolume;
 		public static ConfigEntry<string> LastLoadedBank;
 		public static ConfigEntry<string> LastLoadedAnnouncer;
-		public static ConfigEntry<bool> EnableCorruptedAnnouncer;
 		public static string AssemblyDirectory { get {
 				string codeBase = Assembly.GetExecutingAssembly().CodeBase;
 				UriBuilder uri = new UriBuilder(codeBase);
@@ -70,7 +69,6 @@ namespace TNHBGLoader
 			AnnouncerMusicVolume.Value = Mathf.Clamp(BackgroundMusicVolume.Value, 0, 20);
 			LastLoadedBank = Config.Bind("no touchy", "Saved Bank", "", "Not meant to be changed manually. This autosaves your last bank used, so you don't have to reset it every time you launch H3.");
 			LastLoadedAnnouncer = Config.Bind("no touchy", "Saved Announcer", "", "Not meant to be changed manually. This autosaves your last announcer used, so you don't have to reset it every time you launch H3.");
-			EnableCorruptedAnnouncer = Config.Bind("no touchy", "Enable Corrupted Announcer", false, "Not meant to be changed manually. This autosaves whether you selected corrupted announcer, so you don't have to reset it every time you launch H3.");
 		}
 		
 		//stratum loading
@@ -89,22 +87,11 @@ namespace TNHBGLoader
 		public Empty LoadAnnouncer(FileSystemInfo handle)
 		{
 			var file = handle.ConsumeFile();
-			var manifest = new AnnouncerManifest();
-			manifest = _deserializer.Deserialize<AnnouncerManifest>(File.ReadAllText(file.FullName));
-			manifest.Location = file.FullName;
-			foreach (var vl in manifest.VoiceLines) {
-				vl.StandardAudioClipPath = Path.GetDirectoryName(file.FullName) +"/"+ vl.StandardAudioClipPath;
-				if(vl.CorruptedAudioClipPath != null)
-					vl.CorruptedAudioClipPath = Path.GetDirectoryName(file.FullName) +"/"+ vl.CorruptedAudioClipPath;
-				if(!File.Exists(vl.StandardAudioClipPath)) Debug.LogWarning("Path " + vl.StandardAudioClipPath + " does not exist for announcer " + manifest.GUID + "!");
-			}
-			
-			/*for(int i=0; i < manifest.VoiceLines.Length; i++)
-			{
-				SavWav.Save("G:/exp/" + i + ".wav", AnnouncerAPI.GetAudioFromFile(manifest.VoiceLines[i].StandardAudioClipPath));
-			}*/
-			UnityEngine.Debug.Log("Loaded announcer file " + manifest.GUID);
-			AnnouncerAPI.Announcers.Add(manifest);
+			var yamlfest = new AnnouncerYAMLManifest();
+			yamlfest = _deserializer.Deserialize<AnnouncerYAMLManifest>(File.ReadAllText(file.FullName));
+			Debug.Log("Loaded announcer file " + yamlfest.GUID);
+			yamlfest.Location = file.FullName;
+			AnnouncerAPI.Announcers.Add(AnnouncerAPI.YamlfestToManifest(yamlfest));
 			return new Empty();
 		}
 		public override IEnumerator OnRuntime(IStageContext<IEnumerator> ctx) { yield break; }

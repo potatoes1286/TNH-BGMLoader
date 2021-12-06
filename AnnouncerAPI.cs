@@ -34,21 +34,17 @@ namespace TNH_BGLoader
 			//assembles all the potential locations for the icon, in descending order of importance.
 			string[] paths = new string[] //this is fucking terrible.
 			{
-				//announcer-specific icon
-				pbase + "/" + announcer.GUID + ".png",
 				//hq icon for all announcers- should be based of TS image
+				pbase + "/icon.png",
 				pbase + "/iconhq.png",
 				Directory.GetParent(pbase) + "/iconhq.png",
 				Directory.GetParent(Directory.GetParent(pbase).ToString()) + "/iconhq.png",
 				//TS images
-				pbase + "/icon.png",
 				Directory.GetParent(pbase) + "/icon.png",
 				Directory.GetParent(Directory.GetParent(pbase).ToString()) + "/icon.png",
 			};
 			if (announcer.GUID == "h3vr.default")
 				paths = new string[] {PluginMain.AssemblyDirectory + "/defaultannouncericonhq.png"};
-			if (!string.IsNullOrEmpty(announcer.Icon))
-				paths = new string[] {announcer.Icon};
 
 			//iterate through all paths, get the first one that exists
 			foreach (var path in paths)
@@ -72,6 +68,33 @@ namespace TNH_BGLoader
 			return null;
 		}
 
+		public static AudioClip GetRandomPreview(string guid)
+		{
+			var manifest = GetManifestFromGUID(guid);
+			int rand = Random.Range(0, manifest.Previews.Count);
+			return GetAudioFromFile(manifest.Previews[rand]);
+		}
+		public static AnnouncerManifest YamlfestToManifest(AnnouncerYAMLManifest yamlfest)
+		{
+			AnnouncerManifest manifest = new AnnouncerManifest();
+			manifest.VoiceLines = new List<VoiceLine>();
+			manifest.Name = yamlfest.Name;
+			manifest.GUID = yamlfest.GUID;
+			manifest.Location = yamlfest.Location;
+			manifest.Previews = Directory.GetFiles(yamlfest.VoiceLines, "example*.wav", SearchOption.AllDirectories).ToList();
+			var files = Directory.GetFiles(yamlfest.VoiceLines, "*.wav", SearchOption.AllDirectories).ToList();
+			foreach (var song in files) //iterate through and handle all lines found
+			{
+				VoiceLine vl = new VoiceLine();
+				var songname = Path.GetFileName(song);
+				vl.ID = NameToID(songname);
+				if (!validid) continue;
+				vl.ClipPath = song;
+				manifest.VoiceLines.Add(vl);
+			}
+			return manifest;
+		}
+
 		/*public static IEnumerator AddVoiceLinesToDB(ref TNH_VoiceDatabase db, VoiceLine line)
 		{
 			//i know there's a special place in hell for my naming scheme. dont care
@@ -88,6 +111,42 @@ namespace TNH_BGLoader
 			vl.Clip_Corrupted = ca;
 			db.Lines.Add(vl);
 		}*/
+
+		private static bool validid = true;
+		public static TNH_VoiceLineID NameToID(string songname)
+		{
+			validid = true;
+			//i dont know how to switch this. cope!
+			if (songname.Contains("game_intro")) return TNH_VoiceLineID.AI_UplinkSuccessfulTargetSystemDetectedTakeIt;
+			if (songname.Contains("hold_intro")) return TNH_VoiceLineID.AI_InterfacingWithSystemNode;
+			if (songname.Contains("hold_analyze")) return TNH_VoiceLineID.AI_AnalyzingSystem;
+			if (songname.Contains("encryption_static")) return TNH_VoiceLineID.AI_EncryptionType_0;
+			if (songname.Contains("encryption_hardened")) return TNH_VoiceLineID.AI_EncryptionType_1;
+			if (songname.Contains("encryption_swarm")) return TNH_VoiceLineID.AI_EncryptionType_2;
+			if (songname.Contains("encryption_recursive")) return TNH_VoiceLineID.AI_EncryptionType_3;
+			if (songname.Contains("encryption_stealth")) return TNH_VoiceLineID.AI_EncryptionType_4;
+			if (songname.Contains("encryption_agile")) return TNH_VoiceLineID.AI_EncryptionType_5;
+			if (songname.Contains("encryption_regen")) return TNH_VoiceLineID.AI_EncryptionType_6;
+			if (songname.Contains("encryption_unknown")) return TNH_VoiceLineID.AI_EncryptionType_Unknown;
+			if (songname.Contains("hold_encryption_win")) return TNH_VoiceLineID.AI_Encryption_Neutralized;
+			if (songname.Contains("hold_reminder1")) return TNH_VoiceLineID.AI_Encryption_Reminder1;
+			if (songname.Contains("hold_reminder2")) return TNH_VoiceLineID.AI_Encryption_Reminder2;
+			if (songname.Contains("hold_next_layer")) return TNH_VoiceLineID.AI_AdvancingToNextSystemLayer;
+			if (songname.Contains("hold_win")) return TNH_VoiceLineID.AI_HoldSuccessfulDataExtracted;
+			if (songname.Contains("hold_failure")) return TNH_VoiceLineID.AI_HoldFailedNodeConnectionTerminated;
+			if (songname.Contains("hold_advance")) return TNH_VoiceLineID.AI_AdvanceToNextSystemNodeAndTakeIt;
+			if (songname.Contains("loot_token1")) return TNH_VoiceLineID.AI_OverrideTokenFound_1;
+			if (songname.Contains("loot_token2")) return TNH_VoiceLineID.AI_OverrideTokenFound_2;
+			if (songname.Contains("loot_token3")) return TNH_VoiceLineID.AI_OverrideTokenFound_3;
+			if (songname.Contains("loot_token4")) return TNH_VoiceLineID.AI_OverrideTokenFound_4;
+			if (songname.Contains("loot_token5")) return TNH_VoiceLineID.AI_OverrideTokenFound_5;
+			if (songname.Contains("game_endline")) return TNH_VoiceLineID.AI_ReturningToInterface;
+			if (songname.Contains("game_lose_player")) return TNH_VoiceLineID.AI_PlayerConnectionFailure;
+			if (songname.Contains("game_lose_hold")) return TNH_VoiceLineID.BASE_IntrusionDetectedInitiatingLockdown;
+			validid = false;
+			if(!songname.Contains("example")) Debug.LogWarning(songname + " is not a valid announcer file!");
+			return TNH_VoiceLineID.AI_Encryption_Neutralized;
+		}
 		
 		//why does this field even exist lol
 		public static AudioClip GetAudioFromFile(string path) => WavUtility.ToAudioClip(path);

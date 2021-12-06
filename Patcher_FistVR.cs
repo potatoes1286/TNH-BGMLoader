@@ -87,24 +87,12 @@ namespace TNHBGLoader
 			{
 				//UnityEngine.Debug.Log("Loading ID " + line.ID);
 				AudioClip sa = null;
-				AudioClip ca = null;
 				//i know there's a special place in hell for my naming scheme. dont care
-				if (!string.IsNullOrEmpty(line.StandardAudioClipPath))
-					sa = AnnouncerAPI.GetAudioFromFile(line.StandardAudioClipPath);
-				if (!string.IsNullOrEmpty(line.CorruptedAudioClipPath))
-					ca = AnnouncerAPI.GetAudioFromFile(line.CorruptedAudioClipPath);
+				sa = AnnouncerAPI.GetAudioFromFile(line.ClipPath);
 				if(sa == null) UnityEngine.Debug.LogWarning("SA is missing!");
-				if(ca == null && announcer.HasCorruptedVer) UnityEngine.Debug.LogWarning("CA is missing!");
 				var vl = new TNH_VoiceDatabase.TNH_VoiceLine();
 				vl.ID = line.ID;
-				if (!PluginMain.EnableCorruptedAnnouncer.Value) {
-					vl.Clip_Standard = sa;
-					vl.Clip_Corrupted = ca;
-				} else {
-					vl.Clip_Standard = ca;
-					vl.Clip_Corrupted = sa;
-				}
-				
+				vl.Clip_Standard = sa;
 				db.Lines.Add(vl);
 			}
 			//UnityEngine.Debug.Log("Finished loading!");
