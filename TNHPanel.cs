@@ -26,7 +26,7 @@ namespace TNHBGLoader
 		{
 			Panel = new LockablePanel();
 			Panel.Configure += ConfigurePanel;
-			
+			_enableCorruption.gameObject.SetActive(false);
 			Panel.TextureOverride = SodaliteUtils.LoadTextureFromBytes(Assembly.GetExecutingAssembly().GetResource("panel.png"));
 		}
 		
@@ -37,6 +37,7 @@ namespace TNHBGLoader
 		private ButtonWidget[] _volControls = new ButtonWidget[2];
 		private ButtonWidget[] _cycleControls = new ButtonWidget[2];
 		private ButtonWidget _switchstate;
+		private ButtonWidget _enableCorruption;
 
 		private int _firstMusicIndex;
 
@@ -165,10 +166,11 @@ namespace TNHBGLoader
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 					_switchstate = button;
 				});
-				/*None*/				widget.AddChild((TextWidget text) => {
-					text.Text.text = "";
-					text.Text.alignment = TextAnchor.MiddleCenter;
-					text.Text.fontSize += 5;
+				/*Enable Corrupted*/	widget.AddChild((ButtonWidget button) => {
+					button.ButtonText.text = "Enable Corrupted Version";
+					button.AddButtonListener(SwitchState);
+					button.ButtonText.transform.localRotation = Quaternion.identity;
+					_enableCorruption = button;
 				});
 				#endregion
 				#region Row Six
@@ -286,6 +288,14 @@ namespace TNHBGLoader
 				return ""; } } 
 		private string GetVolumePercent() => Mathf.Round(PluginMain.BackgroundMusicVolume.Value * 100).ToString(CultureInfo.InvariantCulture) + "%";
 		
+		//Announcers
+		private void SetCorruptedVer(object sender, ButtonClickEventArgs args)
+		{
+			PluginMain.EnableCorruptedAnnouncer.Value = !PluginMain.EnableCorruptedAnnouncer.Value;
+			if (PluginMain.EnableCorruptedAnnouncer.Value) _enableCorruption.ButtonText.text = "Disable Corrupted Lines";
+			else _enableCorruption.ButtonText.text = "Enable Corrupted Lines";
+		}
+
 		//Sets new bank
 		private void SetBank(object sender, ButtonClickEventArgs args)
 		{
@@ -297,8 +307,12 @@ namespace TNHBGLoader
 					BankAPI.SwapBank(index);
 					GameObject go = new GameObject();
 					go.AddComponent(typeof(PlaySongSnippet));
+					_enableCorruption.gameObject.SetActive(false);
 				} else if (TNHPstate == TNHPstates.Announcer) {
 					AnnouncerAPI.SwapAnnouncer(AnnouncerAPI.Announcers[index].GUID);
+					PluginMain.EnableCorruptedAnnouncer.Value = false;
+					_enableCorruption.ButtonText.text = "Enable Corrupted Lines";
+					if(AnnouncerAPI.CurrentAnnouncer.HasCorruptedVer) _enableCorruption.gameObject.SetActive(true);
 				}
 				SetIcon(index);
 				_bankText.Text.text = "Selected:\n" + GetCurrentBankName; //set new bank

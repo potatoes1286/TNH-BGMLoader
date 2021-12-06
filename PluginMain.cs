@@ -30,6 +30,7 @@ namespace TNHBGLoader
 		public static ConfigEntry<float> BackgroundMusicVolume;
 		public static ConfigEntry<string> LastLoadedBank;
 		public static ConfigEntry<string> LastLoadedAnnouncer;
+		public static ConfigEntry<bool> EnableCorruptedAnnouncer;
 		public static string AssemblyDirectory { get {
 				string codeBase = Assembly.GetExecutingAssembly().CodeBase;
 				UriBuilder uri = new UriBuilder(codeBase);
@@ -66,6 +67,7 @@ namespace TNHBGLoader
 			BackgroundMusicVolume.Value = Mathf.Clamp(BackgroundMusicVolume.Value, 0, 4);
 			LastLoadedBank = Config.Bind("no touchy", "Saved Bank", "", "Not meant to be changed manually. This autosaves your last bank used, so you don't have to reset it every time you launch H3.");
 			LastLoadedAnnouncer = Config.Bind("no touchy", "Saved Announcer", "", "Not meant to be changed manually. This autosaves your last announcer used, so you don't have to reset it every time you launch H3.");
+			EnableCorruptedAnnouncer = Config.Bind("no touchy", "Enable Corrupted Announcer", false, "Not meant to be changed manually. This autosaves whether you selected corrupted announcer, so you don't have to reset it every time you launch H3.");
 		}
 		
 		//stratum loading

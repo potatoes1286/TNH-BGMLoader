@@ -15,8 +15,12 @@ namespace TNH_BGLoader
 		public static List<AnnouncerManifest> Announcers = new List<AnnouncerManifest>();
 		public static int LoadedAnnouncerIndex = 0;
 		public static AnnouncerManifest CurrentAnnouncer => Announcers[LoadedAnnouncerIndex];
-
-		public static void SwapAnnouncer(string GUID) => LoadedAnnouncerIndex = GetAnnouncerIndexFromGUID(GUID);
+		
+		public static void SwapAnnouncer(string GUID)
+		{
+			LoadedAnnouncerIndex = GetAnnouncerIndexFromGUID(GUID);
+			PluginMain.LastLoadedAnnouncer.Value = CurrentAnnouncer.GUID;
+		}
 		
 		public static int GetAnnouncerIndexFromGUID(string GUID) => Announcers.IndexOf(GetManifestFromGUID(GUID));
 		public static int GetAnnouncerIndexFromManifest(AnnouncerManifest manifest) => Announcers.IndexOf(manifest);
