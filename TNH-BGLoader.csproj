@@ -19,4 +19,8 @@
       <PackageReference Include="H3VR.GameLibs" Version="0.100.7-r.0" />
       <PackageReference Include="YamlDotNet" Version="11.2.1" />
     </ItemGroup>
+    <ItemGroup>
+      <None Remove="panel.png" />
+      <EmbeddedResource Include="panel.png" />
+    </ItemGroup>
 </Project>
