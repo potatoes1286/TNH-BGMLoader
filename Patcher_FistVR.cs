@@ -74,7 +74,13 @@ namespace TNHBGLoader
 			Stopwatch sw = new Stopwatch();
 			sw.Start();
 			var announcer = AnnouncerAPI.CurrentAnnouncer;
-			if (announcer.GUID == "h3vr.default") return true; //skip all this schtuff if default announcer
+			if (announcer.GUID == "h3vr.default")
+			{
+				TNH_VoiceDatabase ddb = __instance.VoiceDB;
+				foreach (var line in ddb.Lines) line.Clip_Standard = line.Clip_Corrupted;
+				__instance.VoiceDB = ddb;
+				return true;
+			}
 			TNH_VoiceDatabase db = ScriptableObject.CreateInstance<TNH_VoiceDatabase>();
 			db.Lines = new List<TNH_VoiceDatabase.TNH_VoiceLine>();
 			foreach (var line in announcer.VoiceLines)
