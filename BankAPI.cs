@@ -11,10 +11,10 @@ namespace TNH_BGLoader
 	public class BankAPI
 	{
 		//Bank Index, Bank Name, Bank Location
-		public static List<string> BankListLocation = new List<string>();
+		public static List<string> BankLocations = new List<string>();
 		public static int LoadedBankIndex = 0;
-		public static string LoadedBankLocation => BankListLocation[LoadedBankIndex];
-		public static bool BanksEmptyOrNull => (BankListLocation == null || BankListLocation.Count == 0);
+		public static string LoadedBankLocation => BankLocations[LoadedBankIndex];
+		public static bool BanksEmptyOrNull => (BankLocations == null || BankLocations.Count == 0);
 		public static List<string> LegacyBanks
 		{
 			get
@@ -22,15 +22,16 @@ namespace TNH_BGLoader
 				// surely this won't throw an access error!
 				var banks = Directory.GetFiles(Paths.PluginPath, "MX_TAH_*.bank", SearchOption.AllDirectories).ToList();
 				// removes all files with parent dir "resources"
-				foreach (var bank in banks) if (Path.GetFileName(Path.GetDirectoryName(bank))?.ToLower() == "resources") BankListLocation.Remove(bank);
+				foreach (var bank in banks) if (Path.GetFileName(Path.GetDirectoryName(bank))?.ToLower() == "resources") BankLocations.Remove(bank);
 				Debug.Log(banks.Count + " banks loaded via legacy bank loader! - PTNHBGML");
 				// i'm supposed to ignore any files thrown into the plugin folder, but idk how to do that. toodles!
 				return banks;
 			}
 		}
+		public static string BankLocationToName(string loc) => Path.GetFileNameWithoutExtension(loc).Split('_').Last();
 		public static string BankIndexToName(int index, bool returnWithIndex = false)
 		{
-			string bankpath = BankAPI.BankListLocation[index];
+			string bankpath = BankAPI.BankLocations[index];
 			string bankname = Path.GetFileNameWithoutExtension(bankpath).Split('_').Last();
 			if (bankname == "TAH") bankname = "Default";
 			if (returnWithIndex) bankname = (index + 1) + ": " + bankname;
@@ -40,7 +41,7 @@ namespace TNH_BGLoader
 		public static void SwapBank(int newBank)
 		{
 			//wrap around
-			newBank = Mathf.Clamp(newBank, 0, BankListLocation.Count - 1);
+			newBank = Mathf.Clamp(newBank, 0, BankLocations.Count - 1);
 			UnloadBankHard(LoadedBankLocation); //force it to be unloaded
 			LoadedBankIndex = newBank; //set banknum to new bank
 			NukeSongSnippets();
@@ -91,19 +92,20 @@ namespace TNH_BGLoader
 			{
 				if (File.Exists(path))
 				{
-					Debug.Log("Loading from " + path);
+					//Debug.Log("Loading from " + path);
 					//var tex = new WWW("file:///" + pbase + "iconhq.png").texture;
 					byte[] byteArray = File.ReadAllBytes(path);
 					Texture2D tex = new Texture2D(1,1);
 					tex.LoadImage(byteArray);
 					if (tex != null)
 					{
-						Debug.Log("Loaded fine!");
+						//Debug.Log("Loaded fine!");
 						return tex;
 					}
-					else Debug.Log("Failed lo load!");
-				} else Debug.Log(path + " does not exist!");
+					//else Debug.Log("Failed lo load!");
+				} //else Debug.Log(path + " does not exist!");
 			}
+			Debug.LogWarning("Cannot find icon for " + BankAPI.BankLocationToName(bankName) + "!");
 			return null;
 		}
 	}
