@@ -6,6 +6,8 @@
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <AssemblyName>PTNHBGML</AssemblyName>
+        <RootNamespace>TNHBGLoader</RootNamespace>
     </PropertyGroup>
     <ItemGroup>       
       <PackageReference Include="BepInEx.Core" Version="5.4.16" />
