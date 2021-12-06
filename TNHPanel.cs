@@ -302,6 +302,7 @@ namespace TNHBGLoader
 			PluginMain.EnableCorruptedAnnouncer.Value = !PluginMain.EnableCorruptedAnnouncer.Value;
 			if (PluginMain.EnableCorruptedAnnouncer.Value) _enableCorruption.ButtonText.text = "Disable Corrupted Lines";
 			else _enableCorruption.ButtonText.text = "Enable Corrupted Lines";
+			PlayAnnouncerSnippet(AnnouncerAPI.CurrentAnnouncer.GUID);
 		}
 
 		//Sets new bank
@@ -321,10 +322,27 @@ namespace TNHBGLoader
 					PluginMain.EnableCorruptedAnnouncer.Value = false;
 					_enableCorruption.ButtonText.text = "Enable Corrupted Lines";
 					if(AnnouncerAPI.CurrentAnnouncer.HasCorruptedVer) _enableCorruption.gameObject.SetActive(true);
+					PlayAnnouncerSnippet(AnnouncerAPI.CurrentAnnouncer.GUID);
 				}
 				SetIcon(index);
 				_bankText.Text.text = "Selected:\n" + GetCurrentBankName; //set new bank
 			}
+		}
+		public void PlayAnnouncerSnippet(string guid)
+		{
+			//get first entry
+			string path = "";
+			if (PluginMain.EnableCorruptedAnnouncer.Value) path = AnnouncerAPI.CurrentAnnouncer.VoiceLines[0].StandardAudioClipPath;
+			else path = AnnouncerAPI.CurrentAnnouncer.VoiceLines[0].StandardAudioClipPath;
+			AudioClip snip = AnnouncerAPI.GetAudioFromFile(path);
+			//make audioevent
+			AudioEvent audioEvent = new AudioEvent();
+			audioEvent.Clips.Add(snip);
+			audioEvent.PitchRange = new Vector2(1f, 1f);
+			float vol = 0.6f * PluginMain.AnnouncerMusicVolume.Value;
+			audioEvent.VolumeRange = new Vector2(vol, vol);
+			//play it
+			SM.PlayCoreSoundDelayed(FVRPooledAudioType.UIChirp, audioEvent, transform.position, 0.05f);
 		}
 
 		private void SetIcon(int index)

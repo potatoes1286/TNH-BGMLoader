@@ -11,6 +11,7 @@ namespace TNH_BGLoader
 	public class VoiceLine
 	{
 		[YamlMember(Alias = "id")]
+		[CanBeNull]
 		public TNH_VoiceLineID ID { get; set; }
 		[CanBeNull]
 		public string StandardAudioClipPath { get; set; }
