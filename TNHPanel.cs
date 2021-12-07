@@ -322,7 +322,6 @@ namespace TNHBGLoader
 		}
 		public void PlayAnnouncerSnippet(string guid)
 		{
-			if (AnnouncerAPI.CurrentAnnouncer.GUID == "h3vr.default") return;
 			//get first entry
 			AudioClip snip = AnnouncerAPI.GetRandomPreview(AnnouncerAPI.CurrentAnnouncer.GUID);
 			//make audioevent

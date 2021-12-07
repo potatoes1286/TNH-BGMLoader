@@ -32,10 +32,16 @@ namespace TNH_BGLoader
 
 		public static readonly AnnouncerManifest DefaultAnnouncer = new AnnouncerManifest()
 		{
-			Name = "Default TNH Announcer",
+			Name = "Default Announcer",
 			GUID = "h3vr.default",
-			VoiceLines = new List<VoiceLine>(),
-			Location = PluginMain.AssemblyDirectory + "/defaultannouncericonhq.png"
+			VoiceLines = new List<VoiceLine>()
+		};
+		
+		public static readonly AnnouncerManifest CorruptedAnnouncer = new AnnouncerManifest()
+		{
+			Name = "Corrupted Announcer",
+			GUID = "h3vr.corrupted",
+			VoiceLines = new List<VoiceLine>()
 		};
 	}
 }

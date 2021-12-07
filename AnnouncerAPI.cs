@@ -44,7 +44,9 @@ namespace TNH_BGLoader
 				Directory.GetParent(Directory.GetParent(pbase).ToString()) + "/icon.png",
 			};
 			if (announcer.GUID == "h3vr.default")
-				paths = new string[] {PluginMain.AssemblyDirectory + "/defaultannouncericonhq.png"};
+				paths = new string[] {PluginMain.AssemblyDirectory + "/default/announcer_default.png"};
+			if (announcer.GUID == "h3vr.corrupted")
+				paths = new string[] {PluginMain.AssemblyDirectory + "/default/announcer_default.png"};
 
 			//iterate through all paths, get the first one that exists
 			foreach (var path in paths)
@@ -70,6 +72,8 @@ namespace TNH_BGLoader
 
 		public static AudioClip GetRandomPreview(string guid)
 		{
+			if (guid == "h3vr.default") return GetAudioFromFile(Path.Combine(PluginMain.AssemblyDirectory, "default/announcer_default.wav"));
+			if (guid == "h3vr.corrupted") return GetAudioFromFile(Path.Combine(PluginMain.AssemblyDirectory, "default/announcer_corrupted.wav"));
 			var manifest = GetManifestFromGUID(guid);
 			int rand = Random.Range(0, manifest.Previews.Count);
 			return GetAudioFromFile(manifest.Previews[rand]);
@@ -140,7 +144,7 @@ namespace TNH_BGLoader
 			if (songname.Contains("loot_token3")) return TNH_VoiceLineID.AI_OverrideTokenFound_3;
 			if (songname.Contains("loot_token4")) return TNH_VoiceLineID.AI_OverrideTokenFound_4;
 			if (songname.Contains("loot_token5")) return TNH_VoiceLineID.AI_OverrideTokenFound_5;
-			if (songname.Contains("game_endline")) return TNH_VoiceLineID.AI_ReturningToInterface;
+			if (songname.Contains("game_end")) return TNH_VoiceLineID.AI_ReturningToInterface;
 			if (songname.Contains("game_lose_player")) return TNH_VoiceLineID.AI_PlayerConnectionFailure;
 			if (songname.Contains("game_lose_hold")) return TNH_VoiceLineID.BASE_IntrusionDetectedInitiatingLockdown;
 			validid = false;

@@ -54,6 +54,7 @@ namespace TNHBGLoader
 			//announcer schtuff
 			_deserializer = new DeserializerBuilder().WithNamingConvention(UnderscoredNamingConvention.Instance).Build();
 			AnnouncerAPI.Announcers.Add(AnnouncerManifest.DefaultAnnouncer);
+			AnnouncerAPI.Announcers.Add(AnnouncerManifest.CorruptedAnnouncer);
 			
 			
 			//patch yo things
