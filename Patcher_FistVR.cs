@@ -80,7 +80,15 @@ namespace TNHBGLoader
 				__instance.VoiceDB = ddb;
 				return true;
 			}
-			if (announcer.GUID == "h3vr.default") { return true; }
+
+			if (announcer.GUID == "h3vr.default")
+			{
+				/*for(int i=0; i < __instance.VoiceDB.Lines.Count; i++) {
+					SavWav.Save("G:/exp/" + __instance.VoiceDB.Lines[i].Clip_Standard.name + ".wav", __instance.VoiceDB.Lines[i].Clip_Standard);
+					UnityEngine.Debug.Log(__instance.VoiceDB.Lines[i].Clip_Standard.name + " has ID " + (__instance.VoiceDB.Lines[i].ID).ToString());
+				}*/
+				return true;
+			}
 			TNH_VoiceDatabase db = ScriptableObject.CreateInstance<TNH_VoiceDatabase>();
 			db.Lines = new List<TNH_VoiceDatabase.TNH_VoiceLine>();
 			foreach (var line in announcer.VoiceLines)
@@ -111,10 +119,7 @@ namespace TNHBGLoader
 			__instance.VoiceDB = db;
 			UnityEngine.Debug.Log(sw.ElapsedMilliseconds + "ms to load all voicelines!");
 
-			/*for(int i=0; i < __instance.VoiceDB.Lines.Count; i++)
-			{
-				SavWav.Save("G:/exp/" + i + ".wav", __instance.VoiceDB.Lines[i].Clip_Standard);
-			}*/
+
 			return true;
 		}
 
