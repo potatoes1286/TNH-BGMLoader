@@ -4,7 +4,7 @@ using YamlDotNet.Serialization;
 
 namespace TNHBGLoader
 {
-	public class AnnouncerYAMLManifest
+	public class AnnouncerYamlfest
 	{
 		public string Name { get; set; }
 		[YamlMember(Alias = "Guid")] public string GUID { get; set; }

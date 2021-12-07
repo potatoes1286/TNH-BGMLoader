@@ -78,7 +78,7 @@ namespace TNH_BGLoader
 			int rand = Random.Range(0, manifest.Previews.Count);
 			return GetAudioFromFile(manifest.Previews[rand]);
 		}
-		public static AnnouncerManifest YamlfestToManifest(AnnouncerYAMLManifest yamlfest)
+		public static AnnouncerManifest YamlfestToManifest(AnnouncerYamlfest yamlfest)
 		{
 			AnnouncerManifest manifest = new AnnouncerManifest();
 			manifest.VoiceLines = new List<VoiceLine>();

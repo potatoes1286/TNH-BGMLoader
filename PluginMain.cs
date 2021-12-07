@@ -88,8 +88,8 @@ namespace TNHBGLoader
 		public Empty LoadAnnouncer(FileSystemInfo handle)
 		{
 			var file = handle.ConsumeFile();
-			var yamlfest = new AnnouncerYAMLManifest();
-			yamlfest = _deserializer.Deserialize<AnnouncerYAMLManifest>(File.ReadAllText(file.FullName));
+			var yamlfest = new AnnouncerYamlfest();
+			yamlfest = _deserializer.Deserialize<AnnouncerYamlfest>(File.ReadAllText(file.FullName));
 			Debug.Log("Loaded announcer file " + yamlfest.GUID);
 			yamlfest.Location = file.FullName;
 			AnnouncerAPI.Announcers.Add(AnnouncerAPI.YamlfestToManifest(yamlfest));
