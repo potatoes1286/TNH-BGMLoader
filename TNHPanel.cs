@@ -260,7 +260,7 @@ namespace TNHBGLoader
 				PluginMain.AnnouncerMusicVolume.Value += inc;
 				if (PluginMain.BackgroundMusicVolume.Value < 0 || PluginMain.BackgroundMusicVolume.Value > 20)
 					WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
-				PluginMain.BackgroundMusicVolume.Value = Mathf.Clamp(PluginMain.BackgroundMusicVolume.Value, 0, 20);
+				PluginMain.AnnouncerMusicVolume.Value = Mathf.Clamp(PluginMain.AnnouncerMusicVolume.Value, 0, 20);
 			}
 			_volumeText.Text.text = GetVolumePercent();
 		}
@@ -290,14 +290,14 @@ namespace TNHBGLoader
 				if (TNHPstate == TNHPstates.BGM)
 					return BankAPI.BankIndexToName(BankAPI.LoadedBankIndex, true);
 				if (TNHPstate == TNHPstates.Announcer)
-					return AnnouncerAPI.Announcers[AnnouncerAPI.LoadedAnnouncerIndex].Name;
+					return (AnnouncerAPI.LoadedAnnouncerIndex+1) + ": " + AnnouncerAPI.Announcers[AnnouncerAPI.LoadedAnnouncerIndex].Name;
 				return ""; } } 
 		private string GetVolumePercent()
 		{
 			if (TNHPstate == TNHPstates.BGM)
 				return Mathf.Round(PluginMain.BackgroundMusicVolume.Value * 100).ToString(CultureInfo.InvariantCulture) + "%";
 			if (TNHPstate == TNHPstates.Announcer)
-				return Mathf.Round(PluginMain.BackgroundMusicVolume.Value * 100).ToString(CultureInfo.InvariantCulture) + "%";
+				return Mathf.Round(PluginMain.AnnouncerMusicVolume.Value * 100).ToString(CultureInfo.InvariantCulture) + "%";
 			return "";
 		}
 
@@ -313,7 +313,8 @@ namespace TNHBGLoader
 					GameObject go = new GameObject();
 					go.AddComponent(typeof(PlaySongSnippet));
 				} else if (TNHPstate == TNHPstates.Announcer) {
-					AnnouncerAPI.SwapAnnouncer(AnnouncerAPI.Announcers[index].GUID);
+					var clamp = Mathf.Clamp(index, 0, AnnouncerAPI.Announcers.Count);
+					AnnouncerAPI.SwapAnnouncer(AnnouncerAPI.Announcers[clamp].GUID);
 					PlayAnnouncerSnippet(AnnouncerAPI.CurrentAnnouncer.GUID);
 				}
 				SetIcon(index);

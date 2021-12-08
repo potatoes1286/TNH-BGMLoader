@@ -8,6 +8,7 @@ using System.Reflection;
 using BepInEx;
 using HarmonyLib;
 using BepInEx.Configuration;
+using BepInEx.Logging;
 using FistVR;
 using FMODUnity;
 using UnityEngine;
@@ -19,6 +20,7 @@ using Debug = UnityEngine.Debug;
 using YamlDotNet;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
+using Logger = BepInEx.Logging.Logger;
 
 namespace TNHBGLoader
 {
@@ -31,6 +33,7 @@ namespace TNHBGLoader
 		public static ConfigEntry<float> AnnouncerMusicVolume;
 		public static ConfigEntry<string> LastLoadedBank;
 		public static ConfigEntry<string> LastLoadedAnnouncer;
+		public static ConfigEntry<bool> EnableDebugLogging;
 		public static string AssemblyDirectory { get {
 				string codeBase = Assembly.GetExecutingAssembly().CodeBase;
 				UriBuilder uri = new UriBuilder(codeBase);
@@ -38,9 +41,12 @@ namespace TNHBGLoader
 				return Path.GetDirectoryName(path);
 			}
 		}
-
+		
+		internal new static ManualLogSource DebugLog;
+		public static void LogSpam(object data) { if(EnableDebugLogging.Value) DebugLog.LogDebug(data); }
 		public void Awake()
 		{
+			DebugLog = Logger;
 			InitConfig();
 			
 			//bank stuff
@@ -64,6 +70,7 @@ namespace TNHBGLoader
 
 		public void InitConfig()
 		{
+			EnableDebugLogging = Config.Bind("General", "Enable Debug Logs", false, "Spams your log with debug info.");
 			BackgroundMusicVolume = Config.Bind("General", "BGM Volume", 1f, "Changes the magnitude of the BGM volume. Must be between 0 and 4.");
 			BackgroundMusicVolume.Value = Mathf.Clamp(BackgroundMusicVolume.Value, 0, 4);
 			AnnouncerMusicVolume = Config.Bind("General", "Announcer Volume", 1f, "Changes the magnitude of the Announcer volume. Must be between 0 and 20. (Please don't set the volume to 2000%.)");
@@ -71,7 +78,7 @@ namespace TNHBGLoader
 			LastLoadedBank = Config.Bind("no touchy", "Saved Bank", "", "Not meant to be changed manually. This autosaves your last bank used, so you don't have to reset it every time you launch H3.");
 			LastLoadedAnnouncer = Config.Bind("no touchy", "Saved Announcer", "", "Not meant to be changed manually. This autosaves your last announcer used, so you don't have to reset it every time you launch H3.");
 		}
-		
+
 		//stratum loading
 		public override void OnSetup(IStageContext<Empty> ctx) {
 			ctx.Loaders.Add("tnhbankfile", LoadTNHBankFile);

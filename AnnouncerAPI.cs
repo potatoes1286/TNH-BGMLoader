@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,6 +7,7 @@ using FistVR;
 using TNHBGLoader;
 using UnityEngine;
 using UnityEngine.Networking;
+using Random = UnityEngine.Random;
 
 namespace TNH_BGLoader
 {
@@ -29,12 +31,12 @@ namespace TNH_BGLoader
 		//I should probably also co-routine this, but co-routine throws a hissyfit whenever i do for some reason.
 		public static Texture2D GetAnnouncerTexture(AnnouncerManifest announcer)
 		{
-			//Debug.Log("Loading image for " + bankName);
+			PluginMain.LogSpam("Loading image for " + announcer.GUID);
 			var pbase = Path.GetDirectoryName(announcer.Location);
 			//assembles all the potential locations for the icon, in descending order of importance.
 			string[] paths = new string[0];
 			if (announcer.GUID == "h3vr.default" || announcer.GUID == "h3vr.corrupted")
-				paths = new string[] { Path.Combine(PluginMain.AssemblyDirectory, "/default/announcer_default.png") };
+				paths = new string[] { Path.Combine(PluginMain.AssemblyDirectory, "default/announcer_default.png") };
 			else paths = new string[] { pbase + "/icon.png", Directory.GetParent(pbase) + "/icon.png" };
 
 			//iterate through all paths, get the first one that exists
@@ -42,19 +44,17 @@ namespace TNH_BGLoader
 			{
 				if (File.Exists(path))
 				{
-					//Debug.Log("Loading from " + path);
 					byte[] byteArray = File.ReadAllBytes(path);
 					Texture2D tex = new Texture2D(1, 1);
 					tex.LoadImage(byteArray);
 					if (tex != null)
 					{
-						//Debug.Log("Loaded fine!");
+						PluginMain.LogSpam("Loading icon from " + path);
 						return tex;
 					}
-					//else Debug.Log("Failed lo load!");
-				} //else Debug.Log(path + " does not exist!");
+				}
 			}
-			Debug.LogWarning("Cannot find icon for " + announcer.GUID + "!");
+			PluginMain.DebugLog.LogError("Cannot find icon for " + announcer.GUID + "!\nPossible locations:\n" + String.Join("\n", paths));
 			return null;
 		}
 
@@ -79,7 +79,7 @@ namespace TNH_BGLoader
 			foreach (var song in files) //iterate through and handle all lines found
 			{
 				VoiceLine vl = new VoiceLine();
-				var songname = Path.GetFileName(song);
+				var songname = song;
 				vl.ID = NameToID(songname);
 				if (!validid) continue;
 				vl.ClipPath = song;
@@ -106,8 +106,9 @@ namespace TNH_BGLoader
 		}*/
 
 		private static bool validid = true;
-		public static TNH_VoiceLineID NameToID(string songname)
+		public static TNH_VoiceLineID NameToID(string song)
 		{
+			var songname = Path.GetFileName(song);
 			validid = true;
 			//i dont know how to switch this. cope!
 			if (songname.Contains("game_intro")) return TNH_VoiceLineID.AI_UplinkSuccessfulTargetSystemDetectedTakeIt;
@@ -154,7 +155,7 @@ namespace TNH_BGLoader
 			if (songname.Contains("base_error")) return TNH_VoiceLineID.BASE_ErrorSystemFailure;
 
 			validid = false;
-			if(!songname.Contains("example")) Debug.LogWarning(songname + " is not a valid announcer file!");
+			if(!songname.Contains("example")) PluginMain.DebugLog.LogError(song + " is not a valid announcer file!");
 			return TNH_VoiceLineID.AI_Encryption_Neutralized;
 		}
 		
