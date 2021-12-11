@@ -132,7 +132,7 @@ namespace TNH_BGLoader
 			if (songname.Contains("hold_next_layer")) return TNH_VoiceLineID.AI_AdvancingToNextSystemLayer;
 			if (songname.Contains("hold_win")) return TNH_VoiceLineID.AI_HoldSuccessfulDataExtracted;
 			if (songname.Contains("hold_failure")) return TNH_VoiceLineID.AI_HoldFailedNodeConnectionTerminated;
-			if (songname.Contains("hold_advance")) return TNH_VoiceLineID.AI_AdvanceToNextSystemNodeAndTakeIt;
+			if (songname.Contains("hold_finish")) return TNH_VoiceLineID.AI_AdvanceToNextSystemNodeAndTakeIt;
 			if (songname.Contains("loot_token1")) return TNH_VoiceLineID.AI_OverrideTokenFound_1;
 			if (songname.Contains("loot_token2")) return TNH_VoiceLineID.AI_OverrideTokenFound_2;
 			if (songname.Contains("loot_token3")) return TNH_VoiceLineID.AI_OverrideTokenFound_3;
