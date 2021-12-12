@@ -97,7 +97,7 @@ namespace TNHBGLoader
 				AudioClip sa = null;
 				//i know there's a special place in hell for my naming scheme. dont care
 				sa = AnnouncerAPI.GetAudioFromFile(line.ClipPath);
-				if(sa == null) UnityEngine.Debug.LogWarning("SA is missing!");
+				if(sa == null) PluginMain.DebugLog.LogWarning("Failed to load from " + line.ClipPath + "!");
 				var vl = new TNH_VoiceDatabase.TNH_VoiceLine();
 				vl.ID = line.ID;
 				vl.Clip_Standard = sa;
@@ -119,9 +119,8 @@ namespace TNHBGLoader
 			}
 			sw.Stop();
 			__instance.VoiceDB = db;
-			PluginMain.DebugLog.LogDebug(sw.ElapsedMilliseconds + "ms to load all voicelines!");
-
-
+			PluginMain.LogSpam(sw.ElapsedMilliseconds + "ms to load all voicelines!");
+			PluginMain.DebugLog.LogDebug("TNH run started! PTNHBGML Info:\nLoaded announcer: " + AnnouncerAPI.CurrentAnnouncer.GUID + "\nLoaded song: " + BankAPI.BankIndexToName(BankAPI.LoadedBankIndex));
 			return true;
 		}
 

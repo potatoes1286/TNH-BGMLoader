@@ -195,11 +195,10 @@ namespace TNHBGLoader
 
 		public void SwitchState(object sender, ButtonClickEventArgs args)
 		{
-				 if (TNHPstate == TNHPstates.BGM) TNHPstate = TNHPstates.Announcer;
-			else if (TNHPstate == TNHPstates.Announcer) TNHPstate = TNHPstates.BGM;
-			UpdateMusicList(null, null); //always use null as an arg, kids
-			UpdateVolume(null, null);
+				 if (TNHPstate == TNHPstates.BGM) {TNHPstate = TNHPstates.Announcer;}
+			else if (TNHPstate == TNHPstates.Announcer) {TNHPstate = TNHPstates.BGM;} 
 			_bankText.Text.text = "Selected:\n" + GetCurrentBankName;
+			_firstMusicIndex = 0;
 			int index = 0;
 			if (TNHPstate == TNHPstates.BGM) {
 				index = BankAPI.LoadedBankIndex;
@@ -207,6 +206,8 @@ namespace TNHBGLoader
 			if (TNHPstate == TNHPstates.Announcer) {
 				index = AnnouncerAPI.LoadedAnnouncerIndex;
 			}
+			UpdateMusicList(null, null); //always use null as an arg, kids
+			UpdateVolume(null, null);
 			SetIcon(index);
 		}
 		

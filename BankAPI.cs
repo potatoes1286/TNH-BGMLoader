@@ -56,7 +56,7 @@ namespace TNH_BGLoader
 		//literal copy of RuntimeManager.UnloadBank but hard unloads
 		public static void UnloadBankHard(string bankName)
 		{
-			PluginMain.DebugLog.LogDebug("Hard unloading " + Path.GetFileName(bankName));
+			PluginMain.LogSpam("Hard unloading " + Path.GetFileName(bankName));
 			RuntimeManager.LoadedBank value;
 			if (RuntimeManager.Instance.loadedBanks.TryGetValue(bankName, out value))
 			{
@@ -86,7 +86,7 @@ namespace TNH_BGLoader
 			};
 			//get default bank loc
 			if (bankName == Path.Combine(Application.streamingAssetsPath, "MX_TAH.bank"))
-				paths = new string[] {PluginMain.AssemblyDirectory + "/defaulticonhq.png"};
+				paths = new string[] {PluginMain.AssemblyDirectory + "/default/bank_default.png"};
 
 			//iterate through all paths, get the first one that exists
 			foreach(var path in paths)
