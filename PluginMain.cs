@@ -8,6 +8,7 @@ using System.Reflection;
 using BepInEx;
 using HarmonyLib;
 using BepInEx.Configuration;
+using BepInEx.Logging;
 using FistVR;
 using FMODUnity;
 using UnityEngine;
@@ -19,6 +20,7 @@ using Debug = UnityEngine.Debug;
 using YamlDotNet;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
+using Logger = BepInEx.Logging.Logger;
 
 namespace TNHBGLoader
 {
@@ -31,7 +33,7 @@ namespace TNHBGLoader
 		public static ConfigEntry<float> AnnouncerMusicVolume;
 		public static ConfigEntry<string> LastLoadedBank;
 		public static ConfigEntry<string> LastLoadedAnnouncer;
-		public static ConfigEntry<bool> EnableCorruptedAnnouncer;
+		public static ConfigEntry<bool> EnableDebugLogging;
 		public static string AssemblyDirectory { get {
 				string codeBase = Assembly.GetExecutingAssembly().CodeBase;
 				UriBuilder uri = new UriBuilder(codeBase);
@@ -39,9 +41,12 @@ namespace TNHBGLoader
 				return Path.GetDirectoryName(path);
 			}
 		}
-
+		
+		internal new static ManualLogSource DebugLog;
+		public static void LogSpam(object data) { if(EnableDebugLogging.Value) DebugLog.LogDebug(data); }
 		public void Awake()
 		{
+			DebugLog = Logger;
 			InitConfig();
 			
 			//bank stuff
@@ -55,6 +60,7 @@ namespace TNHBGLoader
 			//announcer schtuff
 			_deserializer = new DeserializerBuilder().WithNamingConvention(UnderscoredNamingConvention.Instance).Build();
 			AnnouncerAPI.Announcers.Add(AnnouncerManifest.DefaultAnnouncer);
+			AnnouncerAPI.Announcers.Add(AnnouncerManifest.CorruptedAnnouncer);
 			
 			
 			//patch yo things
@@ -64,15 +70,15 @@ namespace TNHBGLoader
 
 		public void InitConfig()
 		{
+			EnableDebugLogging = Config.Bind("General", "Enable Debug Logs", false, "Spams your log with debug info.");
 			BackgroundMusicVolume = Config.Bind("General", "BGM Volume", 1f, "Changes the magnitude of the BGM volume. Must be between 0 and 4.");
 			BackgroundMusicVolume.Value = Mathf.Clamp(BackgroundMusicVolume.Value, 0, 4);
 			AnnouncerMusicVolume = Config.Bind("General", "Announcer Volume", 1f, "Changes the magnitude of the Announcer volume. Must be between 0 and 20. (Please don't set the volume to 2000%.)");
 			AnnouncerMusicVolume.Value = Mathf.Clamp(BackgroundMusicVolume.Value, 0, 20);
 			LastLoadedBank = Config.Bind("no touchy", "Saved Bank", "", "Not meant to be changed manually. This autosaves your last bank used, so you don't have to reset it every time you launch H3.");
 			LastLoadedAnnouncer = Config.Bind("no touchy", "Saved Announcer", "", "Not meant to be changed manually. This autosaves your last announcer used, so you don't have to reset it every time you launch H3.");
-			EnableCorruptedAnnouncer = Config.Bind("no touchy", "Enable Corrupted Announcer", false, "Not meant to be changed manually. This autosaves whether you selected corrupted announcer, so you don't have to reset it every time you launch H3.");
 		}
-		
+
 		//stratum loading
 		public override void OnSetup(IStageContext<Empty> ctx) {
 			ctx.Loaders.Add("tnhbankfile", LoadTNHBankFile);
@@ -89,22 +95,11 @@ namespace TNHBGLoader
 		public Empty LoadAnnouncer(FileSystemInfo handle)
 		{
 			var file = handle.ConsumeFile();
-			var manifest = new AnnouncerManifest();
-			manifest = _deserializer.Deserialize<AnnouncerManifest>(File.ReadAllText(file.FullName));
-			manifest.Location = file.FullName;
-			foreach (var vl in manifest.VoiceLines) {
-				vl.StandardAudioClipPath = Path.GetDirectoryName(file.FullName) +"/"+ vl.StandardAudioClipPath;
-				if(vl.CorruptedAudioClipPath != null)
-					vl.CorruptedAudioClipPath = Path.GetDirectoryName(file.FullName) +"/"+ vl.CorruptedAudioClipPath;
-				if(!File.Exists(vl.StandardAudioClipPath)) Debug.LogWarning("Path " + vl.StandardAudioClipPath + " does not exist for announcer " + manifest.GUID + "!");
-			}
-			
-			/*for(int i=0; i < manifest.VoiceLines.Length; i++)
-			{
-				SavWav.Save("G:/exp/" + i + ".wav", AnnouncerAPI.GetAudioFromFile(manifest.VoiceLines[i].StandardAudioClipPath));
-			}*/
-			UnityEngine.Debug.Log("Loaded announcer file " + manifest.GUID);
-			AnnouncerAPI.Announcers.Add(manifest);
+			var yamlfest = new AnnouncerYamlfest();
+			yamlfest = _deserializer.Deserialize<AnnouncerYamlfest>(File.ReadAllText(file.FullName));
+			Debug.Log("Loaded announcer file " + yamlfest.GUID);
+			yamlfest.Location = file.FullName;
+			AnnouncerAPI.Announcers.Add(AnnouncerAPI.YamlfestToManifest(yamlfest));
 			return new Empty();
 		}
 		public override IEnumerator OnRuntime(IStageContext<IEnumerator> ctx) { yield break; }

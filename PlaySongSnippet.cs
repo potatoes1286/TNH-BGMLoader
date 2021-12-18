@@ -28,13 +28,12 @@ namespace TNH_BGLoader
 			Destroy(gameObject);
 		}
 		
-		public void OnBankChanged() //bank changed, clean tf up
-		{
-			CleanUp();
-		}
+		//bank changed, clean tf up
+		public void OnBankChanged() { CleanUp(); }
 		
 		public void Start()
 		{
+			PluginMain.LogSpam("Playing snippet " + BankAPI.BankIndexToName(BankAPI.LoadedBankIndex));
 			mbus = RuntimeManager.GetBus("bus:/Music");
 			mbus.setVolume(0.25f * PluginMain.BackgroundMusicVolume.Value);
 			snippet = RuntimeManager.CreateInstance("event:/MX/TAH/Fake Meat Must Die");

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BepInEx;
@@ -23,7 +24,7 @@ namespace TNH_BGLoader
 				var banks = Directory.GetFiles(Paths.PluginPath, "MX_TAH_*.bank", SearchOption.AllDirectories).ToList();
 				// removes all files with parent dir "resources"
 				foreach (var bank in banks) if (Path.GetFileName(Path.GetDirectoryName(bank))?.ToLower() == "resources") BankLocations.Remove(bank);
-				Debug.Log(banks.Count + " banks loaded via legacy bank loader! - PTNHBGML");
+				PluginMain.DebugLog.LogDebug(banks.Count + " banks loaded via legacy bank loader!");
 				// i'm supposed to ignore any files thrown into the plugin folder, but idk how to do that. toodles!
 				return banks;
 			}
@@ -55,7 +56,7 @@ namespace TNH_BGLoader
 		//literal copy of RuntimeManager.UnloadBank but hard unloads
 		public static void UnloadBankHard(string bankName)
 		{
-			UnityEngine.Debug.Log("Hard unloading " + Path.GetFileName(bankName));
+			PluginMain.LogSpam("Hard unloading " + Path.GetFileName(bankName));
 			RuntimeManager.LoadedBank value;
 			if (RuntimeManager.Instance.loadedBanks.TryGetValue(bankName, out value))
 			{
@@ -69,7 +70,7 @@ namespace TNH_BGLoader
 		//granted it's 256x256 (usually), how hard can it be to load that?
 		public static Texture2D LoadIconForBank(string bankName)
 		{
-			//Debug.Log("Loading image for " + bankName);
+			PluginMain.LogSpam("Loading image for " + bankName);
 			//get the name and base path of the bank
 			var pbase = Path.GetDirectoryName(bankName) + "/";
 			var name = Path.GetFileNameWithoutExtension(bankName).Split('_').Last();
@@ -85,27 +86,24 @@ namespace TNH_BGLoader
 			};
 			//get default bank loc
 			if (bankName == Path.Combine(Application.streamingAssetsPath, "MX_TAH.bank"))
-				paths = new string[] {PluginMain.AssemblyDirectory + "/defaulticonhq.png"};
+				paths = new string[] {PluginMain.AssemblyDirectory + "/default/bank_default.png"};
 
 			//iterate through all paths, get the first one that exists
 			foreach(var path in paths)
 			{
 				if (File.Exists(path))
 				{
-					//Debug.Log("Loading from " + path);
-					//var tex = new WWW("file:///" + pbase + "iconhq.png").texture;
 					byte[] byteArray = File.ReadAllBytes(path);
 					Texture2D tex = new Texture2D(1,1);
 					tex.LoadImage(byteArray);
 					if (tex != null)
 					{
-						//Debug.Log("Loaded fine!");
+						PluginMain.LogSpam("Loading icon from " + path);
 						return tex;
 					}
-					//else Debug.Log("Failed lo load!");
-				} //else Debug.Log(path + " does not exist!");
+				}
 			}
-			Debug.LogWarning("Cannot find icon for " + BankAPI.BankLocationToName(bankName) + "!");
+			PluginMain.DebugLog.LogError("Cannot find icon for " + BankAPI.BankLocationToName(bankName) + "!\nPossible locations:\n" + String.Join("\n", paths));
 			return null;
 		}
 	}

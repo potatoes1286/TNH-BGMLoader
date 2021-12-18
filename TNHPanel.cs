@@ -36,7 +36,6 @@ namespace TNHBGLoader
 		private ButtonWidget[] _volControls = new ButtonWidget[2];
 		private ButtonWidget[] _cycleControls = new ButtonWidget[2];
 		private ButtonWidget _switchstate;
-		public ButtonWidget _enableCorruption;
 
 		private int _firstMusicIndex;
 
@@ -165,11 +164,10 @@ namespace TNHBGLoader
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 					_switchstate = button;
 				});
-				/*Enable Corrupted*/	widget.AddChild((ButtonWidget button) => {
-					button.ButtonText.text = "Enable Corrupted Version";
-					button.AddButtonListener(SetCorruptedVer);
-					button.ButtonText.transform.localRotation = Quaternion.identity;
-					_enableCorruption = button;
+				/*None*/				widget.AddChild((TextWidget text) => {
+					text.Text.text = "";
+					text.Text.alignment = TextAnchor.MiddleCenter;
+					text.Text.fontSize += 5;
 				});
 				#endregion
 				#region Row Six
@@ -197,11 +195,10 @@ namespace TNHBGLoader
 
 		public void SwitchState(object sender, ButtonClickEventArgs args)
 		{
-				 if (TNHPstate == TNHPstates.BGM) TNHPstate = TNHPstates.Announcer;
-			else if (TNHPstate == TNHPstates.Announcer) TNHPstate = TNHPstates.BGM;
-			UpdateMusicList(null, null); //always use null as an arg, kids
-			UpdateVolume(null, null);
+				 if (TNHPstate == TNHPstates.BGM) {TNHPstate = TNHPstates.Announcer;}
+			else if (TNHPstate == TNHPstates.Announcer) {TNHPstate = TNHPstates.BGM;} 
 			_bankText.Text.text = "Selected:\n" + GetCurrentBankName;
+			_firstMusicIndex = 0;
 			int index = 0;
 			if (TNHPstate == TNHPstates.BGM) {
 				index = BankAPI.LoadedBankIndex;
@@ -209,6 +206,8 @@ namespace TNHBGLoader
 			if (TNHPstate == TNHPstates.Announcer) {
 				index = AnnouncerAPI.LoadedAnnouncerIndex;
 			}
+			UpdateMusicList(null, null); //always use null as an arg, kids
+			UpdateVolume(null, null);
 			SetIcon(index);
 		}
 		
@@ -262,7 +261,7 @@ namespace TNHBGLoader
 				PluginMain.AnnouncerMusicVolume.Value += inc;
 				if (PluginMain.BackgroundMusicVolume.Value < 0 || PluginMain.BackgroundMusicVolume.Value > 20)
 					WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
-				PluginMain.BackgroundMusicVolume.Value = Mathf.Clamp(PluginMain.BackgroundMusicVolume.Value, 0, 20);
+				PluginMain.AnnouncerMusicVolume.Value = Mathf.Clamp(PluginMain.AnnouncerMusicVolume.Value, 0, 20);
 			}
 			_volumeText.Text.text = GetVolumePercent();
 		}
@@ -292,24 +291,15 @@ namespace TNHBGLoader
 				if (TNHPstate == TNHPstates.BGM)
 					return BankAPI.BankIndexToName(BankAPI.LoadedBankIndex, true);
 				if (TNHPstate == TNHPstates.Announcer)
-					return AnnouncerAPI.Announcers[AnnouncerAPI.LoadedAnnouncerIndex].Name;
+					return (AnnouncerAPI.LoadedAnnouncerIndex+1) + ": " + AnnouncerAPI.Announcers[AnnouncerAPI.LoadedAnnouncerIndex].Name;
 				return ""; } } 
 		private string GetVolumePercent()
 		{
 			if (TNHPstate == TNHPstates.BGM)
 				return Mathf.Round(PluginMain.BackgroundMusicVolume.Value * 100).ToString(CultureInfo.InvariantCulture) + "%";
 			if (TNHPstate == TNHPstates.Announcer)
-				return Mathf.Round(PluginMain.BackgroundMusicVolume.Value * 100).ToString(CultureInfo.InvariantCulture) + "%";
+				return Mathf.Round(PluginMain.AnnouncerMusicVolume.Value * 100).ToString(CultureInfo.InvariantCulture) + "%";
 			return "";
-		}
-
-		//Announcers
-		private void SetCorruptedVer(object sender, ButtonClickEventArgs args)
-		{
-			PluginMain.EnableCorruptedAnnouncer.Value = !PluginMain.EnableCorruptedAnnouncer.Value;
-			if (PluginMain.EnableCorruptedAnnouncer.Value) _enableCorruption.ButtonText.text = "Disable Corrupted Lines";
-			else _enableCorruption.ButtonText.text = "Enable Corrupted Lines";
-			PlayAnnouncerSnippet(AnnouncerAPI.CurrentAnnouncer.GUID);
 		}
 
 		//Sets new bank
@@ -323,13 +313,9 @@ namespace TNHBGLoader
 					BankAPI.SwapBank(index);
 					GameObject go = new GameObject();
 					go.AddComponent(typeof(PlaySongSnippet));
-					SetCorruptButtonToShow(false);
 				} else if (TNHPstate == TNHPstates.Announcer) {
-					AnnouncerAPI.SwapAnnouncer(AnnouncerAPI.Announcers[index].GUID);
-					PluginMain.EnableCorruptedAnnouncer.Value = false;
-					_enableCorruption.ButtonText.text = "Enable Corrupted Lines";
-					if(AnnouncerAPI.CurrentAnnouncer.HasCorruptedVer) SetCorruptButtonToShow(true);
-					else SetCorruptButtonToShow(false);
+					var clamp = Mathf.Clamp(index, 0, AnnouncerAPI.Announcers.Count);
+					AnnouncerAPI.SwapAnnouncer(AnnouncerAPI.Announcers[clamp].GUID);
 					PlayAnnouncerSnippet(AnnouncerAPI.CurrentAnnouncer.GUID);
 				}
 				SetIcon(index);
@@ -338,16 +324,8 @@ namespace TNHBGLoader
 		}
 		public void PlayAnnouncerSnippet(string guid)
 		{
-			if (AnnouncerAPI.CurrentAnnouncer.GUID == "h3vr.default") return;
 			//get first entry
-			string path = "";
-			AudioClip snip = null;
-
-			if (PluginMain.EnableCorruptedAnnouncer.Value)
-				path = AnnouncerAPI.CurrentAnnouncer.VoiceLines[0].StandardAudioClipPath;
-			else path = AnnouncerAPI.CurrentAnnouncer.VoiceLines[0].StandardAudioClipPath;
-			Debug.Log(path);
-			snip = AnnouncerAPI.GetAudioFromFile(path);
+			AudioClip snip = AnnouncerAPI.GetRandomPreview(AnnouncerAPI.CurrentAnnouncer.GUID);
 			//make audioevent
 			AudioEvent audioEvent = new AudioEvent();
 			audioEvent.Clips.Add(snip);
@@ -357,15 +335,7 @@ namespace TNHBGLoader
 			//play it
 			SM.PlayGenericSound(audioEvent, GM.CurrentPlayerBody.transform.position);
 		}
-
-		private Image corimg = null;
-		public void SetCorruptButtonToShow(bool set)
-		{
-			if (corimg == null) corimg = _enableCorruption.GetComponent<Image>();
-			corimg.enabled = set;
-			_enableCorruption.transform.GetChild(0).gameObject.SetActive(set);
-		}
-
+		
 		private void SetIcon(int index)
 		{
 			if (TNHPstate == TNHPstates.BGM) {

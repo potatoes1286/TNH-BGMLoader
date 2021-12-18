@@ -30,8 +30,9 @@ namespace TNHBGLoader
 		[HarmonyPrefix]
 		public static bool SM_PlayCoreSoundDelayed_IncludeAnnouncerVol(ref AudioEvent ClipSet)
 		{
-			ClipSet.VolumeRange.x *= PluginMain.BackgroundMusicVolume.Value;
-			ClipSet.VolumeRange.y *= PluginMain.BackgroundMusicVolume.Value;
+			//makes the announcer conform to announcer volume
+			ClipSet.VolumeRange.x *= PluginMain.AnnouncerMusicVolume.Value;
+			ClipSet.VolumeRange.y *= PluginMain.AnnouncerMusicVolume.Value;
 			return true;
 		}
 		
@@ -52,7 +53,7 @@ namespace TNHBGLoader
 			
 			//get the bank last loaded and set banknum to it; if it doesnt exist it just defaults to 0
 			for (int i = 0; i < BankAPI.BankLocations.Count; i++)
-				if (Path.GetFileNameWithoutExtension(BankAPI.BankLocations[i]) == PluginMain.LastLoadedBank.Value) { BankAPI.LoadedBankIndex = i; break; }
+				if (Path.GetFileNameWithoutExtension(BankAPI.BankLocations[i]) == PluginMain.LastLoadedBank.Value) { BankAPI.SwapBank(i); break; }
 			//set last loaded announcer
 			AnnouncerAPI.LoadedAnnouncerIndex = AnnouncerAPI.GetAnnouncerIndexFromGUID(PluginMain.LastLoadedAnnouncer.Value);
 		}
@@ -74,11 +75,19 @@ namespace TNHBGLoader
 			Stopwatch sw = new Stopwatch();
 			sw.Start();
 			var announcer = AnnouncerAPI.CurrentAnnouncer;
-			if (announcer.GUID == "h3vr.default")
-			{
+			if (announcer.GUID == "h3vr.corrupted") {
 				TNH_VoiceDatabase ddb = __instance.VoiceDB;
 				foreach (var line in ddb.Lines) line.Clip_Standard = line.Clip_Corrupted;
 				__instance.VoiceDB = ddb;
+				return true;
+			}
+
+			if (announcer.GUID == "h3vr.default")
+			{
+				/*for(int i=0; i < __instance.VoiceDB.Lines.Count; i++) {
+					SavWav.Save("G:/exp/" + __instance.VoiceDB.Lines[i].Clip_Standard.name + ".wav", __instance.VoiceDB.Lines[i].Clip_Standard);
+					UnityEngine.Debug.Log(__instance.VoiceDB.Lines[i].Clip_Standard.name + " has ID " + (__instance.VoiceDB.Lines[i].ID).ToString());
+				}*/
 				return true;
 			}
 			TNH_VoiceDatabase db = ScriptableObject.CreateInstance<TNH_VoiceDatabase>();
@@ -87,24 +96,12 @@ namespace TNHBGLoader
 			{
 				//UnityEngine.Debug.Log("Loading ID " + line.ID);
 				AudioClip sa = null;
-				AudioClip ca = null;
 				//i know there's a special place in hell for my naming scheme. dont care
-				if (!string.IsNullOrEmpty(line.StandardAudioClipPath))
-					sa = AnnouncerAPI.GetAudioFromFile(line.StandardAudioClipPath);
-				if (!string.IsNullOrEmpty(line.CorruptedAudioClipPath))
-					ca = AnnouncerAPI.GetAudioFromFile(line.CorruptedAudioClipPath);
-				if(sa == null) UnityEngine.Debug.LogWarning("SA is missing!");
-				if(ca == null && announcer.HasCorruptedVer) UnityEngine.Debug.LogWarning("CA is missing!");
+				sa = AnnouncerAPI.GetAudioFromFile(line.ClipPath);
+				if(sa == null) PluginMain.DebugLog.LogWarning("Failed to load from " + line.ClipPath + "!");
 				var vl = new TNH_VoiceDatabase.TNH_VoiceLine();
 				vl.ID = line.ID;
-				if (!PluginMain.EnableCorruptedAnnouncer.Value) {
-					vl.Clip_Standard = sa;
-					vl.Clip_Corrupted = ca;
-				} else {
-					vl.Clip_Standard = ca;
-					vl.Clip_Corrupted = sa;
-				}
-				
+				vl.Clip_Standard = sa;
 				db.Lines.Add(vl);
 			}
 			//UnityEngine.Debug.Log("Finished loading!");
@@ -115,18 +112,16 @@ namespace TNHBGLoader
 				var linesofid = db.Lines.FindAll(line => line.ID == (TNH_VoiceLineID)vlid);
 				if (linesofid.Count == 0)
 				{
+					if( !((TNH_VoiceLineID)vlid).ToString().Contains("BASE_")) 
+						PluginMain.DebugLog.LogWarning("ID " + ((TNH_VoiceLineID)vlid).ToString() + " is empty for " + announcer.GUID +"! Was this intentional?");
 					var baselinesofid = __instance.VoiceDB.Lines.FindAll(line => line.ID == (TNH_VoiceLineID)vlid);
 					db.Lines = db.Lines.Concat(baselinesofid).ToList();
 				}
 			}
 			sw.Stop();
 			__instance.VoiceDB = db;
-			UnityEngine.Debug.Log(sw.ElapsedMilliseconds + "ms to load all voicelines!");
-
-			/*for(int i=0; i < __instance.VoiceDB.Lines.Count; i++)
-			{
-				SavWav.Save("G:/exp/" + i + ".wav", __instance.VoiceDB.Lines[i].Clip_Standard);
-			}*/
+			PluginMain.LogSpam(sw.ElapsedMilliseconds + "ms to load all voicelines!");
+			PluginMain.DebugLog.LogDebug("TNH run started! PTNHBGML Info:\nLoaded announcer: " + AnnouncerAPI.CurrentAnnouncer.GUID + "\nLoaded song: " + BankAPI.BankIndexToName(BankAPI.LoadedBankIndex));
 			return true;
 		}
 
