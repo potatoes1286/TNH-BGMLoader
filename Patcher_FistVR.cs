@@ -53,7 +53,7 @@ namespace TNHBGLoader
 			
 			//get the bank last loaded and set banknum to it; if it doesnt exist it just defaults to 0
 			for (int i = 0; i < BankAPI.BankLocations.Count; i++)
-				if (Path.GetFileNameWithoutExtension(BankAPI.BankLocations[i]) == PluginMain.LastLoadedBank.Value) { BankAPI.LoadedBankIndex = i; break; }
+				if (Path.GetFileNameWithoutExtension(BankAPI.BankLocations[i]) == PluginMain.LastLoadedBank.Value) { BankAPI.SwapBank(i); break; }
 			//set last loaded announcer
 			AnnouncerAPI.LoadedAnnouncerIndex = AnnouncerAPI.GetAnnouncerIndexFromGUID(PluginMain.LastLoadedAnnouncer.Value);
 		}
