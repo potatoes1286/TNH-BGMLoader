@@ -30,8 +30,9 @@ namespace TNHBGLoader
 		[HarmonyPrefix]
 		public static bool SM_PlayCoreSoundDelayed_IncludeAnnouncerVol(ref AudioEvent ClipSet)
 		{
-			ClipSet.VolumeRange.x *= PluginMain.BackgroundMusicVolume.Value;
-			ClipSet.VolumeRange.y *= PluginMain.BackgroundMusicVolume.Value;
+			//makes the announcer conform to announcer volume
+			ClipSet.VolumeRange.x *= PluginMain.AnnouncerMusicVolume.Value;
+			ClipSet.VolumeRange.y *= PluginMain.AnnouncerMusicVolume.Value;
 			return true;
 		}
 		
