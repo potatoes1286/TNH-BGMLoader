@@ -88,7 +88,7 @@ namespace TNHBGLoader
 				__instance.VoiceDB = ddb;
 				return true;
 			}
-
+			
 			if (announcer.GUID == "h3vr.default")
 			{
 				/*for(int i=0; i < __instance.VoiceDB.Lines.Count; i++) {
