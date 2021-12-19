@@ -112,7 +112,8 @@ namespace TNHBGLoader
 				var linesofid = db.Lines.FindAll(line => line.ID == (TNH_VoiceLineID)vlid);
 				if (linesofid.Count == 0)
 				{
-					if( !((TNH_VoiceLineID)vlid).ToString().Contains("BASE_")) 
+					//elegant but unreadable way to say "if voiceline name matches anything in UnusedVoiceLines"
+					if(AnnouncerAPI.UnusedVoicelines.Any(((TNH_VoiceLineID)vlid).ToString().Contains))
 						PluginMain.DebugLog.LogWarning("ID " + ((TNH_VoiceLineID)vlid).ToString() + " is empty for " + announcer.GUID +"! Was this intentional?");
 					var baselinesofid = __instance.VoiceDB.Lines.FindAll(line => line.ID == (TNH_VoiceLineID)vlid);
 					db.Lines = db.Lines.Concat(baselinesofid).ToList();

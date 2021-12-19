@@ -161,5 +161,19 @@ namespace TNH_BGLoader
 		
 		//why does this field even exist lol
 		public static AudioClip GetAudioFromFile(string path) => WavUtility.ToAudioClip(path);
+
+		public static readonly string[] UnusedVoicelines = new[] {
+			"base_",
+			"encryption_cascading",
+			"encryption_cascading",
+			"encryption_orthagonal",
+			"encryption_polymorphic",
+			"encryption_refractive",
+			"game_lose_connection",
+			"game_lose_operator",
+			"loot_regen",
+			"loot_resource",
+			"loot_tool",
+		};
 	}
 }
