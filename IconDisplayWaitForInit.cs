@@ -27,7 +27,7 @@ namespace TNH_BGLoader
 				gameObject.transform.localRotation = Quaternion.identity;
 				gameObject.transform.localScale = new Vector3(0.15f, 0.15f, 0.15f);
 				bgmpanel.icondisplay = rawimagecomp;
-				rawimagecomp.texture = BankAPI.LoadIconForBank(BankAPI.LoadedBankLocation);
+				rawimagecomp.texture = BankAPI.GetBankIcon(BankAPI.CurrentBankLocation);
 				Destroy(this);
 			}
 			catch

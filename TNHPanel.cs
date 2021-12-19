@@ -201,10 +201,10 @@ namespace TNHBGLoader
 			_firstMusicIndex = 0;
 			int index = 0;
 			if (TNHPstate == TNHPstates.BGM) {
-				index = BankAPI.LoadedBankIndex;
+				index = BankAPI.CurrentBankIndex;
 			}
 			if (TNHPstate == TNHPstates.Announcer) {
-				index = AnnouncerAPI.LoadedAnnouncerIndex;
+				index = AnnouncerAPI.CurrentAnnouncerIndex;
 			}
 			UpdateMusicList(null, null); //always use null as an arg, kids
 			UpdateVolume(null, null);
@@ -226,8 +226,8 @@ namespace TNHBGLoader
 			cycleInc = mult * cycleInc;
 			int NewFirstMusicIndex = _firstMusicIndex + cycleInc;
 			bool oob = NewFirstMusicIndex < 0;
-			if ((NewFirstMusicIndex >= BankAPI.BankLocations.Count) && TNHPstate == TNHPstates.BGM ||
-			    (NewFirstMusicIndex >= AnnouncerAPI.Announcers.Count) && TNHPstate == TNHPstates.Announcer)
+			if ((NewFirstMusicIndex >= BankAPI.LoadedBankLocations.Count) && TNHPstate == TNHPstates.BGM ||
+			    (NewFirstMusicIndex >= AnnouncerAPI.LoadedAnnouncers.Count) && TNHPstate == TNHPstates.Announcer)
 				oob = true;
 			if (oob) {
 				WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err); //play error audio if ran out of music to play
@@ -272,15 +272,15 @@ namespace TNHBGLoader
 			int index = _firstMusicIndex + offset;
 			if (TNHPstate == TNHPstates.BGM)
 			{
-				if (index < BankAPI.BankLocations.Count)
-					return BankAPI.BankIndexToName(index, true);
+				if (index < BankAPI.LoadedBankLocations.Count)
+					return BankAPI.GetNameFromIndex(index, true);
 			}
 			else if (TNHPstate == TNHPstates.Announcer)
 			{
-				if (index < AnnouncerAPI.Announcers.Count)
+				if (index < AnnouncerAPI.LoadedAnnouncers.Count)
 				{
 					//index: mybankname
-					string bankname = (index + 1) + ": " + AnnouncerAPI.Announcers[index].Name;
+					string bankname = (index + 1) + ": " + AnnouncerAPI.LoadedAnnouncers[index].Name;
 					return bankname;
 				}
 			}
@@ -289,9 +289,9 @@ namespace TNHBGLoader
 
 		private string GetCurrentBankName { get {
 				if (TNHPstate == TNHPstates.BGM)
-					return BankAPI.BankIndexToName(BankAPI.LoadedBankIndex, true);
+					return BankAPI.GetNameFromIndex(BankAPI.CurrentBankIndex, true);
 				if (TNHPstate == TNHPstates.Announcer)
-					return (AnnouncerAPI.LoadedAnnouncerIndex+1) + ": " + AnnouncerAPI.Announcers[AnnouncerAPI.LoadedAnnouncerIndex].Name;
+					return (AnnouncerAPI.CurrentAnnouncerIndex+1) + ": " + AnnouncerAPI.LoadedAnnouncers[AnnouncerAPI.CurrentAnnouncerIndex].Name;
 				return ""; } } 
 		private string GetVolumePercent()
 		{
@@ -314,8 +314,8 @@ namespace TNHBGLoader
 					GameObject go = new GameObject();
 					go.AddComponent(typeof(PlaySongSnippet));
 				} else if (TNHPstate == TNHPstates.Announcer) {
-					var clamp = Mathf.Clamp(index, 0, AnnouncerAPI.Announcers.Count);
-					AnnouncerAPI.SwapAnnouncer(AnnouncerAPI.Announcers[clamp].GUID);
+					var clamp = Mathf.Clamp(index, 0, AnnouncerAPI.LoadedAnnouncers.Count);
+					AnnouncerAPI.SwapAnnouncer(AnnouncerAPI.LoadedAnnouncers[clamp].GUID);
 					PlayAnnouncerSnippet(AnnouncerAPI.CurrentAnnouncer.GUID);
 				}
 				SetIcon(index);
@@ -339,9 +339,9 @@ namespace TNHBGLoader
 		private void SetIcon(int index)
 		{
 			if (TNHPstate == TNHPstates.BGM) {
-				if (icondisplay != null) icondisplay.texture = BankAPI.LoadIconForBank(BankAPI.LoadedBankLocation);
+				if (icondisplay != null) icondisplay.texture = BankAPI.GetBankIcon(BankAPI.CurrentBankLocation);
 			} else if (TNHPstate == TNHPstates.Announcer) {
-				if (icondisplay != null) icondisplay.texture = AnnouncerAPI.GetAnnouncerTexture(AnnouncerAPI.Announcers[index]);
+				if (icondisplay != null) icondisplay.texture = AnnouncerAPI.GetAnnouncerIcon(AnnouncerAPI.LoadedAnnouncers[index]);
 			}
 		}
 	}

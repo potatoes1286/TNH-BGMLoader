@@ -33,7 +33,7 @@ namespace TNH_BGLoader
 		
 		public void Start()
 		{
-			PluginMain.LogSpam("Playing snippet " + BankAPI.BankIndexToName(BankAPI.LoadedBankIndex));
+			PluginMain.LogSpam("Playing snippet " + BankAPI.GetNameFromIndex(BankAPI.CurrentBankIndex));
 			mbus = RuntimeManager.GetBus("bus:/Music");
 			mbus.setVolume(0.25f * PluginMain.BackgroundMusicVolume.Value);
 			snippet = RuntimeManager.CreateInstance("event:/MX/TAH/Fake Meat Must Die");

@@ -12,27 +12,27 @@ namespace TNH_BGLoader
 	public class BankAPI
 	{
 		//Bank Index, Bank Name, Bank Location
-		public static List<string> BankLocations = new List<string>();
-		public static int LoadedBankIndex = 0;
-		public static string LoadedBankLocation => BankLocations[LoadedBankIndex];
-		public static bool BanksEmptyOrNull => (BankLocations == null || BankLocations.Count == 0);
-		public static List<string> LegacyBanks
-		{
-			get
-			{
-				// surely this won't throw an access error!
-				var banks = Directory.GetFiles(Paths.PluginPath, "MX_TAH_*.bank", SearchOption.AllDirectories).ToList();
-				// removes all files with parent dir "resources"
-				foreach (var bank in banks) if (Path.GetFileName(Path.GetDirectoryName(bank))?.ToLower() == "resources") BankLocations.Remove(bank);
-				PluginMain.DebugLog.LogDebug(banks.Count + " banks loaded via legacy bank loader!");
-				// i'm supposed to ignore any files thrown into the plugin folder, but idk how to do that. toodles!
-				return banks;
-			}
+		//Standard: Bank Index
+		public static List<string> LoadedBankLocations = new List<string>();
+		public static int CurrentBankIndex = 0;
+		public static string CurrentBankLocation => LoadedBankLocations[CurrentBankIndex];
+		//i don't actually think this will ever return true. TODO: check
+		public static bool BanksEmptyOrNull => (LoadedBankLocations == null || LoadedBankLocations.Count == 0);
+		public static List<string> GetLegacyBanks() {
+			// surely this won't throw an access error!
+			var banks = Directory.GetFiles(Paths.PluginPath, "MX_TAH_*.bank", SearchOption.AllDirectories).ToList();
+			// removes all files with parent dir "resources"
+			foreach (var bank in banks)
+				if (Path.GetFileName(Path.GetDirectoryName(bank))?.ToLower() == "resources")
+					LoadedBankLocations.Remove(bank);
+			PluginMain.DebugLog.LogDebug(banks.Count + " banks loaded via legacy bank loader!");
+			// i'm supposed to ignore any files thrown into the plugin folder, but idk how to do that. toodles!
+			return banks;
 		}
-		public static string BankLocationToName(string loc) => Path.GetFileNameWithoutExtension(loc).Split('_').Last();
-		public static string BankIndexToName(int index, bool returnWithIndex = false)
+		public static string GetNameFromLocation(string loc) => Path.GetFileNameWithoutExtension(loc).Split('_').Last();
+		public static string GetNameFromIndex(int index, bool returnWithIndex = false)
 		{
-			string bankpath = BankAPI.BankLocations[index];
+			string bankpath = BankAPI.LoadedBankLocations[index];
 			string bankname = Path.GetFileNameWithoutExtension(bankpath).Split('_').Last();
 			if (bankname == "TAH") bankname = "Default";
 			if (returnWithIndex) bankname = (index + 1) + ": " + bankname;
@@ -42,12 +42,12 @@ namespace TNH_BGLoader
 		public static void SwapBank(int newBank)
 		{
 			//wrap around
-			newBank = Mathf.Clamp(newBank, 0, BankLocations.Count - 1);
-			UnloadBankHard(LoadedBankLocation); //force it to be unloaded
-			LoadedBankIndex = newBank; //set banknum to new bank
+			newBank = Mathf.Clamp(newBank, 0, LoadedBankLocations.Count - 1);
+			UnloadBankHard(CurrentBankLocation); //force it to be unloaded
+			CurrentBankIndex = newBank; //set banknum to new bank
 			NukeSongSnippets();
 			RuntimeManager.LoadBank("MX_TAH"); //load new bank (MX_TAH sets off the patcher)
-			PluginMain.LastLoadedBank.Value = Path.GetFileNameWithoutExtension(LoadedBankLocation); //set last loaded bank
+			PluginMain.LastLoadedBank.Value = Path.GetFileNameWithoutExtension(CurrentBankLocation); //set last loaded bank
 		}
 		public static void NukeSongSnippets()
 		{
@@ -68,7 +68,7 @@ namespace TNH_BGLoader
 		
 		//please co-routine this. doing this on the main thread is just asking for a freeze
 		//granted it's 256x256 (usually), how hard can it be to load that?
-		public static Texture2D LoadIconForBank(string bankName)
+		public static Texture2D GetBankIcon(string bankName)
 		{
 			PluginMain.LogSpam("Loading image for " + bankName);
 			//get the name and base path of the bank
@@ -103,7 +103,7 @@ namespace TNH_BGLoader
 					}
 				}
 			}
-			PluginMain.DebugLog.LogError("Cannot find icon for " + BankAPI.BankLocationToName(bankName) + "!\nPossible locations:\n" + String.Join("\n", paths));
+			PluginMain.DebugLog.LogError("Cannot find icon for " + BankAPI.GetNameFromLocation(bankName) + "!\nPossible locations:\n" + String.Join("\n", paths));
 			return null;
 		}
 	}

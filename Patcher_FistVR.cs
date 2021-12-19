@@ -36,6 +36,13 @@ namespace TNHBGLoader
 			return true;
 		}
 		
+		/*[HarmonyPatch(typeof(GM), "InitScene")]
+		[HarmonyPrefix]
+		public static bool GM_InitScene_CleanupSnippets(ref float i)
+		{
+			BankAPI
+		}*/
+		
 		[HarmonyPatch(typeof(TNH_UIManager), "Start")]
 		[HarmonyPostfix]
 		public static void TNH_UIManager_SpawnPanel()
@@ -52,10 +59,10 @@ namespace TNHBGLoader
 			wait.bgmpanel = bgmpanel;
 			
 			//get the bank last loaded and set banknum to it; if it doesnt exist it just defaults to 0
-			for (int i = 0; i < BankAPI.BankLocations.Count; i++)
-				if (Path.GetFileNameWithoutExtension(BankAPI.BankLocations[i]) == PluginMain.LastLoadedBank.Value) { BankAPI.SwapBank(i); break; }
+			for (int i = 0; i < BankAPI.LoadedBankLocations.Count; i++)
+				if (Path.GetFileNameWithoutExtension(BankAPI.LoadedBankLocations[i]) == PluginMain.LastLoadedBank.Value) { BankAPI.SwapBank(i); break; }
 			//set last loaded announcer
-			AnnouncerAPI.LoadedAnnouncerIndex = AnnouncerAPI.GetAnnouncerIndexFromGUID(PluginMain.LastLoadedAnnouncer.Value);
+			AnnouncerAPI.CurrentAnnouncerIndex = AnnouncerAPI.GetAnnouncerIndexFromGUID(PluginMain.LastLoadedAnnouncer.Value);
 		}
 		
 		//Removes all remaining song snippets if game starts while a snippet is playing
@@ -122,7 +129,7 @@ namespace TNHBGLoader
 			sw.Stop();
 			__instance.VoiceDB = db;
 			PluginMain.LogSpam(sw.ElapsedMilliseconds + "ms to load all voicelines!");
-			PluginMain.DebugLog.LogDebug("TNH run started! PTNHBGML Info:\nLoaded announcer: " + AnnouncerAPI.CurrentAnnouncer.GUID + "\nLoaded song: " + BankAPI.BankIndexToName(BankAPI.LoadedBankIndex));
+			PluginMain.DebugLog.LogDebug("TNH run started! PTNHBGML Info:\nLoaded announcer: " + AnnouncerAPI.CurrentAnnouncer.GUID + "\nLoaded song: " + BankAPI.GetNameFromIndex(BankAPI.CurrentBankIndex));
 			return true;
 		}
 

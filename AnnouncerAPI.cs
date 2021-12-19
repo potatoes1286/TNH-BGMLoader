@@ -14,22 +14,21 @@ namespace TNH_BGLoader
 	public class AnnouncerAPI
 	{
 		//Announcer Manifests, Announcer GUIDs, and Announcer Index - USE GUIDS!
-		public static List<AnnouncerManifest> Announcers = new List<AnnouncerManifest>();
-		public static int LoadedAnnouncerIndex = 0;
-		public static AnnouncerManifest CurrentAnnouncer => Announcers[LoadedAnnouncerIndex];
+		public static List<AnnouncerManifest> LoadedAnnouncers = new List<AnnouncerManifest>();
+		public static int CurrentAnnouncerIndex = 0;
+		public static AnnouncerManifest CurrentAnnouncer => LoadedAnnouncers[CurrentAnnouncerIndex];
 		
-		public static void SwapAnnouncer(string GUID)
-		{
-			LoadedAnnouncerIndex = GetAnnouncerIndexFromGUID(GUID);
+		public static void SwapAnnouncer(string GUID) {
+			CurrentAnnouncerIndex = GetAnnouncerIndexFromGUID(GUID);
 			PluginMain.LastLoadedAnnouncer.Value = CurrentAnnouncer.GUID;
 		}
 		
-		public static int GetAnnouncerIndexFromGUID(string GUID) => Announcers.IndexOf(GetManifestFromGUID(GUID));
-		public static int GetAnnouncerIndexFromManifest(AnnouncerManifest manifest) => Announcers.IndexOf(manifest);
-		public static AnnouncerManifest GetManifestFromGUID(string GUID) => Announcers.FindAll(a => a.GUID == GUID).First();
+		public static int GetAnnouncerIndexFromGUID(string GUID) => LoadedAnnouncers.IndexOf(GetManifestFromGUID(GUID));
+		public static int GetAnnouncerIndexFromManifest(AnnouncerManifest manifest) => LoadedAnnouncers.IndexOf(manifest);
+		public static AnnouncerManifest GetManifestFromGUID(string GUID) => LoadedAnnouncers.FindAll(a => a.GUID == GUID).First();
 		
 		//I should probably also co-routine this, but co-routine throws a hissyfit whenever i do for some reason.
-		public static Texture2D GetAnnouncerTexture(AnnouncerManifest announcer)
+		public static Texture2D GetAnnouncerIcon(AnnouncerManifest announcer)
 		{
 			PluginMain.LogSpam("Loading image for " + announcer.GUID);
 			var pbase = Path.GetDirectoryName(announcer.Location);
@@ -38,7 +37,7 @@ namespace TNH_BGLoader
 			if (announcer.GUID == "h3vr.default" || announcer.GUID == "h3vr.corrupted")
 				paths = new string[] { Path.Combine(PluginMain.AssemblyDirectory, "default/announcer_default.png") };
 			else paths = new string[] { pbase + "/icon.png", Directory.GetParent(pbase) + "/icon.png" };
-
+		
 			//iterate through all paths, get the first one that exists
 			foreach (var path in paths)
 			{
@@ -66,7 +65,7 @@ namespace TNH_BGLoader
 			int rand = Random.Range(0, manifest.Previews.Count);
 			return GetAudioFromFile(manifest.Previews[rand]);
 		}
-		public static AnnouncerManifest YamlfestToManifest(AnnouncerYamlfest yamlfest)
+		public static AnnouncerManifest GetManifestFromYamlfest(AnnouncerYamlfest yamlfest)
 		{
 			yamlfest.VoiceLines = Path.Combine(Path.GetDirectoryName(yamlfest.Location), yamlfest.VoiceLines);
 			AnnouncerManifest manifest = new AnnouncerManifest();
@@ -80,7 +79,7 @@ namespace TNH_BGLoader
 			{
 				VoiceLine vl = new VoiceLine();
 				var songname = song;
-				vl.ID = NameToID(songname);
+				vl.ID = GetNameFromID(songname);
 				if (!validid) continue;
 				vl.ClipPath = song;
 				manifest.VoiceLines.Add(vl);
@@ -88,25 +87,8 @@ namespace TNH_BGLoader
 			return manifest;
 		}
 
-		/*public static IEnumerator AddVoiceLinesToDB(ref TNH_VoiceDatabase db, VoiceLine line)
-		{
-			//i know there's a special place in hell for my naming scheme. dont care
-			var sawww = GetAudioFromFile(line.StandardAudioClipPath);
-			var cawww = GetAudioFromFile(line.CorruptedAudioClipPath);
-			yield return sawww;
-			yield return cawww;
-			var sa = sawww.GetAudioClip();
-			var ca = cawww.GetAudioClip();
-			
-			var vl = new TNH_VoiceDatabase.TNH_VoiceLine();
-			vl.ID = line.ID;
-			vl.Clip_Standard = sa;
-			vl.Clip_Corrupted = ca;
-			db.Lines.Add(vl);
-		}*/
-
 		private static bool validid = true;
-		public static TNH_VoiceLineID NameToID(string song)
+		public static TNH_VoiceLineID GetNameFromID(string song)
 		{
 			var songname = Path.GetFileName(song);
 			validid = true;

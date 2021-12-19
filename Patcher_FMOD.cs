@@ -49,9 +49,9 @@ namespace TNHBGLoader
 			{
 				if (!BankAPI.BanksEmptyOrNull) //i don't even think this is possible? it's not. i need to remove this sometime.
 				{
-					if (BankAPI.LoadedBankLocation == "Surprise Me!") return false;
-					PluginMain.LogSpam("Injecting bank " + Path.GetFileName(BankAPI.LoadedBankLocation) + " into TNH!");
-					bankName = BankAPI.LoadedBankLocation;
+					if (BankAPI.CurrentBankLocation == "Surprise Me!") return false;
+					PluginMain.LogSpam("Injecting bank " + Path.GetFileName(BankAPI.CurrentBankLocation) + " into TNH!");
+					bankName = BankAPI.CurrentBankLocation;
 				}
 			}
 			return true;

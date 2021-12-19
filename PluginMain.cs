@@ -50,17 +50,17 @@ namespace TNHBGLoader
 			InitConfig();
 			
 			//bank stuff
-			BankAPI.BankLocations = BankAPI.LegacyBanks.OrderBy(x => x).ToList();
+			BankAPI.LoadedBankLocations = BankAPI.GetLegacyBanks().OrderBy(x => x).ToList();
 			//nuke all duplicates
-			BankAPI.BankLocations = BankAPI.BankLocations.Distinct().ToList();
+			BankAPI.LoadedBankLocations = BankAPI.LoadedBankLocations.Distinct().ToList();
 			//the loader patch just checks for MX_TAH, not the full root path so this should bypass the check
-			BankAPI.BankLocations.Add(Path.Combine(Application.streamingAssetsPath, "MX_TAH.bank"));
+			BankAPI.LoadedBankLocations.Add(Path.Combine(Application.streamingAssetsPath, "MX_TAH.bank"));
 			//banks.Add("Surprise Me!");
 			
 			//announcer schtuff
 			_deserializer = new DeserializerBuilder().WithNamingConvention(UnderscoredNamingConvention.Instance).Build();
-			AnnouncerAPI.Announcers.Add(AnnouncerManifest.DefaultAnnouncer);
-			AnnouncerAPI.Announcers.Add(AnnouncerManifest.CorruptedAnnouncer);
+			AnnouncerAPI.LoadedAnnouncers.Add(AnnouncerManifest.DefaultAnnouncer);
+			AnnouncerAPI.LoadedAnnouncers.Add(AnnouncerManifest.CorruptedAnnouncer);
 			
 			
 			//patch yo things
@@ -86,8 +86,8 @@ namespace TNHBGLoader
 		}
 		public Empty LoadTNHBankFile(FileSystemInfo handle) {
 			var file = handle.ConsumeFile();
-			if (!BankAPI.BankLocations.Contains(file.FullName))
-				BankAPI.BankLocations.Add(file.FullName);
+			if (!BankAPI.LoadedBankLocations.Contains(file.FullName))
+				BankAPI.LoadedBankLocations.Add(file.FullName);
 			return new Empty();
 		}
 
@@ -99,7 +99,7 @@ namespace TNHBGLoader
 			yamlfest = _deserializer.Deserialize<AnnouncerYamlfest>(File.ReadAllText(file.FullName));
 			Debug.Log("Loaded announcer file " + yamlfest.GUID);
 			yamlfest.Location = file.FullName;
-			AnnouncerAPI.Announcers.Add(AnnouncerAPI.YamlfestToManifest(yamlfest));
+			AnnouncerAPI.LoadedAnnouncers.Add(AnnouncerAPI.GetManifestFromYamlfest(yamlfest));
 			return new Empty();
 		}
 		public override IEnumerator OnRuntime(IStageContext<IEnumerator> ctx) { yield break; }
