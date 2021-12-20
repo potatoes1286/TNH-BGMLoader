@@ -70,7 +70,6 @@ namespace TNH_BGLoader
 		//granted it's 256x256 (usually), how hard can it be to load that?
 		public static Texture2D GetBankIcon(string bankName)
 		{
-			PluginMain.LogSpam("Loading image for " + bankName);
 			//get the name and base path of the bank
 			var pbase = Path.GetDirectoryName(bankName) + "/";
 			var name = Path.GetFileNameWithoutExtension(bankName).Split('_').Last();
@@ -88,23 +87,7 @@ namespace TNH_BGLoader
 			if (bankName == Path.Combine(Application.streamingAssetsPath, "MX_TAH.bank"))
 				paths = new string[] {PluginMain.AssemblyDirectory + "/default/bank_default.png"};
 
-			//iterate through all paths, get the first one that exists
-			foreach(var path in paths)
-			{
-				if (File.Exists(path))
-				{
-					byte[] byteArray = File.ReadAllBytes(path);
-					Texture2D tex = new Texture2D(1,1);
-					tex.LoadImage(byteArray);
-					if (tex != null)
-					{
-						PluginMain.LogSpam("Loading icon from " + path);
-						return tex;
-					}
-				}
-			}
-			PluginMain.DebugLog.LogError("Cannot find icon for " + BankAPI.GetNameFromLocation(bankName) + "!\nPossible locations:\n" + String.Join("\n", paths));
-			return null;
+			return GeneralAPI.GetIcon(bankName, paths);
 		}
 	}
 }

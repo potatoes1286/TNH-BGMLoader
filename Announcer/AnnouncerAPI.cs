@@ -30,7 +30,6 @@ namespace TNH_BGLoader
 		//I should probably also co-routine this, but co-routine throws a hissyfit whenever i do for some reason.
 		public static Texture2D GetAnnouncerIcon(AnnouncerManifest announcer)
 		{
-			PluginMain.LogSpam("Loading image for " + announcer.GUID);
 			var pbase = Path.GetDirectoryName(announcer.Location);
 			//assembles all the potential locations for the icon, in descending order of importance.
 			string[] paths = new string[0];
@@ -38,23 +37,7 @@ namespace TNH_BGLoader
 				paths = new string[] { Path.Combine(PluginMain.AssemblyDirectory, "default/announcer_default.png") };
 			else paths = new string[] { pbase + "/icon.png", Directory.GetParent(pbase) + "/icon.png" };
 		
-			//iterate through all paths, get the first one that exists
-			foreach (var path in paths)
-			{
-				if (File.Exists(path))
-				{
-					byte[] byteArray = File.ReadAllBytes(path);
-					Texture2D tex = new Texture2D(1, 1);
-					tex.LoadImage(byteArray);
-					if (tex != null)
-					{
-						PluginMain.LogSpam("Loading icon from " + path);
-						return tex;
-					}
-				}
-			}
-			PluginMain.DebugLog.LogError("Cannot find icon for " + announcer.GUID + "!\nPossible locations:\n" + String.Join("\n", paths));
-			return null;
+			return GeneralAPI.GetIcon(announcer.GUID, paths);
 		}
 
 		public static AudioClip GetRandomPreview(string guid)

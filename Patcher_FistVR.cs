@@ -8,6 +8,7 @@ using FMOD;
 using HarmonyLib;
 using Microsoft.Win32;
 using TNH_BGLoader;
+using TNHBGLoader.Sosig;
 using UnityEngine;
 using UnityEngine.UI;
 using Debug = FMOD.Debug;
@@ -18,10 +19,18 @@ namespace TNHBGLoader
 {
 	public class Patcher_FistVR
 	{
+		[HarmonyPatch(typeof(FistVR.Sosig), "Start")]
+		[HarmonyPrefix]
+		public static bool Sosig_Start_SetVLS(FistVR.Sosig __instance)
+		{
+			if (SosigVLSAPI.CurrentSosigVLS.guid == "h3vr.default") return true;
+			if (__instance.Speech.name == "SosigSpeech_Anton") __instance.Speech = SosigVLSAPI.CurrentSosigVLS.SpeechSet;
+			return true;
+		}
+		
 		[HarmonyPatch(typeof(FVRFMODController), "SetMasterVolume")]
 		[HarmonyPrefix]
-		public static bool FVRFMODController_SetMasterVolume_IncludeBGMVol(ref float i)
-		{
+		public static bool FVRFMODController_SetMasterVolume_IncludeBGMVol(ref float i) {
 			i *= PluginMain.BackgroundMusicVolume.Value;
 			return true;
 		}
@@ -63,6 +72,8 @@ namespace TNHBGLoader
 				if (Path.GetFileNameWithoutExtension(BankAPI.LoadedBankLocations[i]) == PluginMain.LastLoadedBank.Value) { BankAPI.SwapBank(i); break; }
 			//set last loaded announcer
 			AnnouncerAPI.CurrentAnnouncerIndex = AnnouncerAPI.GetAnnouncerIndexFromGUID(PluginMain.LastLoadedAnnouncer.Value);
+			//set last loaded SosigVLS
+			SosigVLSAPI.CurrentSosigVLSIndex = SosigVLSAPI.GetSosigVLSIndexFromGUID(PluginMain.LastLoadedSosigVLS.Value);
 		}
 		
 		//Removes all remaining song snippets if game starts while a snippet is playing

@@ -15,6 +15,7 @@ using UnityEngine;
 using Stratum;
 using Stratum.Extensions;
 using TNH_BGLoader;
+using TNHBGLoader.Sosig;
 using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
 using YamlDotNet;
@@ -29,11 +30,12 @@ namespace TNHBGLoader
 	[BepInDependency(StratumRoot.GUID, StratumRoot.Version)]
 	public class PluginMain : StratumPlugin
 	{
-		public static ConfigEntry<float> BackgroundMusicVolume;
-		public static ConfigEntry<float> AnnouncerMusicVolume;
+		public static ConfigEntry<float>  BackgroundMusicVolume;
+		public static ConfigEntry<float>  AnnouncerMusicVolume;
 		public static ConfigEntry<string> LastLoadedBank;
 		public static ConfigEntry<string> LastLoadedAnnouncer;
-		public static ConfigEntry<bool> EnableDebugLogging;
+		public static ConfigEntry<string> LastLoadedSosigVLS;
+		public static ConfigEntry<bool>   EnableDebugLogging;
 		public static string AssemblyDirectory { get {
 				string codeBase = Assembly.GetExecutingAssembly().CodeBase;
 				UriBuilder uri = new UriBuilder(codeBase);
@@ -57,17 +59,20 @@ namespace TNHBGLoader
 			BankAPI.LoadedBankLocations.Add(Path.Combine(Application.streamingAssetsPath, "MX_TAH.bank"));
 			//banks.Add("Surprise Me!");
 			
-			//announcer schtuff
+			//start YAML deserializer
 			_deserializer = new DeserializerBuilder().WithNamingConvention(UnderscoredNamingConvention.Instance).Build();
+			//add default announcers
 			AnnouncerAPI.LoadedAnnouncers.Add(AnnouncerManifest.DefaultAnnouncer);
 			AnnouncerAPI.LoadedAnnouncers.Add(AnnouncerManifest.CorruptedAnnouncer);
+			//add default sosig VLS
+			SosigVLSAPI.LoadedSosigVLS.Add(SosigManifest.DefaultSosigVLS);
 			
 			
 			//patch yo things
 			Harmony.CreateAndPatchAll(typeof(Patcher_FMOD));
 			Harmony.CreateAndPatchAll(typeof(Patcher_FistVR));
 		}
-
+		
 		public void InitConfig()
 		{
 			EnableDebugLogging = Config.Bind("General", "Enable Debug Logs", false, "Spams your log with debug info.");
@@ -77,29 +82,40 @@ namespace TNHBGLoader
 			AnnouncerMusicVolume.Value = Mathf.Clamp(BackgroundMusicVolume.Value, 0, 20);
 			LastLoadedBank = Config.Bind("no touchy", "Saved Bank", "", "Not meant to be changed manually. This autosaves your last bank used, so you don't have to reset it every time you launch H3.");
 			LastLoadedAnnouncer = Config.Bind("no touchy", "Saved Announcer", "", "Not meant to be changed manually. This autosaves your last announcer used, so you don't have to reset it every time you launch H3.");
+			LastLoadedSosigVLS = Config.Bind("no touchy", "Saved Sosig VLS", "", "Not meant to be changed manually. This autosaves your last sosig set used, so you don't have to reset it every time you launch H3.");
 		}
 
 		//stratum loading
 		public override void OnSetup(IStageContext<Empty> ctx) {
 			ctx.Loaders.Add("tnhbankfile", LoadTNHBankFile);
 			ctx.Loaders.Add("tnhannouncer", LoadAnnouncer);
+			ctx.Loaders.Add("tnhbgmlsosigvoicelineset", LoadSosigVoiceLineSet);
 		}
+		private IDeserializer _deserializer;
 		public Empty LoadTNHBankFile(FileSystemInfo handle) {
 			var file = handle.ConsumeFile();
 			if (!BankAPI.LoadedBankLocations.Contains(file.FullName))
 				BankAPI.LoadedBankLocations.Add(file.FullName);
 			return new Empty();
 		}
-
-		private IDeserializer _deserializer;
-		public Empty LoadAnnouncer(FileSystemInfo handle)
-		{
+		
+		public Empty LoadAnnouncer(FileSystemInfo handle) {
 			var file = handle.ConsumeFile();
 			var yamlfest = new AnnouncerYamlfest();
 			yamlfest = _deserializer.Deserialize<AnnouncerYamlfest>(File.ReadAllText(file.FullName));
-			Debug.Log("Loaded announcer file " + yamlfest.GUID);
+			DebugLog.LogDebug("Loaded announcer file " + yamlfest.GUID);
 			yamlfest.Location = file.FullName;
 			AnnouncerAPI.LoadedAnnouncers.Add(AnnouncerAPI.GetManifestFromYamlfest(yamlfest));
+			return new Empty();
+		}
+
+		public Empty LoadSosigVoiceLineSet(FileSystemInfo handle) {
+			var file = handle.ConsumeFile();
+			var yamlfest = new SosigYamlfest();
+			yamlfest = _deserializer.Deserialize<SosigYamlfest>(File.ReadAllText(file.FullName));
+			DebugLog.LogDebug("Loaded Sosig Voiceline set " + yamlfest.GUID);
+			yamlfest.Location = file.FullName;
+			SosigVLSAPI.LoadedSosigVLS.Add(SosigVLSAPI.GetManifestFromYamlfest(yamlfest));
 			return new Empty();
 		}
 		public override IEnumerator OnRuntime(IStageContext<IEnumerator> ctx) { yield break; }

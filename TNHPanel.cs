@@ -12,6 +12,7 @@ using Sodalite.Api;
 using Sodalite.UiWidgets;
 using Sodalite.Utilities;
 using TNH_BGLoader;
+using TNHBGLoader.Sosig;
 using Valve.Newtonsoft.Json.Utilities;
 
 namespace TNHBGLoader
@@ -19,7 +20,7 @@ namespace TNHBGLoader
 	public class TNHPanel : MonoBehaviour
 	{
 		public LockablePanel Panel;
-		public enum TNHPstates { BGM, Announcer }
+		public enum TNHPstates { BGM, Announcer, Sosig_Voicelines }
 		public TNHPstates TNHPstate = TNHPstates.BGM;
 
 		public TNHPanel()
@@ -74,21 +75,21 @@ namespace TNHBGLoader
 				/*First Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 0;
 					button.ButtonText.text = GetNameWithOffset(index);
-					button.AddButtonListener(SetBank);
+					button.AddButtonListener(SetCurrentItem);
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				/*Second Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 1;
 					button.ButtonText.text = GetNameWithOffset(index);
-					button.AddButtonListener(SetBank);
+					button.AddButtonListener(SetCurrentItem);
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				#endregion
 				#region Row Two
 				/*current mindex*/		widget.AddChild((TextWidget text) => {
-					text.Text.text = "Selected:\n" + GetCurrentBankName;
+					text.Text.text = "Selected:\n" + GetCurrentBankName();
 					_bankText = text;
 					text.Text.alignment = TextAnchor.MiddleCenter;
 					text.Text.fontSize += 0;
@@ -97,14 +98,14 @@ namespace TNHBGLoader
 				/*Third Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 2;
 					button.ButtonText.text = GetNameWithOffset(index);
-					button.AddButtonListener(SetBank);
+					button.AddButtonListener(SetCurrentItem);
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				/*Fourth Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 3;
 					button.ButtonText.text = GetNameWithOffset(index);
-					button.AddButtonListener(SetBank);
+					button.AddButtonListener(SetCurrentItem);
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
@@ -119,14 +120,14 @@ namespace TNHBGLoader
 				/*Fifth Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 4;
 					button.ButtonText.text = GetNameWithOffset(index);
-					button.AddButtonListener(SetBank);
+					button.AddButtonListener(SetCurrentItem);
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				/*Sixth Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 5;
 					button.ButtonText.text = GetNameWithOffset(index);
-					button.AddButtonListener(SetBank);
+					button.AddButtonListener(SetCurrentItem);
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
@@ -140,14 +141,14 @@ namespace TNHBGLoader
 				/*Seventh Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 6;
 					button.ButtonText.text = GetNameWithOffset(index);
-					button.AddButtonListener(SetBank);
+					button.AddButtonListener(SetCurrentItem);
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
 				/*Eighth Music Slot*/	widget.AddChild((ButtonWidget button) => {
 					int index = 7;
 					button.ButtonText.text = GetNameWithOffset(index);
-					button.AddButtonListener(SetBank);
+					button.AddButtonListener(SetCurrentItem);
 					_musicButtons[index] = button;
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 				});
@@ -159,7 +160,7 @@ namespace TNHBGLoader
 					text.Text.fontSize += 5;
 				});
 				/*Switch State*/		widget.AddChild((ButtonWidget button) => {
-					button.ButtonText.text = "Goto Announcer/BGM";
+					button.ButtonText.text = "BGM";
 					button.AddButtonListener(SwitchState);
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 					_switchstate = button;
@@ -195,20 +196,18 @@ namespace TNHBGLoader
 
 		public void SwitchState(object sender, ButtonClickEventArgs args)
 		{
+			//beauty.
 				 if (TNHPstate == TNHPstates.BGM) {TNHPstate = TNHPstates.Announcer;}
-			else if (TNHPstate == TNHPstates.Announcer) {TNHPstate = TNHPstates.BGM;} 
-			_bankText.Text.text = "Selected:\n" + GetCurrentBankName;
+			else if (TNHPstate == TNHPstates.Announcer) {TNHPstate = TNHPstates.Sosig_Voicelines;} 
+			else if (TNHPstate == TNHPstates.Sosig_Voicelines) {TNHPstate = TNHPstates.BGM;}
+				 
+			_switchstate.ButtonText.text = TNHPstate.ToString().Replace('_', ' ');
+			_bankText.Text.text = "Selected:\n" + GetCurrentBankName();
 			_firstMusicIndex = 0;
 			int index = 0;
-			if (TNHPstate == TNHPstates.BGM) {
-				index = BankAPI.CurrentBankIndex;
-			}
-			if (TNHPstate == TNHPstates.Announcer) {
-				index = AnnouncerAPI.CurrentAnnouncerIndex;
-			}
 			UpdateMusicList(null, null); //always use null as an arg, kids
 			UpdateVolume(null, null);
-			SetIcon(index);
+			SetIcon();
 		}
 		
 		//Updates and changes the BGMs shown
@@ -226,9 +225,17 @@ namespace TNHBGLoader
 			cycleInc = mult * cycleInc;
 			int NewFirstMusicIndex = _firstMusicIndex + cycleInc;
 			bool oob = NewFirstMusicIndex < 0;
-			if ((NewFirstMusicIndex >= BankAPI.LoadedBankLocations.Count) && TNHPstate == TNHPstates.BGM ||
-			    (NewFirstMusicIndex >= AnnouncerAPI.LoadedAnnouncers.Count) && TNHPstate == TNHPstates.Announcer)
-				oob = true;
+			switch (TNHPstate) {
+				case TNHPstates.BGM:
+					if (NewFirstMusicIndex >= BankAPI.LoadedBankLocations.Count) oob = true;
+					break;
+				case TNHPstates.Announcer:
+					if (NewFirstMusicIndex >= AnnouncerAPI.LoadedAnnouncers.Count) oob = true;
+					break;
+				case TNHPstates.Sosig_Voicelines:
+					if (NewFirstMusicIndex >= SosigVLSAPI.LoadedSosigVLS.Count) oob = true;
+					break;
+			}
 			if (oob) {
 				WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err); //play error audio if ran out of music to play
 				return;
@@ -250,18 +257,22 @@ namespace TNHBGLoader
 					inc = 0.05f;
 			}
 			
-			//hahaha spaghet
-			//this just updates and sets the volume n all that pizzaz. TODO: rewrite that.
-			if (TNHPstate == TNHPstates.BGM) {
-				PluginMain.BackgroundMusicVolume.Value += inc;
-				if (PluginMain.BackgroundMusicVolume.Value < 0 || PluginMain.BackgroundMusicVolume.Value > 4)
+			//this just updates and sets the volume n all that pizzaz.
+			switch (TNHPstate)
+			{
+				case TNHPstates.BGM:
+					PluginMain.BackgroundMusicVolume.Value += inc;
+					if (!GeneralAPI.IfIsInRange(PluginMain.BackgroundMusicVolume.Value, 0, 4)) WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
+					PluginMain.BackgroundMusicVolume.Value = Mathf.Clamp(PluginMain.BackgroundMusicVolume.Value, 0, 4);
+					break;
+				case TNHPstates.Announcer:
+					PluginMain.AnnouncerMusicVolume.Value += inc;
+					if (!GeneralAPI.IfIsInRange(PluginMain.AnnouncerMusicVolume.Value, 0, 20)) WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
+					PluginMain.AnnouncerMusicVolume.Value = Mathf.Clamp(PluginMain.AnnouncerMusicVolume.Value, 0, 20);
+					break;
+				case TNHPstates.Sosig_Voicelines:
 					WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
-				PluginMain.BackgroundMusicVolume.Value = Mathf.Clamp(PluginMain.BackgroundMusicVolume.Value, 0, 4);
-			} else if (TNHPstate == TNHPstates.Announcer) {
-				PluginMain.AnnouncerMusicVolume.Value += inc;
-				if (PluginMain.BackgroundMusicVolume.Value < 0 || PluginMain.BackgroundMusicVolume.Value > 20)
-					WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
-				PluginMain.AnnouncerMusicVolume.Value = Mathf.Clamp(PluginMain.AnnouncerMusicVolume.Value, 0, 20);
+					break;
 			}
 			_volumeText.Text.text = GetVolumePercent();
 		}
@@ -270,62 +281,81 @@ namespace TNHBGLoader
 		private string GetNameWithOffset(int offset)
 		{
 			int index = _firstMusicIndex + offset;
-			if (TNHPstate == TNHPstates.BGM)
-			{
-				if (index < BankAPI.LoadedBankLocations.Count)
-					return BankAPI.GetNameFromIndex(index, true);
-			}
-			else if (TNHPstate == TNHPstates.Announcer)
-			{
-				if (index < AnnouncerAPI.LoadedAnnouncers.Count)
-				{
-					//index: mybankname
-					string bankname = (index + 1) + ": " + AnnouncerAPI.LoadedAnnouncers[index].Name;
-					return bankname;
-				}
+			switch (TNHPstate) {
+				case TNHPstates.BGM:
+					if (index < BankAPI.LoadedBankLocations.Count)
+						return BankAPI.GetNameFromIndex(index, true);
+					break;
+				case TNHPstates.Announcer:
+					if (index < AnnouncerAPI.LoadedAnnouncers.Count)
+						return (index + 1) + ": " + AnnouncerAPI.LoadedAnnouncers[index].Name;
+					break;
+				case TNHPstates.Sosig_Voicelines:
+					if (index < AnnouncerAPI.LoadedAnnouncers.Count)
+						return (index + 1) + ": " + SosigVLSAPI.LoadedSosigVLS[index].name;
+					break;
 			}
 			return "";
 		}
 
-		private string GetCurrentBankName { get {
-				if (TNHPstate == TNHPstates.BGM)
+		private string GetCurrentBankName() {
+			switch (TNHPstate)
+			{
+				case TNHPstates.BGM:
 					return BankAPI.GetNameFromIndex(BankAPI.CurrentBankIndex, true);
-				if (TNHPstate == TNHPstates.Announcer)
-					return (AnnouncerAPI.CurrentAnnouncerIndex+1) + ": " + AnnouncerAPI.LoadedAnnouncers[AnnouncerAPI.CurrentAnnouncerIndex].Name;
-				return ""; } } 
+				case TNHPstates.Announcer:
+					return (AnnouncerAPI.CurrentAnnouncerIndex+1) + ": " + AnnouncerAPI.CurrentAnnouncer.Name;
+				case TNHPstates.Sosig_Voicelines:
+					return (SosigVLSAPI.CurrentSosigVLSIndex+1) + ": " + SosigVLSAPI.CurrentSosigVLS.name;
+			} return ""; }
 		private string GetVolumePercent()
 		{
-			if (TNHPstate == TNHPstates.BGM)
-				return Mathf.Round(PluginMain.BackgroundMusicVolume.Value * 100).ToString(CultureInfo.InvariantCulture) + "%";
-			if (TNHPstate == TNHPstates.Announcer)
-				return Mathf.Round(PluginMain.AnnouncerMusicVolume.Value * 100).ToString(CultureInfo.InvariantCulture) + "%";
-			return "";
+			float vol = 0;
+			switch (TNHPstate) {
+				case TNHPstates.BGM:
+					vol = PluginMain.BackgroundMusicVolume.Value;
+					break;
+				case TNHPstates.Announcer:
+					vol = PluginMain.AnnouncerMusicVolume.Value;
+					break;
+				case TNHPstates.Sosig_Voicelines:
+					vol = 1;
+					break;
+			}
+			return Mathf.Round(vol * 100).ToString(CultureInfo.InvariantCulture) + "%";
 		}
-
-		//Sets new bank
-		private void SetBank(object sender, ButtonClickEventArgs args)
+		
+		private void SetCurrentItem(object sender, ButtonClickEventArgs args)
 		{
 			var index = _firstMusicIndex + Array.IndexOf(_musicButtons, sender as ButtonWidget);
 			if (GM.TNH_Manager != null) WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
 			else
 			{
-				if (TNHPstate == TNHPstates.BGM) {
-					BankAPI.SwapBank(index);
-					GameObject go = new GameObject();
-					go.AddComponent(typeof(PlaySongSnippet));
-				} else if (TNHPstate == TNHPstates.Announcer) {
-					var clamp = Mathf.Clamp(index, 0, AnnouncerAPI.LoadedAnnouncers.Count);
-					AnnouncerAPI.SwapAnnouncer(AnnouncerAPI.LoadedAnnouncers[clamp].GUID);
-					PlayAnnouncerSnippet(AnnouncerAPI.CurrentAnnouncer.GUID);
+				int clamp;
+				switch (TNHPstate)
+				{
+					case TNHPstates.BGM:
+						BankAPI.SwapBank(index);
+						GameObject go = new GameObject();
+						go.AddComponent(typeof(PlaySongSnippet));
+						break;
+					case TNHPstates.Announcer:
+						clamp = Mathf.Clamp(index, 0, AnnouncerAPI.LoadedAnnouncers.Count);
+						AnnouncerAPI.SwapAnnouncer(AnnouncerAPI.LoadedAnnouncers[clamp].GUID);
+						PlaySnippet(AnnouncerAPI.GetRandomPreview(AnnouncerAPI.CurrentAnnouncer.GUID));
+						break;
+					case TNHPstates.Sosig_Voicelines:
+						clamp = Mathf.Clamp(index, 0, SosigVLSAPI.LoadedSosigVLS.Count);
+						SosigVLSAPI.SwapSosigVLS(SosigVLSAPI.LoadedSosigVLS[clamp].guid);
+						PlaySnippet(SosigVLSAPI.GetRandomPreview(SosigVLSAPI.CurrentSosigVLS.guid));
+						break;
 				}
-				SetIcon(index);
-				_bankText.Text.text = "Selected:\n" + GetCurrentBankName; //set new bank
+				SetIcon();
+				_bankText.Text.text = "Selected:\n" + GetCurrentBankName(); //set new bank
 			}
 		}
-		public void PlayAnnouncerSnippet(string guid)
+		public void PlaySnippet(AudioClip snip)
 		{
-			//get first entry
-			AudioClip snip = AnnouncerAPI.GetRandomPreview(AnnouncerAPI.CurrentAnnouncer.GUID);
 			//make audioevent
 			AudioEvent audioEvent = new AudioEvent();
 			audioEvent.Clips.Add(snip);
@@ -336,12 +366,20 @@ namespace TNHBGLoader
 			SM.PlayGenericSound(audioEvent, GM.CurrentPlayerBody.transform.position);
 		}
 		
-		private void SetIcon(int index)
+		private void SetIcon()
 		{
-			if (TNHPstate == TNHPstates.BGM) {
-				if (icondisplay != null) icondisplay.texture = BankAPI.GetBankIcon(BankAPI.CurrentBankLocation);
-			} else if (TNHPstate == TNHPstates.Announcer) {
-				if (icondisplay != null) icondisplay.texture = AnnouncerAPI.GetAnnouncerIcon(AnnouncerAPI.LoadedAnnouncers[index]);
+			if (icondisplay != null) return;
+			switch (TNHPstate)
+			{
+				case TNHPstates.BGM:
+					icondisplay.texture = BankAPI.GetBankIcon(BankAPI.CurrentBankLocation);
+					break;
+				case TNHPstates.Announcer:
+					icondisplay.texture = AnnouncerAPI.GetAnnouncerIcon(AnnouncerAPI.CurrentAnnouncer);
+					break;
+				case TNHPstates.Sosig_Voicelines:
+					icondisplay.texture = SosigVLSAPI.GetSosigVLSIcon(SosigVLSAPI.CurrentSosigVLS);
+					break;
 			}
 		}
 	}
