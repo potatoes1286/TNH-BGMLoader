@@ -54,24 +54,18 @@ namespace TNH_BGLoader
 			snippet.getTimelinePosition(out pos);
 			//Debug.Log(pos);
 			if (curLength >= maxVolLength + (windUpTime * 2)) //if volume = 0; we finished. clean up!
-			{
 				CleanUp();
-			}
 		}
 
 		public float GetVol()
 		{
-			float vol = 0;
-			if (curLength < windUpTime) //if winding up
-			{
-				return Mathf.Sin((curLength * (Mathf.PI / 2)) / windUpTime) * maxVol;
-			}
-			if (curLength < windUpTime + maxVolLength) //during maxvolplay time
-			{
+			if (curLength < windUpTime) //winding up
+				return lerpvol(curLength, windUpTime, maxVol);
+			if (curLength < windUpTime + maxVolLength) //max vol
 				return maxVol;
-			}
-			//if winding down
-			return Mathf.Sin(((curLength + windUpTime) * (Mathf.PI / 2)) / windUpTime) * maxVol;
+			return lerpvol(curLength + windUpTime, windUpTime, maxVol); //wind down
 		}
+		
+		public float lerpvol(float t, float Twindup, float Vmax) => (-Mathf.Cos(Mathf.PI * (t / Twindup)) + 1) / 2 * Vmax;
 	}
 }
