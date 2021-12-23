@@ -45,7 +45,7 @@ namespace TNHBGLoader
 		}
 		
 		internal new static ManualLogSource DebugLog;
-		public static void LogSpam(object data) { if(EnableDebugLogging.Value) DebugLog.LogDebug(data); }
+		public static void LogSpam(object data) { if(EnableDebugLogging.Value) DebugLog.LogInfo(data); }
 		public void Awake()
 		{
 			DebugLog = Logger;
