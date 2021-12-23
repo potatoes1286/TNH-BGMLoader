@@ -89,7 +89,7 @@ namespace TNHBGLoader
 		public override void OnSetup(IStageContext<Empty> ctx) {
 			ctx.Loaders.Add("tnhbankfile", LoadTNHBankFile);
 			ctx.Loaders.Add("tnhannouncer", LoadAnnouncer);
-			ctx.Loaders.Add("tnhbgmlsosigvoicelineset", LoadSosigVoiceLineSet);
+			ctx.Loaders.Add("tnhbgmlsosigvls", LoadSosigVoiceLineSet);
 		}
 		private IDeserializer _deserializer;
 		public Empty LoadTNHBankFile(FileSystemInfo handle) {
