@@ -25,7 +25,7 @@ namespace TNH_BGLoader
 			foreach (var bank in banks)
 				if (Path.GetFileName(Path.GetDirectoryName(bank))?.ToLower() == "resources")
 					LoadedBankLocations.Remove(bank);
-			PluginMain.DebugLog.LogDebug(banks.Count + " banks loaded via legacy bank loader!");
+			PluginMain.DebugLog.LogInfo(banks.Count + " banks loaded via legacy bank loader!");
 			// i'm supposed to ignore any files thrown into the plugin folder, but idk how to do that. toodles!
 			return banks;
 		}

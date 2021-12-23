@@ -140,7 +140,7 @@ namespace TNHBGLoader
 			sw.Stop();
 			__instance.VoiceDB = db;
 			PluginMain.LogSpam(sw.ElapsedMilliseconds + "ms to load all voicelines!");
-			PluginMain.DebugLog.LogDebug("TNH run started! PTNHBGML Info:\nLoaded announcer: " + AnnouncerAPI.CurrentAnnouncer.GUID + "\nLoaded song: " + BankAPI.GetNameFromIndex(BankAPI.CurrentBankIndex));
+			PluginMain.DebugLog.LogInfo("TNH run started! PTNHBGML Info:\nLoaded announcer: " + AnnouncerAPI.CurrentAnnouncer.GUID + "\nLoaded song: " + BankAPI.GetNameFromIndex(BankAPI.CurrentBankIndex));
 			return true;
 		}
 

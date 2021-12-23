@@ -103,7 +103,7 @@ namespace TNHBGLoader
 			var file = handle.ConsumeFile();
 			var yamlfest = new AnnouncerYamlfest();
 			yamlfest = _deserializer.Deserialize<AnnouncerYamlfest>(File.ReadAllText(file.FullName));
-			DebugLog.LogDebug("Loaded announcer file " + yamlfest.GUID);
+			DebugLog.LogInfo("Loaded announcer file " + yamlfest.GUID);
 			yamlfest.Location = file.FullName;
 			AnnouncerAPI.LoadedAnnouncers.Add(AnnouncerAPI.GetManifestFromYamlfest(yamlfest));
 			return new Empty();
@@ -113,7 +113,7 @@ namespace TNHBGLoader
 			var file = handle.ConsumeFile();
 			var yamlfest = new SosigYamlfest();
 			yamlfest = _deserializer.Deserialize<SosigYamlfest>(File.ReadAllText(file.FullName));
-			DebugLog.LogDebug("Loaded Sosig Voiceline set " + yamlfest.GUID);
+			DebugLog.LogInfo("Loaded Sosig Voiceline set " + yamlfest.GUID);
 			yamlfest.Location = file.FullName;
 			SosigVLSAPI.LoadedSosigVLS.Add(SosigVLSAPI.GetManifestFromYamlfest(yamlfest));
 			return new Empty();
