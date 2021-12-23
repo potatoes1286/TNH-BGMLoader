@@ -271,7 +271,7 @@ namespace TNHBGLoader
 					PluginMain.AnnouncerMusicVolume.Value = Mathf.Clamp(PluginMain.AnnouncerMusicVolume.Value, 0, 20);
 					break;
 				case TNHPstates.Sosig_Voicelines:
-					WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
+					if(inc != 0) WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
 					break;
 			}
 			_volumeText.Text.text = GetVolumePercent();
@@ -291,7 +291,7 @@ namespace TNHBGLoader
 						return (index + 1) + ": " + AnnouncerAPI.LoadedAnnouncers[index].Name;
 					break;
 				case TNHPstates.Sosig_Voicelines:
-					if (index < AnnouncerAPI.LoadedAnnouncers.Count)
+					if (index < SosigVLSAPI.LoadedSosigVLS.Count)
 						return (index + 1) + ": " + SosigVLSAPI.LoadedSosigVLS[index].name;
 					break;
 			}
@@ -356,11 +356,21 @@ namespace TNHBGLoader
 		}
 		public void PlaySnippet(AudioClip snip)
 		{
+			float pitch = 1f;
+			float vol = 0.6f;
+			switch (TNHPstate)
+			{
+				case TNHPstates.Announcer:
+					vol = 0.6f * PluginMain.AnnouncerMusicVolume.Value;
+					break;
+				case TNHPstates.Sosig_Voicelines:
+					pitch = SosigVLSAPI.CurrentSosigVLS.SpeechSet.BasePitch;
+					break;
+			}
 			//make audioevent
 			AudioEvent audioEvent = new AudioEvent();
 			audioEvent.Clips.Add(snip);
-			audioEvent.PitchRange = new Vector2(1f, 1f);
-			float vol = 0.6f * PluginMain.AnnouncerMusicVolume.Value;
+			audioEvent.PitchRange = new Vector2(pitch, pitch);
 			audioEvent.VolumeRange = new Vector2(vol, vol);
 			//play it
 			SM.PlayGenericSound(audioEvent, GM.CurrentPlayerBody.transform.position);
@@ -368,7 +378,7 @@ namespace TNHBGLoader
 		
 		private void SetIcon()
 		{
-			if (icondisplay != null) return;
+			if (icondisplay == null) return;
 			switch (TNHPstate)
 			{
 				case TNHPstates.BGM:

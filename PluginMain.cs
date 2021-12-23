@@ -65,7 +65,7 @@ namespace TNHBGLoader
 			AnnouncerAPI.LoadedAnnouncers.Add(AnnouncerManifest.DefaultAnnouncer);
 			AnnouncerAPI.LoadedAnnouncers.Add(AnnouncerManifest.CorruptedAnnouncer);
 			//add default sosig VLS
-			SosigVLSAPI.LoadedSosigVLS.Add(SosigManifest.DefaultSosigVLS);
+			SosigVLSAPI.LoadedSosigVLS.Add(SosigManifest.DefaultSosigVLS());
 			
 			
 			//patch yo things

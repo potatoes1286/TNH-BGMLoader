@@ -10,12 +10,18 @@ namespace TNHBGLoader.Sosig
 		public string guid;
 		public string name;
 		public string location;
-		public List<string> previews;
+		public List<AudioClip> previews = new List<AudioClip>();
 		
-		public static readonly SosigManifest DefaultSosigVLS = new SosigManifest()
+		public static SosigManifest DefaultSosigVLS()
 		{
-			name = "Default",
-			guid = "h3vr.default"
-		};
+			var speechSet = ScriptableObject.CreateInstance<SosigSpeechSet>();
+			speechSet.BasePitch = 1.15f;
+			return new SosigManifest()
+				   {
+					   name = "Default",
+					   guid = "h3vr.default",
+					   SpeechSet = speechSet
+				   };
+		}
 	}
 }
