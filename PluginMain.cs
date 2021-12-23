@@ -80,9 +80,9 @@ namespace TNHBGLoader
 			BackgroundMusicVolume.Value = Mathf.Clamp(BackgroundMusicVolume.Value, 0, 4);
 			AnnouncerMusicVolume = Config.Bind("General", "Announcer Volume", 1f, "Changes the magnitude of the Announcer volume. Must be between 0 and 20. (Please don't set the volume to 2000%.)");
 			AnnouncerMusicVolume.Value = Mathf.Clamp(BackgroundMusicVolume.Value, 0, 20);
-			LastLoadedBank = Config.Bind("no touchy", "Saved Bank", "", "Not meant to be changed manually. This autosaves your last bank used, so you don't have to reset it every time you launch H3.");
-			LastLoadedAnnouncer = Config.Bind("no touchy", "Saved Announcer", "", "Not meant to be changed manually. This autosaves your last announcer used, so you don't have to reset it every time you launch H3.");
-			LastLoadedSosigVLS = Config.Bind("no touchy", "Saved Sosig VLS", "", "Not meant to be changed manually. This autosaves your last sosig set used, so you don't have to reset it every time you launch H3.");
+			LastLoadedBank = Config.Bind("no touchy", "Saved Bank", "MX_TAH", "Not meant to be changed manually. This autosaves your last bank used, so you don't have to reset it every time you launch H3.");
+			LastLoadedAnnouncer = Config.Bind("no touchy", "Saved Announcer", "h3vr.default", "Not meant to be changed manually. This autosaves your last announcer used, so you don't have to reset it every time you launch H3.");
+			LastLoadedSosigVLS = Config.Bind("no touchy", "Saved Sosig VLS", "h3vr.default", "Not meant to be changed manually. This autosaves your last sosig set used, so you don't have to reset it every time you launch H3.");
 		}
 
 		//stratum loading
