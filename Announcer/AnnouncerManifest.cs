@@ -19,29 +19,34 @@ namespace TNH_BGLoader
 
 	public class AnnouncerManifest
 	{
-		[CanBeNull]
-		public string Location { get; set; }
-		[CanBeNull]
-		public List<string> Previews { get; set; }
-		public string Name { get; set; }
+		[CanBeNull] public string       Location { get; set; }
+		[CanBeNull] public List<string> Previews { get; set; }
+		public             string       Name     { get; set; }
 		
-		[YamlMember(Alias = "Guid")]
-		public string GUID { get; set; }
+		public string          GUID       { get; set; }
 		public List<VoiceLine> VoiceLines { get; set; }
-		[CanBeNull]
 
-		public static readonly AnnouncerManifest DefaultAnnouncer = new AnnouncerManifest()
-		{
-			Name = "Default Announcer",
-			GUID = "h3vr.default",
-			VoiceLines = new List<VoiceLine>()
-		};
-		
-		public static readonly AnnouncerManifest CorruptedAnnouncer = new AnnouncerManifest()
-		{
-			Name = "Corrupted Announcer",
-			GUID = "h3vr.corrupted",
-			VoiceLines = new List<VoiceLine>()
-		};
+		public float FrontPadding { get; set; }
+		public float BackPadding  { get; set; }
+
+		public static readonly AnnouncerManifest DefaultAnnouncer =
+			new AnnouncerManifest()
+			{
+				Name = "Default Announcer",
+				GUID = "h3vr.default",
+				VoiceLines = new List<VoiceLine>(),
+				FrontPadding = 0.2f,
+				BackPadding = 1.2f
+			};
+
+		public static readonly AnnouncerManifest CorruptedAnnouncer =
+			new AnnouncerManifest()
+			{
+				Name = "Corrupted Announcer",
+				GUID = "h3vr.corrupted",
+				VoiceLines = new List<VoiceLine>(),
+				FrontPadding = 0.2f,
+				BackPadding = 1.2f
+			};
 	}
 }

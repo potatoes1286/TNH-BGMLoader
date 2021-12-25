@@ -45,6 +45,33 @@ namespace TNHBGLoader
 			return true;
 		}
 		
+		[HarmonyPatch(typeof(TNH_Manager), "VoiceUpdate")]
+		[HarmonyPrefix]
+		public static bool TNH_Manager_VoiceUpdate_AccountForVoiceLinePadding(TNH_Manager __instance)
+		{
+			if (__instance.timeTilLineClear >= 0f)
+			{
+				__instance.timeTilLineClear -= Time.deltaTime;
+				return true;
+			}
+			if (__instance.QueuedLines.Count > 0)
+			{
+				TNH_VoiceLineID key = __instance.QueuedLines.Dequeue();
+				if (__instance.voiceDic_Standard.ContainsKey(key))
+				{
+					int index = UnityEngine.Random.Range(0, __instance.voiceDic_Standard[key].Count);
+					AudioClip audioClip = __instance.voiceDic_Standard[key][index];
+					AudioEvent audioEvent = new AudioEvent();
+					audioEvent.Clips.Add(audioClip);
+					audioEvent.PitchRange = new Vector2(1f, 1f);
+					audioEvent.VolumeRange = new Vector2(0.6f, 0.6f);
+					__instance.timeTilLineClear = audioClip.length + AnnouncerAPI.CurrentAnnouncer.BackPadding;
+					SM.PlayCoreSoundDelayed(FVRPooledAudioType.UIChirp, audioEvent, __instance.transform.position, AnnouncerAPI.CurrentAnnouncer.FrontPadding);
+				}
+			}
+			return true;
+		}
+		
 		/*[HarmonyPatch(typeof(GM), "InitScene")]
 		[HarmonyPrefix]
 		public static bool GM_InitScene_CleanupSnippets(ref float i)

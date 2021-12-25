@@ -11,7 +11,7 @@ namespace TNHBGLoader.Sosig
 		public string name;
 		public string location;
 		public List<AudioClip> previews = new List<AudioClip>();
-		
+
 		public static SosigManifest DefaultSosigVLS()
 		{
 			var speechSet = ScriptableObject.CreateInstance<SosigSpeechSet>();

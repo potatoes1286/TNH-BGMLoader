@@ -55,6 +55,8 @@ namespace TNH_BGLoader
 			manifest.VoiceLines = new List<VoiceLine>();
 			manifest.Name = yamlfest.Name;
 			manifest.GUID = yamlfest.GUID;
+			manifest.FrontPadding = yamlfest.FrontPadding;
+			manifest.BackPadding = yamlfest.BackPadding;
 			manifest.Location = yamlfest.Location;
 			manifest.Previews = Directory.GetFiles(yamlfest.VoiceLines, "example*.wav", SearchOption.AllDirectories).ToList();
 			var files = Directory.GetFiles(yamlfest.VoiceLines, "*.wav", SearchOption.AllDirectories).ToList();

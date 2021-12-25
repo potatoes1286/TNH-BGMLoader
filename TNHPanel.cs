@@ -33,10 +33,10 @@ namespace TNHBGLoader
 		private TextWidget   _bankText;
 		private TextWidget   _volumeText;
 
-		private ButtonWidget[] _musicButtons = new ButtonWidget[8];
-		private ButtonWidget[] _volControls = new ButtonWidget[2];
+		private ButtonWidget[] _musicButtons  = new ButtonWidget[8];
+		private ButtonWidget[] _volControls   = new ButtonWidget[2];
 		private ButtonWidget[] _cycleControls = new ButtonWidget[2];
-		private ButtonWidget _switchstate;
+		private ButtonWidget   _switchstate;
 
 		private int _firstMusicIndex;
 
