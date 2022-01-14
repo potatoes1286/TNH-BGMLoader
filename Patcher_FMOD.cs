@@ -49,7 +49,8 @@ namespace TNHBGLoader
 			{
 				if (!BankAPI.BanksEmptyOrNull) //i don't even think this is possible? it's not. i need to remove this sometime.
 				{
-					if (BankAPI.CurrentBankLocation == "Surprise Me!") return false;
+					//this relies on Select Random being first. don't fucking touch it
+					if (BankAPI.CurrentBankLocation == "Select Random") BankAPI.CurrentBankIndex = UnityEngine.Random.Range(1, BankAPI.LoadedBankLocations.Count);
 					PluginMain.LogSpam("Injecting bank " + Path.GetFileName(BankAPI.CurrentBankLocation) + " into TNH!");
 					bankName = BankAPI.CurrentBankLocation;
 				}

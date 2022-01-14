@@ -19,6 +19,7 @@ namespace TNH_BGLoader
 		public static AnnouncerManifest CurrentAnnouncer => LoadedAnnouncers[CurrentAnnouncerIndex];
 		
 		public static void SwapAnnouncer(string GUID) {
+			if (GUID == "ptnhbgml.random") GUID = LoadedAnnouncers[UnityEngine.Random.Range(1, LoadedAnnouncers.Count)].GUID;
 			CurrentAnnouncerIndex = GetAnnouncerIndexFromGUID(GUID);
 			PluginMain.LastLoadedAnnouncer.Value = CurrentAnnouncer.GUID;
 		}

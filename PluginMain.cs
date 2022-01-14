@@ -55,16 +55,15 @@ namespace TNHBGLoader
 			BankAPI.LoadedBankLocations = BankAPI.GetLegacyBanks().OrderBy(x => x).ToList();
 			//nuke all duplicates
 			BankAPI.LoadedBankLocations = BankAPI.LoadedBankLocations.Distinct().ToList();
-			//the loader patch just checks for MX_TAH, not the full root path so this should bypass the check
-			BankAPI.LoadedBankLocations.Add(Path.Combine(Application.streamingAssetsPath, "MX_TAH.bank"));
-			//banks.Add("Surprise Me!");
-			
+
 			//start YAML deserializer
 			_deserializer = new DeserializerBuilder().WithNamingConvention(UnderscoredNamingConvention.Instance).Build();
 			//add default announcers
+			AnnouncerAPI.LoadedAnnouncers.Add(AnnouncerManifest.RandomAnnouncer);
 			AnnouncerAPI.LoadedAnnouncers.Add(AnnouncerManifest.DefaultAnnouncer);
 			AnnouncerAPI.LoadedAnnouncers.Add(AnnouncerManifest.CorruptedAnnouncer);
 			//add default sosig VLS
+			SosigVLSAPI.LoadedSosigVLS.Add(SosigManifest.RandomSosigVLS());
 			SosigVLSAPI.LoadedSosigVLS.Add(SosigManifest.DefaultSosigVLS());
 			
 			

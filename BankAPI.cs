@@ -19,8 +19,11 @@ namespace TNH_BGLoader
 		//i don't actually think this will ever return true. TODO: check
 		public static bool BanksEmptyOrNull => (LoadedBankLocations == null || LoadedBankLocations.Count == 0);
 		public static List<string> GetLegacyBanks() {
+			List<string> banks = new List<string>();
+			banks.Add("Select Random"); //if this is not first it can cause issues + don't rename this
+			banks.Add(Path.Combine(Application.streamingAssetsPath, "MX_TAH.bank")); //the loader patch just checks for MX_TAH, not the full root path so this bypasses the check
 			// surely this won't throw an access error!
-			var banks = Directory.GetFiles(Paths.PluginPath, "MX_TAH_*.bank", SearchOption.AllDirectories).ToList();
+			banks = banks.Concat(Directory.GetFiles(Paths.PluginPath, "MX_TAH_*.bank", SearchOption.AllDirectories).ToList()).ToList();
 			// removes all files with parent dir "resources"
 			foreach (var bank in banks)
 				if (Path.GetFileName(Path.GetDirectoryName(bank))?.ToLower() == "resources")
@@ -46,7 +49,7 @@ namespace TNH_BGLoader
 			UnloadBankHard(CurrentBankLocation); //force it to be unloaded
 			CurrentBankIndex = newBank; //set banknum to new bank
 			NukeSongSnippets();
-			RuntimeManager.LoadBank("MX_TAH"); //load new bank (MX_TAH sets off the patcher)
+			RuntimeManager.LoadBank("MX_TAH"); //load new bank (MX_TAH sets off the patcher Patcher_FMOD.FMODRuntimeManagerPatch_LoadBank)
 			PluginMain.LastLoadedBank.Value = Path.GetFileNameWithoutExtension(CurrentBankLocation); //set last loaded bank
 		}
 		public static void NukeSongSnippets()

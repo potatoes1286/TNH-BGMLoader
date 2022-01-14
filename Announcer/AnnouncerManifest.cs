@@ -38,6 +38,16 @@ namespace TNH_BGLoader
 				FrontPadding = 0.2f,
 				BackPadding = 1.2f
 			};
+		
+		public static readonly AnnouncerManifest RandomAnnouncer =
+			new AnnouncerManifest()
+			{
+				Name = "Select Random Announcer",
+				GUID = "ptnhbgml.random",
+				VoiceLines = new List<VoiceLine>(),
+				FrontPadding = 0.2f,
+				BackPadding = 1.2f
+			};
 
 		public static readonly AnnouncerManifest CorruptedAnnouncer =
 			new AnnouncerManifest()

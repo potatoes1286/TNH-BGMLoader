@@ -23,5 +23,17 @@ namespace TNHBGLoader.Sosig
 					   SpeechSet = speechSet
 				   };
 		}
+		
+		public static SosigManifest RandomSosigVLS()
+		{
+			var speechSet = ScriptableObject.CreateInstance<SosigSpeechSet>();
+			speechSet.BasePitch = 1.15f;
+			return new SosigManifest()
+				   {
+					   name = "Select Random Voiceline",
+					   guid = "ptnhbgml.random",
+					   SpeechSet = speechSet
+				   };
+		}
 	}
 }

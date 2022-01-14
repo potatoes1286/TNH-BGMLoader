@@ -35,7 +35,8 @@ namespace TNHBGLoader.Sosig
 
 		public static void SwapSosigVLS(string guid)
 		{
-			CurrentSosigVLSIndex                 = GetSosigVLSIndexFromGUID(guid);
+			if (guid == "ptnhbgml.random") guid = LoadedSosigVLS[UnityEngine.Random.Range(1, LoadedSosigVLS.Count)].guid;
+			CurrentSosigVLSIndex = GetSosigVLSIndexFromGUID(guid);
 			PluginMain.LastLoadedSosigVLS.Value = CurrentSosigVLS.guid;
 		}
 		
