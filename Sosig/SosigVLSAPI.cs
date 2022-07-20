@@ -12,15 +12,22 @@ namespace TNHBGLoader.Sosig
 	public class SosigVLSAPI : MonoBehaviour
 	{
 		//SosigManifests, SosigManifest Index, SosigManifest GUIDs, prefer GUIDs
-		public static List<SosigManifest> LoadedSosigVLS = new List<SosigManifest>();
-		public static int CurrentSosigVLSIndex = 0;
-		public static SosigManifest CurrentSosigVLS => LoadedSosigVLS[CurrentSosigVLSIndex];
+		public static List<SosigManifest>        LoadedSosigVLSs       = new List<SosigManifest>();
+		public static Dictionary<string, string> VLSGuidToName        = new Dictionary<string, string>();
+		public static List<string>               VLSGuidOrder         = new List<string>();
+		public static Dictionary<string, int>    CurrentSosigVLSIndex = new Dictionary<string, int>();
+
+
+		public static SosigSpeechSet[] DefaultVLSs;
 		
-		public static int GetSosigVLSIndexFromGUID(string GUID) => LoadedSosigVLS.IndexOf(GetManifestFromGUID(GUID));
-		public static int GetSosigVLSIndexFromManifest(SosigManifest manifest) => LoadedSosigVLS.IndexOf(manifest);
-		public static SosigManifest GetManifestFromGUID(string GUID) => LoadedSosigVLS.FindAll(a => a.guid == GUID).First();
-		
-		
+		public static int GetSosigVLSIndexFromGUID(string GUID) => LoadedSosigVLSs.IndexOf(GetManifestFromGUID(GUID));
+		public static int GetSosigVLSIndexFromManifest(SosigManifest manifest) => LoadedSosigVLSs.IndexOf(manifest);
+		public static SosigManifest GetManifestFromGUID(string GUID) => LoadedSosigVLSs.FindAll(a => a.guid == GUID).First();
+
+		public static int CurrentSosigVlsIndexOfVlsSet(int    index) => CurrentSosigVLSIndex[VLSGuidOrder[index]];
+		public static int CurrentSosigVlsIndexOfVlsSet(string guid)  => CurrentSosigVLSIndex[guid];
+		public static SosigManifest CurrentSosigVlsOfVlsSet(int         index) => LoadedSosigVLSs[CurrentSosigVLSIndex[VLSGuidOrder[index]]];
+		public static SosigManifest CurrentSosigVlsOfVlsSet(string      guid)  => LoadedSosigVLSs[CurrentSosigVLSIndex[guid]];
 		public static Texture2D GetSosigVLSIcon(SosigManifest sosigVLS)
 		{
 			var pbase = Path.GetDirectoryName(sosigVLS.location);
@@ -28,16 +35,19 @@ namespace TNHBGLoader.Sosig
 			string[] paths = new string[0];
 			if (sosigVLS.guid == "h3vr.default")
 				paths = new string[] { Path.Combine(PluginMain.AssemblyDirectory, "default/sosigvls_default.png") };
+			else if (sosigVLS.guid == "h3vr.zosig")
+				paths = new string[] { Path.Combine(PluginMain.AssemblyDirectory, "default/sosigvls_zosig.png") };
 			else paths = new string[] { pbase + "/icon.png", Directory.GetParent(pbase) + "/icon.png" };
 			
 			return GeneralAPI.GetIcon(sosigVLS.guid, paths);
 		}
 
-		public static void SwapSosigVLS(string guid)
+		public static void SwapSosigVLS(string guid, string vlsSet)
 		{
-			if (guid == "ptnhbgml.random") guid = LoadedSosigVLS[UnityEngine.Random.Range(1, LoadedSosigVLS.Count)].guid;
-			CurrentSosigVLSIndex = GetSosigVLSIndexFromGUID(guid);
-			PluginMain.LastLoadedSosigVLS.Value = CurrentSosigVLS.guid;
+			if (guid == "ptnhbgml.random") guid = LoadedSosigVLSs[UnityEngine.Random.Range(1, LoadedSosigVLSs.Count)].guid;
+			CurrentSosigVLSIndex[vlsSet] = GetSosigVLSIndexFromGUID(guid);
+			//TODO: Fix this!
+			//PluginMain.LastLoadedSosigVLS.Value = CurrentSosigVLS.guid;
 		}
 		
 		public static SosigManifest GetManifestFromYamlfest(SosigYamlfest yamlfest) {

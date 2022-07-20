@@ -63,15 +63,21 @@ namespace TNHBGLoader
 			AnnouncerAPI.LoadedAnnouncers.Add(AnnouncerManifest.DefaultAnnouncer);
 			AnnouncerAPI.LoadedAnnouncers.Add(AnnouncerManifest.CorruptedAnnouncer);
 			//add default sosig VLS
-			SosigVLSAPI.LoadedSosigVLS.Add(SosigManifest.RandomSosigVLS());
-			SosigVLSAPI.LoadedSosigVLS.Add(SosigManifest.DefaultSosigVLS());
+			SosigVLSAPI.LoadedSosigVLSs.Add(SosigManifest.RandomSosigVLS());
+			SosigVLSAPI.LoadedSosigVLSs.Add(SosigManifest.DefaultSosigVLS());
+			SosigVLSAPI.LoadedSosigVLSs.Add(SosigManifest.DefaultZosigVLS());
 			
+			SosigVLSDefinitionSetLaod(new VLSGuidToNameDefinitionsYamlfest()
+			{
+				GuidsToNames = new []{"SosigSpeech_Anton:Sosig", "SosigSpeech_Zosig:Zosig"}
+			});
 			
 			//patch yo things
 			Harmony.CreateAndPatchAll(typeof(Patcher_FMOD));
 			Harmony.CreateAndPatchAll(typeof(Patcher_FistVR));
 		}
 		
+		//TODO: Move last loaded x into it's own storage file because bepinex config does not support string[] afaik
 		public void InitConfig()
 		{
 			EnableDebugLogging = Config.Bind("General", "Enable Debug Logs", false, "Spams your log with debug info.");
@@ -89,6 +95,7 @@ namespace TNHBGLoader
 			ctx.Loaders.Add("tnhbankfile", LoadTNHBankFile);
 			ctx.Loaders.Add("tnhannouncer", LoadAnnouncer);
 			ctx.Loaders.Add("tnhbgmlsosigvls", LoadSosigVoiceLineSet);
+			ctx.Loaders.Add("tnhbgmlvlsdictionary", LoadSosigVoiceLineDefinitionSet);
 		}
 		private IDeserializer _deserializer;
 		public Empty LoadTNHBankFile(FileSystemInfo handle) {
@@ -114,9 +121,35 @@ namespace TNHBGLoader
 			yamlfest = _deserializer.Deserialize<SosigYamlfest>(File.ReadAllText(file.FullName));
 			DebugLog.LogInfo("Loaded Sosig Voiceline set " + yamlfest.GUID);
 			yamlfest.Location = file.FullName;
-			SosigVLSAPI.LoadedSosigVLS.Add(SosigVLSAPI.GetManifestFromYamlfest(yamlfest));
+			SosigVLSAPI.LoadedSosigVLSs.Add(SosigVLSAPI.GetManifestFromYamlfest(yamlfest));
 			return new Empty();
 		}
+		
+		public Empty LoadSosigVoiceLineDefinitionSet(FileSystemInfo handle) {
+			var file = handle.ConsumeFile();
+			VLSGuidToNameDefinitionsYamlfest yamlfest = _deserializer.Deserialize<VLSGuidToNameDefinitionsYamlfest>(File.ReadAllText(file.FullName));
+			string guids = "";
+			for (int i = 0; i < yamlfest.GuidsToNames.Length; i++)
+				guids += yamlfest.GuidsToNames[i].Split(':')[0] + ", "; //GuidsToNames in format [guid]:[name]
+			guids = guids.Remove(guids.Length - 2);
+			DebugLog.LogInfo("Loaded Sosig Voiceline Dictionary Set defining: " + guids);
+			SosigVLSDefinitionSetLaod(yamlfest);
+			return new Empty();
+		}
+		
+		//please refactor all these names. Lord help me.
+		private void SosigVLSDefinitionSetLaod(VLSGuidToNameDefinitionsYamlfest yamlfest)
+		{
+			for (int i = 0; i < yamlfest.GuidsToNames.Length; i++)
+			{
+				//i love violating DRY!!!!
+				string[] kvpair = yamlfest.GuidsToNames[i].Split(':');
+				SosigVLSAPI.VLSGuidToName[kvpair[0]] = kvpair[1];
+				if(!SosigVLSAPI.VLSGuidOrder.Contains(kvpair[0]))
+					SosigVLSAPI.VLSGuidOrder.Add(kvpair[0]);
+			}
+		}
+
 		public override IEnumerator OnRuntime(IStageContext<IEnumerator> ctx) { yield break; }
 	}
 

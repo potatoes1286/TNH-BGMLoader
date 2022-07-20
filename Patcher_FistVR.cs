@@ -23,8 +23,14 @@ namespace TNHBGLoader
 		[HarmonyPrefix]
 		public static bool Sosig_Start_SetVLS(FistVR.Sosig __instance)
 		{
-			if (SosigVLSAPI.CurrentSosigVLS.guid == "h3vr.default") return true;
-			if (__instance.Speech.name == "SosigSpeech_Anton") __instance.Speech = SosigVLSAPI.CurrentSosigVLS.SpeechSet;
+			string sname = __instance.Speech.name;
+			if (SosigVLSAPI.VLSGuidOrder.Contains(sname))
+			{
+				if (SosigVLSAPI.CurrentSosigVlsOfVlsSet(sname).guid == "h3vr.default") return true;
+				__instance.Speech = SosigVLSAPI.CurrentSosigVlsOfVlsSet(sname).SpeechSet;
+			}
+			/*if (SosigVLSAPI.CurrentSosigVLS.guid == "h3vr.default") return true;
+			if (__instance.Speech.name == "SosigSpeech_Anton") __instance.Speech = SosigVLSAPI.CurrentSosigVLS.SpeechSet;*/
 			return true;
 		}
 		
@@ -100,7 +106,8 @@ namespace TNHBGLoader
 			//set last loaded announcer
 			AnnouncerAPI.CurrentAnnouncerIndex = AnnouncerAPI.GetAnnouncerIndexFromGUID(PluginMain.LastLoadedAnnouncer.Value);
 			//set last loaded SosigVLS
-			SosigVLSAPI.CurrentSosigVLSIndex = SosigVLSAPI.GetSosigVLSIndexFromGUID(PluginMain.LastLoadedSosigVLS.Value);
+			//TODO: FIX!
+			//SosigVLSAPI.CurrentSosigVLSIndex = SosigVLSAPI.GetSosigVLSIndexFromGUID(PluginMain.LastLoadedSosigVLS.Value);
 		}
 		
 		//Removes all remaining song snippets if game starts while a snippet is playing

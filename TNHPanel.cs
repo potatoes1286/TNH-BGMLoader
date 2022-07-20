@@ -42,6 +42,8 @@ namespace TNHBGLoader
 
 		public RawImage icondisplay;
 
+		private int _selectedVLSSet;
+
 		private void ConfigurePanel(GameObject panel)
 		{
 			GameObject canvas = panel.transform.Find("OptionsCanvas_0_Main/Canvas").gameObject;
@@ -233,7 +235,7 @@ namespace TNHBGLoader
 					if (NewFirstMusicIndex >= AnnouncerAPI.LoadedAnnouncers.Count) oob = true;
 					break;
 				case TNHPstates.Sosig_Voicelines:
-					if (NewFirstMusicIndex >= SosigVLSAPI.LoadedSosigVLS.Count) oob = true;
+					if (NewFirstMusicIndex >= SosigVLSAPI.LoadedSosigVLSs.Count) oob = true;
 					break;
 			}
 			if (oob) {
@@ -245,9 +247,30 @@ namespace TNHBGLoader
 			for (int i = 0; i < _musicButtons.Length; i++) _musicButtons[i].ButtonText.text = GetNameWithOffset(i);
 		}
 		
+		//When in VLS, the audio volume switches to a "VLS type" option to select the VLS for different
+		//audio types, such as Zosigs or those funny little robotic men.
+		private void CycleVLS(object? sender)
+		{
+			int[] range = new[] { 0, SosigVLSAPI.VLSGuidOrder.Count - 1 };
+			//++ if volcontrols 1, -- if volcontrols 0
+			//then wrap to prevent overflow/underflow
+			if(sender != null)
+				_selectedVLSSet = (_selectedVLSSet + (sender as ButtonWidget == _volControls[1] ? 1 : -1)).Wrap(range);
+			_volumeText.Text.text = SosigVLSAPI.VLSGuidToName[SosigVLSAPI.VLSGuidOrder[_selectedVLSSet]];
+			_volControls[0].ButtonText.text = SosigVLSAPI.VLSGuidToName[SosigVLSAPI.VLSGuidOrder[(_selectedVLSSet - 1).Wrap(range)]];
+			_volControls[1].ButtonText.text = SosigVLSAPI.VLSGuidToName[SosigVLSAPI.VLSGuidOrder[(_selectedVLSSet + 1).Wrap(range)]];
+			PlaySnippet(SosigVLSAPI.GetRandomPreview(SosigVLSAPI.CurrentSosigVlsOfVlsSet(_selectedVLSSet).guid));
+		}
+		
 		//Updates and changes the volume amount
 		private void UpdateVolume(object sender, ButtonClickEventArgs args)
 		{
+			if (TNHPstate == TNHPstates.Sosig_Voicelines)
+			{
+				CycleVLS(sender);
+				return;
+			}
+
 			float inc = 0f;
 			if (sender != null)
 			{
@@ -270,9 +293,9 @@ namespace TNHBGLoader
 					if (!GeneralAPI.IfIsInRange(PluginMain.AnnouncerMusicVolume.Value, 0, 20)) WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
 					PluginMain.AnnouncerMusicVolume.Value = Mathf.Clamp(PluginMain.AnnouncerMusicVolume.Value, 0, 20);
 					break;
-				case TNHPstates.Sosig_Voicelines:
+				/*case TNHPstates.Sosig_Voicelines:
 					if(inc != 0) WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
-					break;
+					break;*/
 			}
 			_volumeText.Text.text = GetVolumePercent();
 		}
@@ -291,8 +314,8 @@ namespace TNHBGLoader
 						return (index + 1) + ": " + AnnouncerAPI.LoadedAnnouncers[index].Name;
 					break;
 				case TNHPstates.Sosig_Voicelines:
-					if (index < SosigVLSAPI.LoadedSosigVLS.Count)
-						return (index + 1) + ": " + SosigVLSAPI.LoadedSosigVLS[index].name;
+					if (index < SosigVLSAPI.LoadedSosigVLSs.Count)
+						return (index + 1) + ": " + SosigVLSAPI.LoadedSosigVLSs[index].name;
 					break;
 			}
 			return "";
@@ -306,7 +329,7 @@ namespace TNHBGLoader
 				case TNHPstates.Announcer:
 					return (AnnouncerAPI.CurrentAnnouncerIndex+1) + ": " + AnnouncerAPI.CurrentAnnouncer.Name;
 				case TNHPstates.Sosig_Voicelines:
-					return (SosigVLSAPI.CurrentSosigVLSIndex+1) + ": " + SosigVLSAPI.CurrentSosigVLS.name;
+					return (SosigVLSAPI.CurrentSosigVlsIndexOfVlsSet(_selectedVLSSet)+1) + ": " + SosigVLSAPI.CurrentSosigVlsOfVlsSet(_selectedVLSSet).name;
 			} return ""; }
 		private string GetVolumePercent()
 		{
@@ -345,9 +368,9 @@ namespace TNHBGLoader
 						PlaySnippet(AnnouncerAPI.GetRandomPreview(AnnouncerAPI.CurrentAnnouncer.GUID));
 						break;
 					case TNHPstates.Sosig_Voicelines:
-						clamp = Mathf.Clamp(index, 0, SosigVLSAPI.LoadedSosigVLS.Count);
-						SosigVLSAPI.SwapSosigVLS(SosigVLSAPI.LoadedSosigVLS[clamp].guid);
-						PlaySnippet(SosigVLSAPI.GetRandomPreview(SosigVLSAPI.CurrentSosigVLS.guid));
+						clamp = Mathf.Clamp(index, 0, SosigVLSAPI.LoadedSosigVLSs.Count);
+						SosigVLSAPI.SwapSosigVLS(SosigVLSAPI.LoadedSosigVLSs[clamp].guid, SosigVLSAPI.VLSGuidOrder[_selectedVLSSet]);
+						PlaySnippet(SosigVLSAPI.GetRandomPreview(SosigVLSAPI.CurrentSosigVlsOfVlsSet(_selectedVLSSet).guid));
 						break;
 				}
 				SetIcon();
@@ -364,7 +387,7 @@ namespace TNHBGLoader
 					vol = 0.6f * PluginMain.AnnouncerMusicVolume.Value;
 					break;
 				case TNHPstates.Sosig_Voicelines:
-					pitch = SosigVLSAPI.CurrentSosigVLS.SpeechSet.BasePitch;
+					pitch = SosigVLSAPI.CurrentSosigVlsOfVlsSet(_selectedVLSSet).SpeechSet.BasePitch;
 					break;
 			}
 			//make audioevent
@@ -388,7 +411,7 @@ namespace TNHBGLoader
 					icondisplay.texture = AnnouncerAPI.GetAnnouncerIcon(AnnouncerAPI.CurrentAnnouncer);
 					break;
 				case TNHPstates.Sosig_Voicelines:
-					icondisplay.texture = SosigVLSAPI.GetSosigVLSIcon(SosigVLSAPI.CurrentSosigVLS);
+					icondisplay.texture = SosigVLSAPI.GetSosigVLSIcon(SosigVLSAPI.CurrentSosigVlsOfVlsSet(_selectedVLSSet));
 					break;
 			}
 		}

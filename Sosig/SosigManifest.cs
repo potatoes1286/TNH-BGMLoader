@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using FistVR;
 using UnityEngine;
 
@@ -14,7 +15,7 @@ namespace TNHBGLoader.Sosig
 
 		public static SosigManifest DefaultSosigVLS()
 		{
-			var speechSet = ScriptableObject.CreateInstance<SosigSpeechSet>();
+			var speechSet = Resources.LoadAll<SosigSpeechSet>("").First(x => x.name == "SosigSpeech_Anton");
 			speechSet.BasePitch = 1.15f;
 			return new SosigManifest()
 				   {
@@ -22,6 +23,17 @@ namespace TNHBGLoader.Sosig
 					   guid = "h3vr.default",
 					   SpeechSet = speechSet
 				   };
+		}
+		public static SosigManifest DefaultZosigVLS()
+		{
+			var speechSet = Resources.LoadAll<SosigSpeechSet>("").First(x => x.name == "SosigSpeech_Zosig");
+			speechSet.BasePitch = 1.15f;
+			return new SosigManifest()
+			{
+				name = "Zosig",
+				guid = "h3vr.zosig",
+				SpeechSet = speechSet
+			};
 		}
 		
 		public static SosigManifest RandomSosigVLS()
