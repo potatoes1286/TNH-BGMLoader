@@ -23,10 +23,22 @@ namespace TNHBGLoader
 		[HarmonyPrefix]
 		public static bool Sosig_Start_SetVLS(FistVR.Sosig __instance)
 		{
+			
+			
+			
 			string sname = __instance.Speech.name;
 			if (SosigVLSAPI.VLSGuidOrder.Contains(sname))
 			{
-				if (SosigVLSAPI.CurrentSosigVlsOfVlsSet(sname).guid == "h3vr.default") return true;
+				/*if (SosigVLSAPI.CurrentSosigVlsOfVlsSet(sname).guid == "h3vr.default"
+				 && __instance.Speech.name != "SosigSpeech_Anton")
+					__instance.Speech = def;
+				if (SosigVLSAPI.CurrentSosigVlsOfVlsSet(sname).guid == "h3vr.zosig"
+				 && __instance.Speech.name != "SosigSpeech_Zosig")
+					__instance.Speech = zosig;*/
+				if (SosigVLSAPI.CurrentSosigVlsOfVlsSet(sname).guid == "h3vr.default")
+					return true;
+				if (SosigVLSAPI.CurrentSosigVlsOfVlsSet(sname).guid == "h3vr.zosig")
+					return true;
 				__instance.Speech = SosigVLSAPI.CurrentSosigVlsOfVlsSet(sname).SpeechSet;
 			}
 			/*if (SosigVLSAPI.CurrentSosigVLS.guid == "h3vr.default") return true;

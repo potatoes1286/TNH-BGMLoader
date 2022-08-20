@@ -12,10 +12,11 @@ namespace TNHBGLoader.Sosig
 		public string name;
 		public string location;
 		public List<AudioClip> previews = new List<AudioClip>();
-
+		
+		public static SosigSpeechSet[] sets;
 		public static SosigManifest DefaultSosigVLS()
 		{
-			var speechSet = Resources.LoadAll<SosigSpeechSet>("").First(x => x.name == "SosigSpeech_Anton");
+			var speechSet = ScriptableObject.CreateInstance<SosigSpeechSet>();
 			speechSet.BasePitch = 1.15f;
 			return new SosigManifest()
 				   {
@@ -26,7 +27,7 @@ namespace TNHBGLoader.Sosig
 		}
 		public static SosigManifest DefaultZosigVLS()
 		{
-			var speechSet = Resources.LoadAll<SosigSpeechSet>("").First(x => x.name == "SosigSpeech_Zosig");
+			var speechSet = ScriptableObject.CreateInstance<SosigSpeechSet>();
 			speechSet.BasePitch = 1.15f;
 			return new SosigManifest()
 			{

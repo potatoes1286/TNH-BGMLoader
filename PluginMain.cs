@@ -62,15 +62,17 @@ namespace TNHBGLoader
 			AnnouncerAPI.LoadedAnnouncers.Add(AnnouncerManifest.RandomAnnouncer);
 			AnnouncerAPI.LoadedAnnouncers.Add(AnnouncerManifest.DefaultAnnouncer);
 			AnnouncerAPI.LoadedAnnouncers.Add(AnnouncerManifest.CorruptedAnnouncer);
+
+
+			SosigVLSDefinitionSetLaod(new VLSGuidToNameDefinitionsYamlfest()
+			{
+				GuidsToNames = new []{"SosigSpeech_Anton:Default", "SosigSpeech_Zosig:Zosig"}
+			});
+			
 			//add default sosig VLS
 			SosigVLSAPI.LoadedSosigVLSs.Add(SosigManifest.RandomSosigVLS());
 			SosigVLSAPI.LoadedSosigVLSs.Add(SosigManifest.DefaultSosigVLS());
 			SosigVLSAPI.LoadedSosigVLSs.Add(SosigManifest.DefaultZosigVLS());
-			
-			SosigVLSDefinitionSetLaod(new VLSGuidToNameDefinitionsYamlfest()
-			{
-				GuidsToNames = new []{"SosigSpeech_Anton:Sosig", "SosigSpeech_Zosig:Zosig"}
-			});
 			
 			//patch yo things
 			Harmony.CreateAndPatchAll(typeof(Patcher_FMOD));
@@ -128,11 +130,8 @@ namespace TNHBGLoader
 		public Empty LoadSosigVoiceLineDefinitionSet(FileSystemInfo handle) {
 			var file = handle.ConsumeFile();
 			VLSGuidToNameDefinitionsYamlfest yamlfest = _deserializer.Deserialize<VLSGuidToNameDefinitionsYamlfest>(File.ReadAllText(file.FullName));
-			string guids = "";
-			for (int i = 0; i < yamlfest.GuidsToNames.Length; i++)
-				guids += yamlfest.GuidsToNames[i].Split(':')[0] + ", "; //GuidsToNames in format [guid]:[name]
-			guids = guids.Remove(guids.Length - 2);
-			DebugLog.LogInfo("Loaded Sosig Voiceline Dictionary Set defining: " + guids);
+
+			
 			SosigVLSDefinitionSetLaod(yamlfest);
 			return new Empty();
 		}
@@ -140,11 +139,16 @@ namespace TNHBGLoader
 		//please refactor all these names. Lord help me.
 		private void SosigVLSDefinitionSetLaod(VLSGuidToNameDefinitionsYamlfest yamlfest)
 		{
+			//DebugLog.LogInfo($"Loading {yamlfest.GuidsToNames.Length} VLS set definitions!");
 			for (int i = 0; i < yamlfest.GuidsToNames.Length; i++)
 			{
 				//i love violating DRY!!!!
 				string[] kvpair = yamlfest.GuidsToNames[i].Split(':');
+				DebugLog.LogInfo("Loading Sosig Voiceline Dictionary Set defining: " + kvpair[0]);
 				SosigVLSAPI.VLSGuidToName[kvpair[0]] = kvpair[1];
+				SosigVLSAPI.CurrentSosigVLSIndex[kvpair[0]] = 1; //1: Default
+				if(kvpair[0] == "SosigSpeech_Zosig")
+					SosigVLSAPI.CurrentSosigVLSIndex[kvpair[0]] = 2; //2: Zosig
 				if(!SosigVLSAPI.VLSGuidOrder.Contains(kvpair[0]))
 					SosigVLSAPI.VLSGuidOrder.Add(kvpair[0]);
 			}

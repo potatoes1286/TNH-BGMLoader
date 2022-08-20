@@ -24,7 +24,13 @@ namespace TNHBGLoader.Sosig
 		public static int GetSosigVLSIndexFromManifest(SosigManifest manifest) => LoadedSosigVLSs.IndexOf(manifest);
 		public static SosigManifest GetManifestFromGUID(string GUID) => LoadedSosigVLSs.FindAll(a => a.guid == GUID).First();
 
-		public static int CurrentSosigVlsIndexOfVlsSet(int    index) => CurrentSosigVLSIndex[VLSGuidOrder[index]];
+		public static int CurrentSosigVlsIndexOfVlsSet(int index)
+		{
+			if(!CurrentSosigVLSIndex.ContainsKey(VLSGuidOrder[index]))
+				PluginMain.DebugLog.LogFatal($"{VLSGuidOrder[index]} was not in the VLS index database!");
+			return CurrentSosigVLSIndex[VLSGuidOrder[index]];
+		}
+
 		public static int CurrentSosigVlsIndexOfVlsSet(string guid)  => CurrentSosigVLSIndex[guid];
 		public static SosigManifest CurrentSosigVlsOfVlsSet(int         index) => LoadedSosigVLSs[CurrentSosigVLSIndex[VLSGuidOrder[index]]];
 		public static SosigManifest CurrentSosigVlsOfVlsSet(string      guid)  => LoadedSosigVLSs[CurrentSosigVLSIndex[guid]];
