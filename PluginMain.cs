@@ -16,6 +16,7 @@ using Stratum;
 using Stratum.Extensions;
 using TNH_BGLoader;
 using TNHBGLoader.Sosig;
+using TNHBGLoader.Soundtrack;
 using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
 using YamlDotNet;
@@ -98,6 +99,7 @@ namespace TNHBGLoader
 			ctx.Loaders.Add("tnhannouncer", LoadAnnouncer);
 			ctx.Loaders.Add("tnhbgmlsosigvls", LoadSosigVoiceLineSet);
 			ctx.Loaders.Add("tnhbgmlvlsdictionary", LoadSosigVoiceLineDefinitionSet);
+			ctx.Loaders.Add("tnhbgml_soundtrack", LoadSoundtrack);
 		}
 		private IDeserializer _deserializer;
 		public Empty LoadTNHBankFile(FileSystemInfo handle) {
@@ -130,9 +132,14 @@ namespace TNHBGLoader
 		public Empty LoadSosigVoiceLineDefinitionSet(FileSystemInfo handle) {
 			var file = handle.ConsumeFile();
 			VLSGuidToNameDefinitionsYamlfest yamlfest = _deserializer.Deserialize<VLSGuidToNameDefinitionsYamlfest>(File.ReadAllText(file.FullName));
-
-			
 			SosigVLSDefinitionSetLaod(yamlfest);
+			return new Empty();
+		}
+		
+		public Empty LoadSoundtrack(FileSystemInfo handle) {
+			var file = handle.ConsumeFile();
+			SoundtrackYamlfest yamlfest = _deserializer.Deserialize<SoundtrackYamlfest>(File.ReadAllText(file.FullName));
+			SoundtrackAPI.AssembleMusicData(yamlfest.ToManifest(file.FullName)); //Convert Yamlfest to Manifest and forward to AMD.
 			return new Empty();
 		}
 		
