@@ -13,6 +13,7 @@ using Sodalite.UiWidgets;
 using Sodalite.Utilities;
 using TNH_BGLoader;
 using TNHBGLoader.Sosig;
+using TNHBGLoader.Soundtrack;
 using Valve.Newtonsoft.Json.Utilities;
 
 namespace TNHBGLoader
@@ -229,7 +230,7 @@ namespace TNHBGLoader
 			bool oob = NewFirstMusicIndex < 0;
 			switch (TNHPstate) {
 				case TNHPstates.BGM:
-					if (NewFirstMusicIndex >= BankAPI.LoadedBankLocations.Count) oob = true;
+					if (NewFirstMusicIndex >= BankAPI.LoadedBankLocations.Count + SoundtrackAPI.Soundtracks.Length) oob = true;
 					break;
 				case TNHPstates.Announcer:
 					if (NewFirstMusicIndex >= AnnouncerAPI.LoadedAnnouncers.Count) oob = true;
@@ -308,6 +309,8 @@ namespace TNHBGLoader
 				case TNHPstates.BGM:
 					if (index < BankAPI.LoadedBankLocations.Count)
 						return BankAPI.GetNameFromIndex(index, true);
+					if (index < BankAPI.LoadedBankLocations.Count + SoundtrackAPI.Soundtracks.Length)
+						return SoundtrackAPI.Soundtracks[index - BankAPI.LoadedBankLocations.Count].Name;
 					break;
 				case TNHPstates.Announcer:
 					if (index < AnnouncerAPI.LoadedAnnouncers.Count)
@@ -325,7 +328,9 @@ namespace TNHBGLoader
 			switch (TNHPstate)
 			{
 				case TNHPstates.BGM:
-					return BankAPI.GetNameFromIndex(BankAPI.CurrentBankIndex, true);
+					if(!SoundtrackAPI.SoundtrackEnabled)
+						return BankAPI.GetNameFromIndex(BankAPI.CurrentBankIndex, true);
+					return $"{BankAPI.LoadedBankLocations.Count + SoundtrackAPI.SelectedSoundtrack + 1}: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack]}";
 				case TNHPstates.Announcer:
 					return (AnnouncerAPI.CurrentAnnouncerIndex+1) + ": " + AnnouncerAPI.CurrentAnnouncer.Name;
 				case TNHPstates.Sosig_Voicelines:
@@ -359,8 +364,14 @@ namespace TNHBGLoader
 				{
 					case TNHPstates.BGM:
 						BankAPI.SwapBank(index);
-						GameObject go = new GameObject();
-						go.AddComponent(typeof(PlayFModSnippet));
+						if (index < BankAPI.LoadedBankLocations.Count) {
+							GameObject go = new GameObject();
+							go.AddComponent(typeof(PlayFModSnippet));
+						}
+						else {
+							//TODO: Play snippet for soundtrack!
+						}
+
 						break;
 					case TNHPstates.Announcer:
 						clamp = Mathf.Clamp(index, 0, AnnouncerAPI.LoadedAnnouncers.Count);
@@ -405,7 +416,10 @@ namespace TNHBGLoader
 			switch (TNHPstate)
 			{
 				case TNHPstates.BGM:
-					icondisplay.texture = BankAPI.GetBankIcon(BankAPI.CurrentBankLocation);
+					if(!SoundtrackAPI.SoundtrackEnabled)
+						icondisplay.texture = BankAPI.GetBankIcon(BankAPI.CurrentBankLocation);
+					else
+						icondisplay.texture = SoundtrackAPI.GetIcon(SoundtrackAPI.SelectedSoundtrack);
 					break;
 				case TNHPstates.Announcer:
 					icondisplay.texture = AnnouncerAPI.GetAnnouncerIcon(AnnouncerAPI.CurrentAnnouncer);

@@ -145,5 +145,10 @@ namespace TNHBGLoader.Soundtrack {
 				return true;
 			return false;
 		}
+
+		public static Texture2D GetIcon(int soundtrack) {
+			//TODO: DO this!
+			return null;
+		}
 	}
 }
