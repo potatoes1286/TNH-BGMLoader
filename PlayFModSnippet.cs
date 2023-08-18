@@ -6,7 +6,9 @@ using UnityEngine;
 
 namespace TNH_BGLoader
 {
-	public class PlaySongSnippet : MonoBehaviour
+	//Plays a snipped of a song.
+	//Specifically for FMod Banks!
+	public class PlayFModSnippet : MonoBehaviour
 	{
 		public EventInstance snippet;
 		public Bus mbus;

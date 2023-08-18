@@ -360,7 +360,7 @@ namespace TNHBGLoader
 					case TNHPstates.BGM:
 						BankAPI.SwapBank(index);
 						GameObject go = new GameObject();
-						go.AddComponent(typeof(PlaySongSnippet));
+						go.AddComponent(typeof(PlayFModSnippet));
 						break;
 					case TNHPstates.Announcer:
 						clamp = Mathf.Clamp(index, 0, AnnouncerAPI.LoadedAnnouncers.Count);
