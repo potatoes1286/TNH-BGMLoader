@@ -77,23 +77,73 @@ namespace TNHBGLoader.Soundtrack {
 			//Uh.
 		}
 
-		public static AudioClip[] GetAudioclipsForSituation(string situation, bool isHold) {
+		
+		//I am a big hater of DRY
+		//no particular reason
+		public static HoldData GetAudioclipsForHold(int situation) {
 			var soundtrack = Soundtracks[SelectedSoundtrack];
-			if (isHold) {
-				var holds = soundtrack.Holds.Where(x => x.Timing == situation || x.Timing == "all");
-				if(holds.Any())
-					holds = soundtrack.Holds.Where(x => x.Timing == "any");
-				var number = UnityEngine.Random.Range(0, holds.Count());
-				var hold = holds.ToArray()[number];
-				var clips = new AudioClip[] { hold.Intro, hold.Lo, hold.Transition, hold.MedHi, hold.End };
-				return clips;
+			var holds = soundtrack.Holds.Where(x => x.Timing.TimingsMatch(situation));
+			if (holds.Count() == 0)
+				holds = soundtrack.Holds.Where(x => x.Timing == "fallback");
+			var number = UnityEngine.Random.Range(0, holds.Count());
+			return holds.ToArray()[number];
+		}
+		
+		public static TakeData GetAudioclipsForTake(int situation) {
+			var soundtrack = Soundtracks[SelectedSoundtrack];
+			var takes = soundtrack.Takes.Where(x => x.Timing.TimingsMatch(situation));
+			if (takes.Count() == 0)
+				takes = soundtrack.Takes.Where(x => x.Timing == "fallback");
+			var number = UnityEngine.Random.Range(0, takes.Count());
+			return takes.ToArray()[number];
+		}
+		
+		//Does not account for fallback.
+		//Compares sequencetiming format (See _FORMAT.txt) and the current situation provided by TnH
+		//Mainly to handle globs
+		public static bool TimingsMatch(this string seqTiming, int situation) {
+			//This is a parse hell.
+			//There's probably a better way to do this
+			if (seqTiming == "all")
+				return true;
+			if (seqTiming == "fallback")
+				return false;
+			
+			if (seqTiming.Contains(',')) {
+				//This is a split seqTiming. EG 1,3,5
+				var situations = seqTiming.Split(',');
+				if (situations.Contains(situation.ToString()))
+					return true;
+				return false;
 			}
-			else { //if take
-				var takes = soundtrack.Takes.Where(x => x.Timing == situation || x.Timing == "all");
-				var number = UnityEngine.Random.Range(0, takes.Count());
-				var take = takes.ToArray()[number];
-				return new AudioClip[] { take.Track };
+
+			if (seqTiming.Contains('-')) {
+				//This is a range. EG 1-3
+				var situations = seqTiming.Split('-');
+				if (situation >= int.Parse(situations[0]) && situation <= int.Parse(situations[1]))
+					return true;
+				return false;
 			}
+
+			if (seqTiming.Contains('+')) {
+				//This is above a number (inclusive). EG 3+
+				var val = int.Parse(seqTiming.Replace("+", string.Empty));
+				if (situation >= val)
+					return true;
+				return false;
+			}
+			
+			if (seqTiming.Contains('-')) {
+				//This is above a number (inclusive). EG 3+
+				var val = int.Parse(seqTiming.Replace("-", string.Empty));
+				if (situation <= val)
+					return true;
+				return false;
+			}
+
+			if (situation == int.Parse(seqTiming))
+				return true;
+			return false;
 		}
 	}
 }
