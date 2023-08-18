@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 namespace TNHBGLoader.Soundtrack {
 	public static class SoundtrackAPI {
 
 		public static SoundtrackManifest[] Soundtracks;
+		//If enabled, use soundtracks. If not, use Banks.
 		public static bool                 SoundtrackEnabled;
 		public static int                  SelectedSoundtrack;
 		
@@ -64,6 +66,34 @@ namespace TNHBGLoader.Soundtrack {
 			manifest.Guid = yamlfest.Guid;
 			manifest.Path = path;
 			return manifest;
+		}
+		
+		//Loads new soundtrack to be ran.
+		public static void LoadSoundtrack(int index) {
+			//Flag the game that we're doing soundtrack. Unflagging is done in BankAPI.SwapBanks.
+			SoundtrackEnabled = true;
+			SelectedSoundtrack = index;
+			//Do i even have to do more?
+			//Uh.
+		}
+
+		public static AudioClip[] GetAudioclipsForSituation(string situation, bool isHold) {
+			var soundtrack = Soundtracks[SelectedSoundtrack];
+			if (isHold) {
+				var holds = soundtrack.Holds.Where(x => x.Timing == situation || x.Timing == "all");
+				if(holds.Any())
+					holds = soundtrack.Holds.Where(x => x.Timing == "any");
+				var number = UnityEngine.Random.Range(0, holds.Count());
+				var hold = holds.ToArray()[number];
+				var clips = new AudioClip[] { hold.Intro, hold.Lo, hold.Transition, hold.MedHi, hold.End };
+				return clips;
+			}
+			else { //if take
+				var takes = soundtrack.Takes.Where(x => x.Timing == situation || x.Timing == "all");
+				var number = UnityEngine.Random.Range(0, takes.Count());
+				var take = takes.ToArray()[number];
+				return new AudioClip[] { take.Track };
+			}
 		}
 	}
 }

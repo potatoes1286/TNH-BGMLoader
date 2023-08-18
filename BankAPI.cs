@@ -5,6 +5,7 @@ using System.Linq;
 using BepInEx;
 using FMODUnity;
 using TNHBGLoader;
+using TNHBGLoader.Soundtrack;
 using UnityEngine;
 
 namespace TNH_BGLoader
@@ -44,13 +45,25 @@ namespace TNH_BGLoader
 		public delegate void bevent(); public static event bevent OnBankSwapped;
 		public static void SwapBank(int newBank)
 		{
-			//wrap around
-			newBank = Mathf.Clamp(newBank, 0, LoadedBankLocations.Count - 1);
-			UnloadBankHard(CurrentBankLocation); //force it to be unloaded
-			CurrentBankIndex = newBank; //set banknum to new bank
-			NukeSongSnippets();
-			RuntimeManager.LoadBank("MX_TAH"); //load new bank (MX_TAH sets off the patcher Patcher_FMOD.FMODRuntimeManagerPatch_LoadBank)
-			PluginMain.LastLoadedBank.Value = Path.GetFileNameWithoutExtension(CurrentBankLocation); //set last loaded bank
+			//If over the # of banks, overflow into Soundtrack API.
+			if (newBank > LoadedBankLocations.Count - 1) {
+				//Shit over the workload to the soundtrack API.
+				//newBank - LoadedBankLocations.Count results in the # as it corresponds to in the soundtrack data
+				//Ex: If you have 5 Banks, and you ask for Index 5 (6th bank), it corresponds to Index 0 (1st soundtrack)
+				//Yeah, its hacky. But the man who plans still hasn't started and my code works.
+				SoundtrackAPI.LoadSoundtrack(newBank - LoadedBankLocations.Count);
+			} else { //If not overflow, do outdated Bank method.
+				//Ensure the game doesn't think we're doing soundtrack method.
+				//Flagging is done in SoundtrackAPI.LoadSoundtrack.
+				SoundtrackAPI.SoundtrackEnabled = false;
+				UnloadBankHard(CurrentBankLocation); //force it to be unloaded
+				CurrentBankIndex = newBank; //set banknum to new bank
+				NukeSongSnippets();
+				//load new bank (MX_TAH sets off the patcher Patcher_FMOD.FMODRuntimeManagerPatch_LoadBank)
+				RuntimeManager.LoadBank("MX_TAH"); 
+				PluginMain.LastLoadedBank.Value =
+					Path.GetFileNameWithoutExtension(CurrentBankLocation); //set last loaded bank
+			}
 		}
 		public static void NukeSongSnippets()
 		{
