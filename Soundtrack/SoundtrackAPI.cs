@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using FistVR;
 using UnityEngine;
 
 namespace TNHBGLoader.Soundtrack {
@@ -11,6 +12,8 @@ namespace TNHBGLoader.Soundtrack {
 		//If enabled, use soundtracks. If not, use Banks.
 		public static bool                 SoundtrackEnabled;
 		public static int                  SelectedSoundtrack;
+
+
 		
 		//Assemble a complete soundtrack manifest using the path of the file.
 		//Can be written as Ass Music for short, symbolizing what you're gonna do with it.

@@ -78,6 +78,7 @@ namespace TNHBGLoader
 			//patch yo things
 			Harmony.CreateAndPatchAll(typeof(Patcher_FMOD));
 			Harmony.CreateAndPatchAll(typeof(Patcher_FistVR));
+			Harmony.CreateAndPatchAll(typeof(SoundtrackPatches));
 		}
 		
 		//TODO: Move last loaded x into it's own storage file because bepinex config does not support string[] afaik
