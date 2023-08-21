@@ -74,7 +74,8 @@ public class WavUtility
 			data = Convert32BitByteArrayToAudioClipData (fileBytes, headerOffset, subchunk2);
 			break;
 		default:
-			throw new Exception (bitDepth + " bit depth is not supported.");
+			throw new Exception (bitDepth + " bit " +
+			                     "depth is not supported.");
 		}
 
 		AudioClip audioClip = AudioClip.Create (name, data.Length, (int)channels, sampleRate, false);

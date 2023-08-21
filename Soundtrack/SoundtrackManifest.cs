@@ -8,6 +8,8 @@ namespace TNHBGLoader.Soundtrack {
 		public string         Path;
 		//GUID of the soundtrack
 		public string         Guid;
+		//Location of where the soundtracks are located, relative to the yamlfest.
+		public string		  Location;
 		//List of potential Hold songs
 		public HoldData[]	  Holds;
 		//List of potential Take songs

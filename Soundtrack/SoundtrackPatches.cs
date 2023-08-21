@@ -1,5 +1,6 @@
 ﻿using FistVR;
 using HarmonyLib;
+using UnityEngine;
 
 namespace TNHBGLoader.Soundtrack {
 	public class SoundtrackPatches {
@@ -11,7 +12,7 @@ namespace TNHBGLoader.Soundtrack {
 			int level = GM.TNH_Manager.m_level;
 			if (musicIndex == 1) {
 				var holdMusic = SoundtrackAPI.GetAudioclipsForHold(level);
-				TnHSoundtrack.SwitchSong(holdMusic.Intro, false); // Forcefully set song to intro, which will end and go to
+				TnHSoundtrack.SwitchSong(holdMusic.Intro, "Intro", false); // Forcefully set song to intro, which will end and go to
 				TnHSoundtrack.Queue(holdMusic.Lo, true, true, "Lo"); // The Lo song, which will need to be manually skipped to
 				TnHSoundtrack.Queue(holdMusic.Transition, true, false, "Transition"); // The transition song which ends and starts
 				TnHSoundtrack.Queue(holdMusic.MedHi, true, true, "MedHi"); // The MedHi song, see Lo and then
@@ -24,30 +25,34 @@ namespace TNHBGLoader.Soundtrack {
 		[HarmonyPatch(typeof(TNH_Manager), "SetHoldWaveIntensity")]
 		[HarmonyPrefix]
 		public static bool Patch_SetHoldWaveIntensity_TransitionToMedHi(ref int intensity) {
-			if (!SoundtrackAPI.SoundtrackEnabled)
+			if (!SoundtrackAPI.SoundtrackEnabled || intensity != 2)
 				return true;
 			// Just making sure it *skips* to Transition.
 			// There's like, NO good reason this should be needed.
 			// But i dont want to risk it.
 			// i stg if this null throws
-			while (TnHSoundtrack.SongQueue[0].name != "Transition")
+			while (TnHSoundtrack.SongQueue[0].name != "Transition") {
+				Debug.Log($"Skipping song {TnHSoundtrack.SongQueue[0].name}");
 				TnHSoundtrack.SongQueue.RemoveAt(0);
-			if (intensity == 2)
-				TnHSoundtrack.PlayNextSongInQueue();
-			return false;
+			}
+			TnHSoundtrack.PlayNextSongInQueue();
+			return true;
 		}
 		
-		[HarmonyPatch(typeof(TNH_Manager), "SetPhase_Completed")]
+		[HarmonyPatch(typeof(TNH_Manager), "SetPhase_Take")]
 		[HarmonyPrefix]
-		public static bool Patch_SetPhaseCompleted_PlayEndAndTakeSong(ref int intensity) {
-			if (!SoundtrackAPI.SoundtrackEnabled)
+		public static bool Patch_SetPhaseTake_PlayEndAndTakeSong() {
+			if (!SoundtrackAPI.SoundtrackEnabled || TnHSoundtrack.SongQueue.Count == 0)
 				return true;
 			// Just making sure it *skips* to End.
 			// i stg if this null throws
-			while (TnHSoundtrack.SongQueue[0].name != "End")
+			while (TnHSoundtrack.SongQueue[0].name != "End") {
+				Debug.Log($"Skipping song {TnHSoundtrack.SongQueue[0].name}");
 				TnHSoundtrack.SongQueue.RemoveAt(0);
+			}
+			Debug.Log($"Playing end song.");
 			TnHSoundtrack.PlayNextSongInQueue();
-			return false;
+			return true;
 		}
 		
 		[HarmonyPatch(typeof(TNH_Manager), "Start")]

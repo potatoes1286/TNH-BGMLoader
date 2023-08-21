@@ -230,7 +230,7 @@ namespace TNHBGLoader
 			bool oob = NewFirstMusicIndex < 0;
 			switch (TNHPstate) {
 				case TNHPstates.BGM:
-					if (NewFirstMusicIndex >= BankAPI.LoadedBankLocations.Count + SoundtrackAPI.Soundtracks.Length) oob = true;
+					if (NewFirstMusicIndex >= BankAPI.LoadedBankLocations.Count + SoundtrackAPI.Soundtracks.Count) oob = true;
 					break;
 				case TNHPstates.Announcer:
 					if (NewFirstMusicIndex >= AnnouncerAPI.LoadedAnnouncers.Count) oob = true;
@@ -309,7 +309,7 @@ namespace TNHBGLoader
 				case TNHPstates.BGM:
 					if (index < BankAPI.LoadedBankLocations.Count)
 						return BankAPI.GetNameFromIndex(index, true);
-					if (index < BankAPI.LoadedBankLocations.Count + SoundtrackAPI.Soundtracks.Length)
+					if (index < BankAPI.LoadedBankLocations.Count + SoundtrackAPI.Soundtracks.Count)
 						return SoundtrackAPI.Soundtracks[index - BankAPI.LoadedBankLocations.Count].Name;
 					break;
 				case TNHPstates.Announcer:

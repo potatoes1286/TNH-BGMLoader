@@ -12,7 +12,7 @@ namespace TNHBGLoader.Soundtrack {
 		public static int           CurrentAudioSource;
 		
 		public static AudioSource GetNotCurrentAudioSource => AudioSources[CurrentAudioSource == 0 ? 1 : 0];
-		public static AudioSource GetCurrentAudioSource => GetCurrentAudioSource;
+		public static AudioSource GetCurrentAudioSource => AudioSources[CurrentAudioSource];
 
 		public struct SongQueueItem {
 			public AudioClip clip;
@@ -21,7 +21,7 @@ namespace TNHBGLoader.Soundtrack {
 			public string    name;
 		}
 		
-		public static List<SongQueueItem> SongQueue;
+		public static List<SongQueueItem> SongQueue = new List<SongQueueItem>();
 
 		//feels redundant, probably is
 		public static void Queue(AudioClip clip, bool fadeIn, bool loop, string name) {
@@ -37,7 +37,7 @@ namespace TNHBGLoader.Soundtrack {
 		private static bool  isSwitching; //if true, is switching between songs
 		private static float switchStartTime; //When the switch began via Time.time
 		private static float switchLength = 1.5f; //how long the switch lasts, in seconds
-		private static float maxVol; //Maximum volume set by settings
+		private static float vol = (PluginMain.AnnouncerMusicVolume.Value / 4f); //volume set by settings (Maximum is naturally 1)
 		
 		private static float songLength; // amount of time in seconds the current song lasts
 		private static float songStartTime; // When the current song began via Time.time
@@ -45,19 +45,21 @@ namespace TNHBGLoader.Soundtrack {
 
 		public static void CreateAudioSources() {
 			AudioSources = new[] {
-				GM.Instance.gameObject.AddComponent<AudioSource>(),
-				GM.Instance.gameObject.AddComponent<AudioSource>()
+				GM.Instance.m_currentPlayerBody.Head.gameObject.AddComponent<AudioSource>(),
+				GM.Instance.m_currentPlayerBody.Head.gameObject.AddComponent<AudioSource>()
 			};
 			foreach (var source in AudioSources) {
 				source.playOnAwake = false;
 				source.priority = 0;
-				source.volume = maxVol;
+				source.volume = vol;
 				source.spatialBlend = 0;
 				source.loop = true; //lets just fucking assume huh
 			}
 		}
 		
-		public static void SwitchSong(AudioClip newSong, bool loopNewSong = true, bool fadeOut = true) {
+		public static void SwitchSong(AudioClip newSong, string name, bool loopNewSong = true, bool fadeOut = true) {
+			Debug.Log($"Playing song {name} of length {newSong.length}");
+			songStartTime = Time.time;
 			songLength = newSong.length;
 			//If current source is 0, new source is 1, and vice versa.
 			int newSource = CurrentAudioSource == 0 ? 1 : 0;
@@ -77,7 +79,7 @@ namespace TNHBGLoader.Soundtrack {
 				GetCurrentAudioSource.Stop();
 				CurrentAudioSource = newSource;
 				GetCurrentAudioSource.clip = newSong;
-				GetCurrentAudioSource.volume = maxVol;
+				GetCurrentAudioSource.volume = vol;
 				if (loopNewSong)
 					GetCurrentAudioSource.loop = true;
 				else
@@ -86,13 +88,14 @@ namespace TNHBGLoader.Soundtrack {
 			}
 		}
 
-		public void Start() {
+		public void Awake() {
+			vol = PluginMain.AnnouncerMusicVolume.Value / 4f;
 			CreateAudioSources();
 			//I'm not too sure why? But hotswapping banks mid-game will completely break FMOD.
 			//In other words, instead of properly stopping FMOD, i am just making itself crash.
 			//Good code design.
-			BankAPI.SwapBank(0);
-			SwitchSong(SoundtrackAPI.GetAudioclipsForTake(0).Track); //start playing take theme
+			Debug.Log("Gonna make it play now.");
+			SwitchSong(SoundtrackAPI.GetAudioclipsForTake(0).Track, "Take"); //start playing take theme
 		}
 
 		public void Update() {
@@ -101,7 +104,7 @@ namespace TNHBGLoader.Soundtrack {
 			if (isSwitching) {
 				timeDif = Time.time - switchStartTime; //get time dif between start and now
 				float progress = timeDif / switchLength; //pcnt progress on how far into switching it is
-				float newVol = progress * maxVol; //Linear progression sadly. TODO: Add easing function
+				float newVol = progress * vol; //Linear progression sadly. TODO: Add easing function
 				GetCurrentAudioSource.volume = newVol;
 				GetNotCurrentAudioSource.volume = 1 - newVol;
 				if (progress >= 1) {
@@ -114,6 +117,7 @@ namespace TNHBGLoader.Soundtrack {
 			timeDif = songLength - (Time.time - songStartTime);
 			//Note for a potential bug- songStartTime will NOT reset if the song is looping.
 			if (timeDif <= switchLength && !GetCurrentAudioSource.loop && SongQueue.Count > 0) {
+				Debug.Log($"End of song incoming. Playing next song.");
 				PlayNextSongInQueue();
 			}
 		}
@@ -123,7 +127,7 @@ namespace TNHBGLoader.Soundtrack {
 			//Swap the songs out with juuuust enough time for the current song to end.
 			var song = SongQueue[0];
 			SongQueue.RemoveAt(0);
-			SwitchSong(song.clip, song.loop, song.fadeIn);
+			SwitchSong(song.clip, song.name, song.loop, song.fadeIn);
 		}
 	}
 }

@@ -8,7 +8,7 @@ using UnityEngine;
 namespace TNHBGLoader.Soundtrack {
 	public static class SoundtrackAPI {
 
-		public static SoundtrackManifest[] Soundtracks;
+		public static List<SoundtrackManifest> Soundtracks = new List<SoundtrackManifest>();
 		//If enabled, use soundtracks. If not, use Banks.
 		public static bool                 SoundtrackEnabled;
 		public static int                  SelectedSoundtrack;
@@ -18,17 +18,21 @@ namespace TNHBGLoader.Soundtrack {
 		//Assemble a complete soundtrack manifest using the path of the file.
 		//Can be written as Ass Music for short, symbolizing what you're gonna do with it.
 		public static SoundtrackManifest AssembleMusicData(SoundtrackManifest manifest) {
-			string dirPath = manifest.Path;
+			string dirPath = Path.Combine(Path.GetDirectoryName(manifest.Path), manifest.Location);
 			//ingest sequences
 			List<HoldData> sequenceDatas = new List<HoldData>();
 			string[] sequences = Directory.GetDirectories(dirPath);
 			foreach (var sequence in sequences) {
+				Debug.Log($"Ingesting hold sequence {sequence}");
+				if (File.Exists(sequence) && !sequence.Contains(".wav")) //it was ingesting the fucking yaml :/
+					continue;
 				//split directory name into sequence, timing, and name
 				//See _FORMAT.txt for more.
-				string[] metadata = Path.GetDirectoryName(sequence).Split('_');
+				//Despite the confusing name, GetFileName works here. Changes C:\folder1\folder2 -> folder2
+				string[] metadata = Path.GetFileName(sequence).Split('_');
 				//Verify the sequence info is valid
 				if (metadata[0] != "sequence" || metadata.Length != 3) {
-					Debug.LogError($"Soundtrack {manifest.Name} has an incorrect sequence info name at file {sequence}!");
+					Debug.LogError($"Soundtrack {manifest.Name} has an incorrect sequence info name at file {Path.GetFileName(sequence)}!");
 					continue;
 				}
 				HoldData data = new HoldData();
@@ -37,6 +41,7 @@ namespace TNHBGLoader.Soundtrack {
 				data.Name = metadata[2];
 				//get the wav files; turn to audio clips and all that jazz
 				data.Intro = WavUtility.ToAudioClip(Path.Combine(sequence, "intro.wav"));
+				Debug.Log($"Ingesting intro sequence {Path.Combine(sequence, "intro.wav")}");
 				data.Lo = WavUtility.ToAudioClip(Path.Combine(sequence, "lo.wav"));
 				data.Transition = WavUtility.ToAudioClip(Path.Combine(sequence, "transition.wav"));
 				data.MedHi = WavUtility.ToAudioClip(Path.Combine(sequence, "medhi.wav"));
@@ -50,6 +55,9 @@ namespace TNHBGLoader.Soundtrack {
 			//See _FORMAT.txt for more info.
 			string[] takes = Directory.GetFiles(dirPath, "take_*_*.wav", SearchOption.TopDirectoryOnly);
 			foreach (var take in takes) {
+				Debug.Log($"Ingesting takes {take}");
+				if (File.Exists(take) && !take.Contains(".wav")) //it was ingesting the fucking yaml :/
+					continue;
 				string[] metadata = Path.GetFileName(take).Split('_');
 				TakeData data = new TakeData();
 				data.Timing = metadata[1];
@@ -68,6 +76,7 @@ namespace TNHBGLoader.Soundtrack {
 			manifest.Name = yamlfest.Name;
 			manifest.Guid = yamlfest.Guid;
 			manifest.Path = path;
+			manifest.Location = yamlfest.location;
 			return manifest;
 		}
 		
@@ -89,7 +98,9 @@ namespace TNHBGLoader.Soundtrack {
 			if (holds.Count() == 0)
 				holds = soundtrack.Holds.Where(x => x.Timing == "fallback");
 			var number = UnityEngine.Random.Range(0, holds.Count());
-			return holds.ToArray()[number];
+			var data = holds.ToArray()[number];
+			Debug.Log($"Selected {data.Name}");
+			return data;
 		}
 		
 		public static TakeData GetAudioclipsForTake(int situation) {
@@ -98,7 +109,9 @@ namespace TNHBGLoader.Soundtrack {
 			if (takes.Count() == 0)
 				takes = soundtrack.Takes.Where(x => x.Timing == "fallback");
 			var number = UnityEngine.Random.Range(0, takes.Count());
-			return takes.ToArray()[number];
+			var data = takes.ToArray()[number];
+			Debug.Log($"Selected {data.Name}");
+			return data;
 		}
 		
 		//Does not account for fallback.

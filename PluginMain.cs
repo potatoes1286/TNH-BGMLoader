@@ -140,7 +140,14 @@ namespace TNHBGLoader
 		public Empty LoadSoundtrack(FileSystemInfo handle) {
 			var file = handle.ConsumeFile();
 			SoundtrackYamlfest yamlfest = _deserializer.Deserialize<SoundtrackYamlfest>(File.ReadAllText(file.FullName));
-			SoundtrackAPI.AssembleMusicData(yamlfest.ToManifest(file.FullName)); //Convert Yamlfest to Manifest and forward to AMD.
+			Debug.Log($"Loading soundtrack {yamlfest.Name}");
+			var manifest = SoundtrackAPI.AssembleMusicData(yamlfest.ToManifest(file.FullName)); //Convert Yamlfest to Manifest and forward to AMD.
+			if (SoundtrackAPI.Soundtracks == null) {
+				Debug.Log("retard");
+				SoundtrackAPI.Soundtracks = new List<SoundtrackManifest>();
+			}
+
+			SoundtrackAPI.Soundtracks.Add(manifest);
 			return new Empty();
 		}
 		
