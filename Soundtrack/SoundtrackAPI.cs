@@ -40,12 +40,65 @@ namespace TNHBGLoader.Soundtrack {
 				data.Timing = metadata[1];
 				data.Name = metadata[2];
 				//get the wav files; turn to audio clips and all that jazz
-				data.Intro = WavUtility.ToAudioClip(Path.Combine(sequence, "intro.wav"));
-				Debug.Log($"Ingesting intro sequence {Path.Combine(sequence, "intro.wav")}");
-				data.Lo = WavUtility.ToAudioClip(Path.Combine(sequence, "lo.wav"));
-				data.Transition = WavUtility.ToAudioClip(Path.Combine(sequence, "transition.wav"));
-				data.MedHi = WavUtility.ToAudioClip(Path.Combine(sequence, "medhi.wav"));
-				data.End = WavUtility.ToAudioClip(Path.Combine(sequence, "end.wav"));
+				
+				//Put them all into lists before we populate the manifest arrays
+				var Intros = new List<Track>();
+				var Los = new List<Track>();
+				var Transitions = new List<Track>();
+				var MedHis = new List<Track>();
+				var Ends = new List<Track>();
+				
+				// Go thru all .wavs and sort them with metadata, name, and track
+				var files = Directory.GetFiles(sequence, "*.wav", SearchOption.TopDirectoryOnly);
+				foreach (var file in files) {
+					Debug.Log($"Handling file {file}");
+					var fileName = Path.GetFileNameWithoutExtension(file);
+					var track = new Track();
+					
+					track.clip = WavUtility.ToAudioClip(file);
+					
+					var fileSplit = fileName.Split('_'); // Format: [Track type]_[metadata]_[identifier] or [Track type]_[identifier]
+					//populate metadata + name fields
+					if (fileSplit.Length == 2) {
+						track.metadata = new[] { "" };
+						track.name = fileSplit[1];
+					} else if (fileSplit.Length == 3) {
+						track.metadata = fileSplit[1].Split('/');
+						track.name = fileSplit[2];
+						//Verify the arguments in metadata are valid
+						foreach (var arg in track.metadata)
+							if (arg != "sip" && arg != "dnf" && arg != "loop")
+								Debug.LogError($"File {file} has invalid metadata: {arg}!");
+					}
+					else {
+						Debug.LogError($"File {file} has an invalid name!");
+					}
+					//put them into the correct track types
+					track.type = fileSplit[0];
+					switch (fileSplit[0]) {
+						case "intro":
+							Intros.Add(track);
+							break;
+						case "lo":
+							Los.Add(track);
+							break;
+						case "transition":
+							Transitions.Add(track);
+							break;
+						case "medhi":
+							MedHis.Add(track);
+							break;
+						case "end":
+							Ends.Add(track);
+							break;
+					}
+				}
+
+				data.Intro = Intros.ToArray();
+				data.Lo = Los.ToArray();
+				data.Transition = Transitions.ToArray();
+				data.MedHi = MedHis.ToArray();
+				data.End = Ends.ToArray();
 				sequenceDatas.Add(data);
 			}
 			

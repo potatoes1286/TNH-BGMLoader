@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using FistVR;
 using FMODUnity;
 using HarmonyLib;
@@ -6,6 +7,7 @@ using TNH_BGLoader;
 using UnityEngine;
 
 namespace TNHBGLoader.Soundtrack {
+
 	public class TnHSoundtrack : MonoBehaviour {
 		
 		public static AudioSource[] AudioSources;
@@ -14,24 +16,21 @@ namespace TNHBGLoader.Soundtrack {
 		public static AudioSource GetNotCurrentAudioSource => AudioSources[CurrentAudioSource == 0 ? 1 : 0];
 		public static AudioSource GetCurrentAudioSource => AudioSources[CurrentAudioSource];
 
-		public struct SongQueueItem {
-			public AudioClip clip;
-			public bool      fadeIn;
-			public bool      loop;
-			public string    name;
-		}
-		
-		public static List<SongQueueItem> SongQueue = new List<SongQueueItem>();
+		public static List<Track> SongQueue = new List<Track>();
 
 		//feels redundant, probably is
-		public static void Queue(AudioClip clip, bool fadeIn, bool loop, string name) {
-			SongQueue.Add(new SongQueueItem()
+		public static void Queue(AudioClip clip, string metadata, string name) {
+			SongQueue.Add(new Track()
 			{
 				clip = clip,
-				fadeIn = fadeIn,
-				loop = loop,
+				metadata = metadata.Split('/'),
 				name = name
 			});
+		}
+		
+		//oh now THIS is redundant.
+		public static void Queue(Track track) {
+			SongQueue.Add(track);
 		}
 
 		private static bool  isSwitching; //if true, is switching between songs
@@ -39,7 +38,7 @@ namespace TNHBGLoader.Soundtrack {
 		private static float switchLength = 1.5f; //how long the switch lasts, in seconds
 		private static float vol = (PluginMain.AnnouncerMusicVolume.Value / 4f); //volume set by settings (Maximum is naturally 1)
 		
-		private static float songLength; // amount of time in seconds the current song lasts
+		private static double songLength; // amount of time in seconds the current song lasts
 		private static float songStartTime; // When the current song began via Time.time
 
 
@@ -58,9 +57,16 @@ namespace TNHBGLoader.Soundtrack {
 		}
 		
 		public static void SwitchSong(AudioClip newSong, string name, bool loopNewSong = true, bool fadeOut = true) {
-			Debug.Log($"Playing song {name} of length {newSong.length}");
+			
 			songStartTime = Time.time;
-			songLength = newSong.length;
+			
+			// Who the fuck decided that the length of an audioclip would not represent the length of an audioclip?
+			// I hate unity with a burning passion.
+			//songLength = newSong.length;
+			songLength = (double)newSong.samples / (newSong.frequency * newSong.channels);
+			
+			Debug.Log($"Playing song {name} of length {songLength} ");
+
 			//If current source is 0, new source is 1, and vice versa.
 			int newSource = CurrentAudioSource == 0 ? 1 : 0;
 			if (fadeOut) {
@@ -114,11 +120,17 @@ namespace TNHBGLoader.Soundtrack {
 			}
 			
 			//Handle Queue
-			timeDif = songLength - (Time.time - songStartTime);
+			timeDif = (float)songLength - (Time.time - songStartTime);
 			//Note for a potential bug- songStartTime will NOT reset if the song is looping.
 			if (timeDif <= switchLength && !GetCurrentAudioSource.loop && SongQueue.Count > 0) {
 				Debug.Log($"End of song incoming. Playing next song.");
 				PlayNextSongInQueue();
+			}
+			else if (timeDif <= 0f && GetCurrentAudioSource.loop) {
+				//Handle looping. because the BUILT IN LOOP FUNCTION FOR UNITY DOESN'T ACTUALLY GODDAMN WORK PROPERLY
+				//UUUUUGGGHHH UNITY PLEASE
+				GetCurrentAudioSource.Stop();
+				GetCurrentAudioSource.Play();
 			}
 		}
 		
@@ -127,7 +139,7 @@ namespace TNHBGLoader.Soundtrack {
 			//Swap the songs out with juuuust enough time for the current song to end.
 			var song = SongQueue[0];
 			SongQueue.RemoveAt(0);
-			SwitchSong(song.clip, song.name, song.loop, song.fadeIn);
+			SwitchSong(song.clip, song.name, song.metadata.Any(x => x == "loop"), song.metadata.All(x => x != "dnf"));
 		}
 	}
 }

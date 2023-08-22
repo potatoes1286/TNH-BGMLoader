@@ -1,6 +1,14 @@
 ﻿using UnityEngine;
 
 namespace TNHBGLoader.Soundtrack {
+	
+	public struct Track {
+		public AudioClip clip;
+		public string[]  metadata; //sip (Skip In Place), dnf (Do Not Fade), loop
+		public string    name;
+		public string    type;
+	}
+	
 	public class SoundtrackManifest {
 		//Name of the soundtrack
 		public string         Name;
@@ -23,15 +31,15 @@ namespace TNHBGLoader.Soundtrack {
 		//Name. Doesn't do much of anything, really.
 		public string    Name;
 		//Right when you touch the hold cube
-		public AudioClip Intro;
+		public Track[] Intro;
 		//Plays after intro
-		public AudioClip Lo;
+		public Track[] Lo;
 		//Transition to MedHi
-		public AudioClip Transition;
+		public Track[] Transition;
 		//Plays at later stages of the hold
-		public AudioClip MedHi;
+		public Track[] MedHi;
 		//End of the hold
-		public AudioClip End;
+		public Track[] End;
 	}
 	
 	//Metadata for the Take phase
@@ -41,6 +49,7 @@ namespace TNHBGLoader.Soundtrack {
 		//Name. Doesn't do much of anything, really.
 		public string    Name;
 		//Looping track during the take
+		//Takes don't have any metadata, so don't worry about it not being a Track and being an AudioClip.
 		public AudioClip Track;
 	}
 }

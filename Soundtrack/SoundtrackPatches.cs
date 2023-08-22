@@ -12,12 +12,17 @@ namespace TNHBGLoader.Soundtrack {
 			int level = GM.TNH_Manager.m_level;
 			if (musicIndex == 1) {
 				var holdMusic = SoundtrackAPI.GetAudioclipsForHold(level);
-				TnHSoundtrack.SwitchSong(holdMusic.Intro, "Intro", false); // Forcefully set song to intro, which will end and go to
-				TnHSoundtrack.Queue(holdMusic.Lo, true, true, "Lo"); // The Lo song, which will need to be manually skipped to
-				TnHSoundtrack.Queue(holdMusic.Transition, true, false, "Transition"); // The transition song which ends and starts
-				TnHSoundtrack.Queue(holdMusic.MedHi, true, true, "MedHi"); // The MedHi song, see Lo and then
-				TnHSoundtrack.Queue(holdMusic.End, true, false, "End"); // The end song plays. Once that's over
-				TnHSoundtrack.Queue(SoundtrackAPI.GetAudioclipsForTake(level + 1).Track, true, true, "Take"); // The Take song for the next level will play.
+				
+				 
+				
+				
+				TnHSoundtrack.SwitchSong(holdMusic.Intro[Random.Range(0, holdMusic.Intro.Length)].clip, "Intro", false); // Forcefully set song to intro, which will end and go to
+				TnHSoundtrack.Queue(holdMusic.Lo[Random.Range(0, holdMusic.Intro.Length)]); // The Lo song, which will need to be manually skipped to
+				TnHSoundtrack.Queue(holdMusic.Transition[Random.Range(0, holdMusic.Intro.Length)]); // The transition song which ends and starts
+				TnHSoundtrack.Queue(holdMusic.MedHi[Random.Range(0, holdMusic.Intro.Length)]); // The MedHi song, see Lo and then
+				TnHSoundtrack.Queue(holdMusic.End[Random.Range(0, holdMusic.Intro.Length)]); // The end song plays. Once that's over
+				var take = SoundtrackAPI.GetAudioclipsForTake(level + 1);
+				TnHSoundtrack.Queue(take.Track, "loop", take.Name); // The Take song for the next level will play.
 			}
 			return false;
 		}
@@ -31,8 +36,8 @@ namespace TNHBGLoader.Soundtrack {
 			// There's like, NO good reason this should be needed.
 			// But i dont want to risk it.
 			// i stg if this null throws
-			while (TnHSoundtrack.SongQueue[0].name != "Transition") {
-				Debug.Log($"Skipping song {TnHSoundtrack.SongQueue[0].name}");
+			while (TnHSoundtrack.SongQueue[0].type != "transition") {
+				Debug.Log($"Skipping song {TnHSoundtrack.SongQueue[0].name} of type {TnHSoundtrack.SongQueue[0].type}");
 				TnHSoundtrack.SongQueue.RemoveAt(0);
 			}
 			TnHSoundtrack.PlayNextSongInQueue();
@@ -46,8 +51,8 @@ namespace TNHBGLoader.Soundtrack {
 				return true;
 			// Just making sure it *skips* to End.
 			// i stg if this null throws
-			while (TnHSoundtrack.SongQueue[0].name != "End") {
-				Debug.Log($"Skipping song {TnHSoundtrack.SongQueue[0].name}");
+			while (TnHSoundtrack.SongQueue[0].type != "end") {
+				Debug.Log($"Skipping song {TnHSoundtrack.SongQueue[0].name} of type {TnHSoundtrack.SongQueue[0].type}");
 				TnHSoundtrack.SongQueue.RemoveAt(0);
 			}
 			Debug.Log($"Playing end song.");
