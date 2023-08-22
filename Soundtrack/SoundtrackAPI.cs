@@ -177,6 +177,8 @@ namespace TNHBGLoader.Soundtrack {
 				return true;
 			if (seqTiming == "fallback")
 				return false;
+			if (seqTiming == "death" && situation == -1)
+				return true;
 			
 			if (seqTiming.Contains(',')) {
 				//This is a split seqTiming. EG 1,3,5
@@ -194,17 +196,17 @@ namespace TNHBGLoader.Soundtrack {
 				return false;
 			}
 
-			if (seqTiming.Contains('+')) {
-				//This is above a number (inclusive). EG 3+
-				var val = int.Parse(seqTiming.Replace("+", string.Empty));
+			if (seqTiming.Contains("ge")) {
+				//This is above a number (inclusive). EG ge3
+				var val = int.Parse(seqTiming.Replace("ge", string.Empty));
 				if (situation >= val)
 					return true;
 				return false;
 			}
 			
-			if (seqTiming.Contains('-')) {
-				//This is above a number (inclusive). EG 3+
-				var val = int.Parse(seqTiming.Replace("-", string.Empty));
+			if (seqTiming.Contains("le")) {
+				//This is above a number (inclusive). EG le3
+				var val = int.Parse(seqTiming.Replace("le", string.Empty));
 				if (situation <= val)
 					return true;
 				return false;
@@ -216,8 +218,7 @@ namespace TNHBGLoader.Soundtrack {
 		}
 
 		public static Texture2D GetIcon(int soundtrack) {
-			//TODO: DO this!
-			return null;
+			return GeneralAPI.GetIcon(Soundtracks[soundtrack].Guid, new[] { Path.Combine(Soundtracks[soundtrack].Path, "icon.png") });
 		}
 	}
 }

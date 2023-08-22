@@ -66,6 +66,17 @@ namespace TNHBGLoader.Soundtrack {
 			return true;
 		}
 		
+		[HarmonyPatch(typeof(TNH_Manager), "SetPhase_Dead")]
+		[HarmonyPrefix]
+		public static bool Patch_SetPhaseDead_PlayTake() {
+			if (!SoundtrackAPI.SoundtrackEnabled)
+				return true;
+			Debug.Log($"Playing dead song.");
+			var track = SoundtrackAPI.GetAudioclipsForTake(-1);
+			TnHSoundtrack.SwitchSong(track.Track, track.Name, new []{"loop"} );
+			return true;
+		}
+		
 		[HarmonyPatch(typeof(TNH_Manager), "Start")]
 		[HarmonyPrefix]
 		public static bool Patch_Start_AddTnHSoundtrack(ref TNH_Manager __instance) {
