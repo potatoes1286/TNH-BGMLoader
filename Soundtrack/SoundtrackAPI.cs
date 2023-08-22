@@ -47,6 +47,9 @@ namespace TNHBGLoader.Soundtrack {
 				var Transitions = new List<Track>();
 				var MedHis = new List<Track>();
 				var Ends = new List<Track>();
+				var Phases = new List<List<Track>>(); //2d list!
+				var PhaseTransitions = new List<List<Track>>();
+				var OrbTouches = new List<Track>();
 				
 				// Go thru all .wavs and sort them with metadata, name, and track
 				var files = Directory.GetFiles(sequence, "*.wav", SearchOption.TopDirectoryOnly);
@@ -91,14 +94,55 @@ namespace TNHBGLoader.Soundtrack {
 						case "end":
 							Ends.Add(track);
 							break;
+						case "orbtouch":
+							OrbTouches.Add(track);
+							break;
+						default:
+							//handle phases
+							var isTransition = false;
+							//remove non-number parts
+							if (fileSplit[0].Contains("phasetr")) {
+								fileSplit[0].Replace("phasetr", String.Empty);
+								isTransition = true;
+							}
+							if (fileSplit[0].Contains("phase")) {
+								fileSplit[0].Replace("phase", String.Empty);
+							}
+							var tp = int.TryParse(fileSplit[0], out int phase);
+							if (!tp) {
+								Debug.LogError($"Cannot categorize {file}!");
+								break;
+							}
+							//There must be 1 more Phase.Count than phase. phase starts at 0
+							//If there's not enough Phases, then we just keep adding until we have enough
+							if (!isTransition) {
+								while (phase >= Phases.Count)
+									Phases.Add(new List<Track>());
+								Phases[phase].Add(track);
+							}
+							else {
+								while (phase >= PhaseTransitions.Count)
+									PhaseTransitions.Add(new List<Track>());
+								PhaseTransitions[phase].Add(track);
+							}
+
+							break;
 					}
 				}
+				
+				if((Phases.Any() || PhaseTransitions.Any()) && (Los.Any() || MedHis.Any()))
+					PluginMain.DebugLog.LogError($"{manifest.Guid}:{sequence} mixes together Phases and Lo/MedHi! This is unsupported! Defaulting to Phases.");
+				if(!Los.Any())
+					PluginMain.DebugLog.LogError($"{manifest.Guid}:{sequence} does not contain a Lo! This is unsupported!");
 
 				data.Intro = Intros.ToArray();
 				data.Lo = Los.ToArray();
 				data.Transition = Transitions.ToArray();
 				data.MedHi = MedHis.ToArray();
 				data.End = Ends.ToArray();
+				data.OrbTouch = OrbTouches.ToArray();
+				data.Phase = Phases;
+				data.PhaseTransition = PhaseTransitions;
 				sequenceDatas.Add(data);
 			}
 			

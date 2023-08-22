@@ -21,11 +21,11 @@ namespace TNHBGLoader.Soundtrack {
 				if(holdMusic.MedHi.Length > 0)
 					TnHSoundtrack.Queue(holdMusic.MedHi[Random.Range(0, holdMusic.Intro.Length)]); // The MedHi song, see Lo and then
 				if(holdMusic.End.Length > 0)
-					TnHSoundtrack.Queue(holdMusic.End[Random.Range(0, holdMusic.Intro.Length)]); // The end song plays. Once that's over
+					TnHSoundtrack.Queue(holdMusic.End[Random.Range(0, holdMusic.End.Length)]); // End
 				var take = SoundtrackAPI.GetAudioclipsForTake(level + 1);
-				TnHSoundtrack.Queue(take.Track, "loop", take.Name, "take"); // The Take song for the next level will play.
+				TnHSoundtrack.Queue(take.Track, "loop", take.Name, "take"); // Take song after the hold
 				
-				TnHSoundtrack.PlayNextSongInQueue();
+				TnHSoundtrack.PlayNextSongInQueue(); // Plays next song, finishing Take and playing Intro (if exists, if not, Lo or Phases.)
 			}
 			return false;
 		}

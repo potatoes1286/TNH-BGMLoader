@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace TNHBGLoader.Soundtrack {
 	
@@ -40,6 +41,14 @@ namespace TNHBGLoader.Soundtrack {
 		public Track[] MedHi;
 		//End of the hold
 		public Track[] End;
+		
+		//Alt system, Phases.
+		//Eh. Fuck it. List time.
+		public List<List<Track>> Phase;
+		public List<List<Track>> PhaseTransition;
+
+		//Replace sound of OrbTouch.
+		public Track[] OrbTouch;
 	}
 	
 	//Metadata for the Take phase
