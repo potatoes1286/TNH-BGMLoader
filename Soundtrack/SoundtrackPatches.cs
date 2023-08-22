@@ -23,7 +23,8 @@ namespace TNHBGLoader.Soundtrack {
 				if (HoldMusic.Phase.Count != 0) { // Using phases.
 					for (int phase = 0; phase < HoldMusic.Phase.Count; phase++) {
 						TnHSoundtrack.Queue(HoldMusic.Phase[phase][Random.Range(0, HoldMusic.Phase.Count)]); // Phase
-						TnHSoundtrack.Queue(HoldMusic.PhaseTransition[phase][Random.Range(0, HoldMusic.PhaseTransition.Count)]); // Phase Transition
+						if(HoldMusic.PhaseTransition[phase].Count > 0)
+							TnHSoundtrack.Queue(HoldMusic.PhaseTransition[phase][Random.Range(0, HoldMusic.PhaseTransition.Count)]); // Phase Transition
 					}
 				}
 				else { // Not using Phases. Continue as normal.

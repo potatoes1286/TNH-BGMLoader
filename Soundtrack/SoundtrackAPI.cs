@@ -248,9 +248,15 @@ namespace TNHBGLoader.Soundtrack {
 				return true;
 			if (seqTiming == "fallback")
 				return false;
-			if (seqTiming == "death" && situation == -1)
-				return true;
+			if (seqTiming == "death")
+				if (situation == -1) {
+					return true;
+				}
+				else {
+					return false;
+				}
 			
+
 			if (seqTiming.Contains(',')) {
 				//This is a split seqTiming. EG 1,3,5
 				var situations = seqTiming.Split(',');
