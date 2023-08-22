@@ -140,6 +140,7 @@ namespace TNHBGLoader.Soundtrack {
 				//UUUUUGGGHHH UNITY PLEASE
 				GetCurrentAudioSource.Stop();
 				GetCurrentAudioSource.Play();
+				songStartTime = Time.time;
 			}
 		}
 		
