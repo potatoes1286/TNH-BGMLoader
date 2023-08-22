@@ -122,7 +122,8 @@ namespace TNHBGLoader.Soundtrack {
 				float progress = timeDif / switchLength; //pcnt progress on how far into switching it is
 				float newVol = progress * vol; //Linear progression sadly. TODO: Add easing function
 				GetCurrentAudioSource.volume = newVol;
-				GetNotCurrentAudioSource.volume = 1 - newVol;
+				GetNotCurrentAudioSource.volume = vol - newVol;
+				Debug.Log($"timeDif: {timeDif}, curAudioSource {newVol}, oldAudioSource {1 - newVol}");
 				if (progress >= 1) {
 					isSwitching = false;
 					GetNotCurrentAudioSource.Stop();
