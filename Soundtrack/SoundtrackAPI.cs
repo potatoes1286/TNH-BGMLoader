@@ -137,14 +137,14 @@ namespace TNHBGLoader.Soundtrack {
 		public static void LoadSoundtrack(int index) {
 			//Flag the game that we're doing soundtrack. Unflagging is done in BankAPI.SwapBanks.
 			SoundtrackEnabled = true;
+			PluginMain.IsSoundtrack.Value = true;
 			SelectedSoundtrack = index;
-			//Do i even have to do more?
-			//Uh.
+			PluginMain.LastLoadedSoundtrack.Value = Soundtracks[SelectedSoundtrack].Guid;
 		}
 
 		
 		//I am a big hater of DRY
-		//no particular reason
+		//no particular reason 
 		public static HoldData GetAudioclipsForHold(int situation) {
 			var soundtrack = Soundtracks[SelectedSoundtrack];
 			var holds = soundtrack.Holds.Where(x => x.Timing.TimingsMatch(situation));

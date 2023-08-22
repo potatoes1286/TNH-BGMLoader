@@ -310,7 +310,7 @@ namespace TNHBGLoader
 					if (index < BankAPI.LoadedBankLocations.Count)
 						return BankAPI.GetNameFromIndex(index, true);
 					if (index < BankAPI.LoadedBankLocations.Count + SoundtrackAPI.Soundtracks.Count)
-						return SoundtrackAPI.Soundtracks[index - BankAPI.LoadedBankLocations.Count].Name;
+						return $"{index - BankAPI.LoadedBankLocations.Count + 1}: {SoundtrackAPI.Soundtracks[index - BankAPI.LoadedBankLocations.Count].Name}";
 					break;
 				case TNHPstates.Announcer:
 					if (index < AnnouncerAPI.LoadedAnnouncers.Count)

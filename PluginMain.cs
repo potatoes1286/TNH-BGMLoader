@@ -37,6 +37,8 @@ namespace TNHBGLoader
 		public static ConfigEntry<string> LastLoadedAnnouncer;
 		public static ConfigEntry<string> LastLoadedSosigVLS;
 		public static ConfigEntry<bool>   EnableDebugLogging;
+		public static ConfigEntry<string> LastLoadedSoundtrack;
+		public static ConfigEntry<bool>   IsSoundtrack;
 		public static string AssemblyDirectory { get {
 				string codeBase = Assembly.GetExecutingAssembly().CodeBase;
 				UriBuilder uri = new UriBuilder(codeBase);
@@ -75,6 +77,10 @@ namespace TNHBGLoader
 			SosigVLSAPI.LoadedSosigVLSs.Add(SosigManifest.DefaultSosigVLS());
 			SosigVLSAPI.LoadedSosigVLSs.Add(SosigManifest.DefaultZosigVLS());
 			
+			// Setup soundtrack info
+
+			SoundtrackAPI.SoundtrackEnabled = IsSoundtrack.Value;
+			
 			//patch yo things
 			Harmony.CreateAndPatchAll(typeof(Patcher_FMOD));
 			Harmony.CreateAndPatchAll(typeof(Patcher_FistVR));
@@ -92,6 +98,8 @@ namespace TNHBGLoader
 			LastLoadedBank = Config.Bind("no touchy", "Saved Bank", "MX_TAH", "Not meant to be changed manually. This autosaves your last bank used, so you don't have to reset it every time you launch H3.");
 			LastLoadedAnnouncer = Config.Bind("no touchy", "Saved Announcer", "h3vr.default", "Not meant to be changed manually. This autosaves your last announcer used, so you don't have to reset it every time you launch H3.");
 			LastLoadedSosigVLS = Config.Bind("no touchy", "Saved Sosig VLS", "h3vr.default", "Not meant to be changed manually. This autosaves your last sosig set used, so you don't have to reset it every time you launch H3.");
+			LastLoadedSoundtrack = Config.Bind("no touchy", "Saved Soundtrack", "", "Not meant to be changed manually. This autosaves your last sosig set used, so you don't have to reset it every time you launch H3.");
+			IsSoundtrack = Config.Bind("no touchy", "Saved Is Soundtrack", false, "Not meant to be changed manually. This autosaves your last sosig set used, so you don't have to reset it every time you launch H3.");
 		}
 
 		//stratum loading
@@ -146,8 +154,9 @@ namespace TNHBGLoader
 				Debug.Log("retard");
 				SoundtrackAPI.Soundtracks = new List<SoundtrackManifest>();
 			}
-
 			SoundtrackAPI.Soundtracks.Add(manifest);
+			if (manifest.Guid == LastLoadedSoundtrack.Value)
+				SoundtrackAPI.SelectedSoundtrack = SoundtrackAPI.Soundtracks.Count - 1;
 			return new Empty();
 		}
 		
