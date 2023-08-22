@@ -123,7 +123,6 @@ namespace TNHBGLoader.Soundtrack {
 				float newVol = progress * vol; //Linear progression sadly. TODO: Add easing function
 				GetCurrentAudioSource.volume = newVol;
 				GetNotCurrentAudioSource.volume = vol - newVol;
-				Debug.Log($"timeDif: {timeDif}, curAudioSource {newVol}, oldAudioSource {1 - newVol}");
 				if (progress >= 1) {
 					isSwitching = false;
 					GetNotCurrentAudioSource.Stop();
