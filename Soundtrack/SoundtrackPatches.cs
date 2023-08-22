@@ -112,6 +112,26 @@ namespace TNHBGLoader.Soundtrack {
 			return true;
 		}
 		
+		/*[HarmonyPatch(typeof(TNH_Manager), "Start")]
+		[HarmonyPostfix]
+		public static void Patch_Start_PrintPhaseDeets(ref TNH_Manager __instance) {
+			//Print out the length to failure for Failure Sync.
+			foreach (var level in __instance.m_curProgression.Levels)
+				for(int i = 0; i < level.HoldChallenge.Phases.Count; i++)
+					PluginMain.DebugLog.LogInfo($"Level: {level}, phase: {i}, length: {level.HoldChallenge.Phases[i].ScanTime * 0.8 + 120} - {level.HoldChallenge.Phases[i].ScanTime * 1.2 + 120}");
+		}*/
+
+		
+		//Handle Failure Sync
+		[HarmonyPatch(typeof(TNH_HoldPoint), "BeginAnalyzing")]
+		[HarmonyPostfix]
+		public static void Patch_BeginAnalyzing_HandleFailureSync(ref TNH_HoldPoint __instance) {
+			TnHSoundtrack.failureSyncInfoReady = true;
+			TnHSoundtrack.timeIdentified = Time.time;
+			//TickDownToFailure is fixed at 120. I think.
+			TnHSoundtrack.timeFail = Time.time + 120f + __instance.m_tickDownToIdentification;
+		}
+		
 		//Implement OrbTouch funzies
 		[HarmonyPatch(typeof(TNH_HoldPointSystemNode), "Start")]
 		[HarmonyPrefix]

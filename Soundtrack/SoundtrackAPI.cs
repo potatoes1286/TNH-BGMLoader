@@ -73,7 +73,7 @@ namespace TNHBGLoader.Soundtrack {
 						track.name = fileSplit[2];
 						//Verify the arguments in metadata are valid
 						foreach (var arg in track.metadata)
-							if (arg != "st" && arg != "dnf" && arg != "loop")
+							if (arg != "st" && arg != "dnf" && arg != "loop" && arg != "fs")
 								Debug.LogError($"File {file} has invalid metadata: {arg}!");
 					}
 					else {

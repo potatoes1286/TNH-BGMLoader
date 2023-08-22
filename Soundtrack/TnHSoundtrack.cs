@@ -40,7 +40,13 @@ namespace TNHBGLoader.Soundtrack {
 		private static float vol = (PluginMain.AnnouncerMusicVolume.Value / 4f); //volume set by settings (Maximum is naturally 1)
 		
 		private static double songLength; // amount of time in seconds the current song lasts
-		private static float songStartTime; // When the current song began via Time.time
+		private static float  songStartTime; // When the current song began via Time.time
+		
+		//Failure sync stuff.
+		//A flip to let the switchsong know that the failruesync info is ready.
+		public static  bool   failureSyncInfoReady;
+		public static  float  timeIdentified;
+		public static  float  timeFail;
 
 
 		public static void CreateAudioSources() {
@@ -62,7 +68,8 @@ namespace TNHBGLoader.Soundtrack {
 			bool loopNewSong = metadata.Any(x => x == "loop");
 			bool fadeOut = metadata.All(x => x != "dnf");
 			bool seamlessTransition = metadata.Any(x => x == "st");
-			
+			bool failureSync = metadata.Any(x => x == "fs");
+
 			if(!seamlessTransition)
 				songStartTime = Time.time;
 			var curTime = GetCurrentAudioSource.time;
@@ -102,6 +109,25 @@ namespace TNHBGLoader.Soundtrack {
 			
 			if(seamlessTransition)
 				GetCurrentAudioSource.time = curTime;
+			if (failureSync) {
+				//The info is already there and waiting for us.
+				if (failureSyncInfoReady) {
+					float timeToFail = (timeFail - timeIdentified) - (Time.time - timeIdentified);
+					//Ensure the song is long enough.
+					if (timeToFail > songLength) {
+						PluginMain.DebugLog
+.LogError($"Soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack]}:{name} is TOO SHORT! Song length: {songLength}, Time to Fail: {timeToFail}! Lengthen your song!");
+						return;
+					}
+					double playHead = songLength - timeToFail;
+					GetCurrentAudioSource.time = (float)playHead;
+					failureSyncInfoReady = false;
+				}
+				//It hasn't been identified yet. Just fucking throw.
+				else {
+					PluginMain.DebugLog.LogError($"Soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack]}:{name} DID NOT have enough time to get info about how long the hold is! (FailureSync). Please lengthen your transition or intro to give more buffer time for the info to load! It should be AT LEAST 5 seconds.");
+				}
+			}
 		}
 
 		public void Awake() {
