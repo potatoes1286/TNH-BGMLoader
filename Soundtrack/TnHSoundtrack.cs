@@ -19,12 +19,13 @@ namespace TNHBGLoader.Soundtrack {
 		public static List<Track> SongQueue = new List<Track>();
 
 		//feels redundant, probably is
-		public static void Queue(AudioClip clip, string metadata, string name) {
-			SongQueue.Add(new Track()
+		public static void Queue(AudioClip clip, string metadata, string name, string type) {
+			SongQueue.Add(new Track
 			{
 				clip = clip,
 				metadata = metadata.Split('/'),
-				name = name
+				name = name,
+				type = type
 			});
 		}
 		
@@ -56,10 +57,16 @@ namespace TNHBGLoader.Soundtrack {
 			}
 		}
 		
-		public static void SwitchSong(AudioClip newSong, string name, bool loopNewSong = true, bool fadeOut = true) {
+		public static void SwitchSong(AudioClip newSong, string name, string[] metadata) {
 			
-			songStartTime = Time.time;
+			bool loopNewSong = metadata.Any(x => x == "loop");
+			bool fadeOut = metadata.All(x => x != "dnf");
+			bool seamlessTransition = metadata.Any(x => x == "st");
 			
+			if(!seamlessTransition)
+				songStartTime = Time.time;
+			var curTime = GetCurrentAudioSource.time;
+
 			// Who the fuck decided that the length of an audioclip would not represent the length of an audioclip?
 			// I hate unity with a burning passion.
 			//songLength = newSong.length;
@@ -92,6 +99,8 @@ namespace TNHBGLoader.Soundtrack {
 					GetCurrentAudioSource.loop = false;
 				GetCurrentAudioSource.Play();
 			}
+
+			GetCurrentAudioSource.time = curTime;
 		}
 
 		public void Awake() {
@@ -101,7 +110,7 @@ namespace TNHBGLoader.Soundtrack {
 			//In other words, instead of properly stopping FMOD, i am just making itself crash.
 			//Good code design.
 			Debug.Log("Gonna make it play now.");
-			SwitchSong(SoundtrackAPI.GetAudioclipsForTake(0).Track, "Take"); //start playing take theme
+			SwitchSong(SoundtrackAPI.GetAudioclipsForTake(0).Track, "Take", new [] {"loop"}); //start playing take theme
 		}
 
 		public void Update() {
@@ -139,7 +148,7 @@ namespace TNHBGLoader.Soundtrack {
 			//Swap the songs out with juuuust enough time for the current song to end.
 			var song = SongQueue[0];
 			SongQueue.RemoveAt(0);
-			SwitchSong(song.clip, song.name, song.metadata.Any(x => x == "loop"), song.metadata.All(x => x != "dnf"));
+			SwitchSong(song.clip, song.name, song.metadata);
 		}
 	}
 }
