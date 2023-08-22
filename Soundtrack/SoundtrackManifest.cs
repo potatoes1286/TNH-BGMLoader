@@ -48,7 +48,10 @@ namespace TNHBGLoader.Soundtrack {
 		public List<List<Track>> PhaseTransition;
 
 		//Replace sound of OrbTouch.
-		public Track[] OrbTouch;
+		public Track[] OrbActivate;
+		public Track[] OrbHoldWave;
+		public Track[] OrbSuccess;
+		public Track[] OrbFailure;
 	}
 	
 	//Metadata for the Take phase

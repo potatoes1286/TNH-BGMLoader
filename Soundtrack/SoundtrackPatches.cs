@@ -122,16 +122,31 @@ namespace TNHBGLoader.Soundtrack {
 			HoldMusic = SoundtrackAPI.GetAudioclipsForHold(GM.TNH_Manager.m_level);
 
 			//If there's no OrbTouch, skip this
-			if (HoldMusic.OrbTouch.Length == 0)
+			if (HoldMusic.OrbActivate.Length == 0)
 				return true;
 			
 			//Convert tracks to a list of audioclips
 			var clips = new List<AudioClip>();
-			foreach (var track in HoldMusic.OrbTouch)
+			foreach (var track in HoldMusic.OrbActivate)
 				clips.Add(track.clip);
-			//Rewrite the AudioEvent's sound for OrbTouch.
 			__instance.AUDEvent_HoldActivate.Clips = clips;
-			//it's uncanny how easy it is
+			
+			clips = new List<AudioClip>();
+			foreach (var track in HoldMusic.OrbHoldWave)
+				clips.Add(track.clip);
+			__instance.HoldPoint.AUDEvent_HoldWave.Clips = clips;
+			
+			clips = new List<AudioClip>();
+			foreach (var track in HoldMusic.OrbSuccess)
+				clips.Add(track.clip);
+			__instance.HoldPoint.AUDEvent_Success.Clips = clips;
+			
+			clips = new List<AudioClip>();
+			foreach (var track in HoldMusic.OrbFailure)
+				clips.Add(track.clip);
+			__instance.HoldPoint.AUDEvent_Failure.Clips = clips;
+			
+			
 			return true;
 		}
 	}

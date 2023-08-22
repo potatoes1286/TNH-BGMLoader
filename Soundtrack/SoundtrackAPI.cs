@@ -49,7 +49,10 @@ namespace TNHBGLoader.Soundtrack {
 				var Ends = new List<Track>();
 				var Phases = new List<List<Track>>(); //2d list!
 				var PhaseTransitions = new List<List<Track>>();
-				var OrbTouches = new List<Track>();
+				var OrbActivates = new List<Track>();
+				var OrbWave = new List<Track>();
+				var OrbSuccess = new List<Track>();
+				var OrbFailure = new List<Track>();
 				
 				// Go thru all .wavs and sort them with metadata, name, and track
 				var files = Directory.GetFiles(sequence, "*.wav", SearchOption.TopDirectoryOnly);
@@ -94,8 +97,17 @@ namespace TNHBGLoader.Soundtrack {
 						case "end":
 							Ends.Add(track);
 							break;
-						case "orbtouch":
-							OrbTouches.Add(track);
+						case "orbactivate":
+							OrbActivates.Add(track);
+							break;
+						case "orbwave":
+							OrbWave.Add(track);
+							break;
+						case "orbsuccess":
+							OrbSuccess.Add(track);
+							break;
+						case "orbfailure":
+							OrbFailure.Add(track);
 							break;
 						default:
 							//handle phases
@@ -140,7 +152,10 @@ namespace TNHBGLoader.Soundtrack {
 				data.Transition = Transitions.ToArray();
 				data.MedHi = MedHis.ToArray();
 				data.End = Ends.ToArray();
-				data.OrbTouch = OrbTouches.ToArray();
+				data.OrbActivate = OrbActivates.ToArray();
+				data.OrbHoldWave = OrbWave.ToArray();
+				data.OrbSuccess = OrbSuccess.ToArray();
+				data.OrbFailure = OrbFailure.ToArray();
 				data.Phase = Phases;
 				data.PhaseTransition = PhaseTransitions;
 				sequenceDatas.Add(data);
@@ -186,7 +201,6 @@ namespace TNHBGLoader.Soundtrack {
 			PluginMain.LastLoadedSoundtrack.Value = Soundtracks[SelectedSoundtrack].Guid;
 		}
 
-		
 		//I am a big hater of DRY
 		//no particular reason 
 		public static HoldData GetAudioclipsForHold(int situation) {
