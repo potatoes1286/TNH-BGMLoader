@@ -150,6 +150,13 @@ namespace TNHBGLoader.Soundtrack {
 			var holds = soundtrack.Holds.Where(x => x.Timing.TimingsMatch(situation));
 			if (holds.Count() == 0)
 				holds = soundtrack.Holds.Where(x => x.Timing == "fallback");
+
+			if (!holds.Any()) {
+				holds = soundtrack.Holds.Where(x => x.Timing.TimingsMatch(0));
+				if (situation < 4)
+					Debug.LogError($"PTNHBGML: {soundtrack.Guid} does not have a take song for hold {situation}!");
+			}
+
 			var number = UnityEngine.Random.Range(0, holds.Count());
 			var data = holds.ToArray()[number];
 			Debug.Log($"Selected {data.Name}");
@@ -159,8 +166,14 @@ namespace TNHBGLoader.Soundtrack {
 		public static TakeData GetAudioclipsForTake(int situation) {
 			var soundtrack = Soundtracks[SelectedSoundtrack];
 			var takes = soundtrack.Takes.Where(x => x.Timing.TimingsMatch(situation));
-			if (takes.Count() == 0)
+			if (!takes.Any())
 				takes = soundtrack.Takes.Where(x => x.Timing == "fallback");
+			//Fallback if there are no fallbacks + no available tracks
+			if (!takes.Any()) {
+				takes = soundtrack.Takes.Where(x => x.Timing.TimingsMatch(0));
+				if(situation < 4)
+					Debug.LogError($"PTNHBGML: {soundtrack.Guid} does not have a take song for take {situation}!");
+			}
 			var number = UnityEngine.Random.Range(0, takes.Count());
 			var data = takes.ToArray()[number];
 			Debug.Log($"Selected {data.Name}");
