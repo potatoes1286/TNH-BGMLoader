@@ -1,4 +1,5 @@
-﻿using FistVR;
+﻿using System.Linq;
+using FistVR;
 using HarmonyLib;
 using UnityEngine;
 
@@ -17,7 +18,8 @@ namespace TNHBGLoader.Soundtrack {
 				TnHSoundtrack.Queue(holdMusic.Lo[Random.Range(0, holdMusic.Intro.Length)]); // The Lo song, which will need to be manually skipped to
 				if(holdMusic.Transition.Length > 0)
 					TnHSoundtrack.Queue(holdMusic.Transition[Random.Range(0, holdMusic.Intro.Length)]); // The transition song which ends and starts
-				TnHSoundtrack.Queue(holdMusic.MedHi[Random.Range(0, holdMusic.Intro.Length)]); // The MedHi song, see Lo and then
+				if(holdMusic.MedHi.Length > 0)
+					TnHSoundtrack.Queue(holdMusic.MedHi[Random.Range(0, holdMusic.Intro.Length)]); // The MedHi song, see Lo and then
 				if(holdMusic.End.Length > 0)
 					TnHSoundtrack.Queue(holdMusic.End[Random.Range(0, holdMusic.Intro.Length)]); // The end song plays. Once that's over
 				var take = SoundtrackAPI.GetAudioclipsForTake(level + 1);
@@ -33,11 +35,14 @@ namespace TNHBGLoader.Soundtrack {
 		public static bool Patch_SetHoldWaveIntensity_TransitionToMedHi(ref int intensity) {
 			if (!SoundtrackAPI.SoundtrackEnabled || intensity != 2)
 				return true;
+			//If there's no MedHi queued, just skip it.
+			if (TnHSoundtrack.SongQueue.All(x => x.type != "medhi"))
+				return true;
 			// Just making sure it *skips* to Transition.
 			// There's like, NO good reason this should be needed.
 			// But i dont want to risk it.
 			// i stg if this null throws
-			while (TnHSoundtrack.SongQueue[0].type != "transition" || TnHSoundtrack.SongQueue[0].type != "medhi") {
+			while (TnHSoundtrack.SongQueue[0].type != "transition" && TnHSoundtrack.SongQueue[0].type != "medhi") {
 				Debug.Log($"Skipping song {TnHSoundtrack.SongQueue[0].name} of type {TnHSoundtrack.SongQueue[0].type}");
 				TnHSoundtrack.SongQueue.RemoveAt(0);
 			}
@@ -52,7 +57,7 @@ namespace TNHBGLoader.Soundtrack {
 				return true;
 			// Just making sure it *skips* to End.
 			// i stg if this null throws
-			while (TnHSoundtrack.SongQueue[0].type != "end" || TnHSoundtrack.SongQueue[0].type != "take") {
+			while (TnHSoundtrack.SongQueue[0].type != "end" && TnHSoundtrack.SongQueue[0].type != "take") {
 				Debug.Log($"Skipping song {TnHSoundtrack.SongQueue[0].name} of type {TnHSoundtrack.SongQueue[0].type}");
 				TnHSoundtrack.SongQueue.RemoveAt(0);
 			}

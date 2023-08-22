@@ -23,7 +23,7 @@ namespace TNHBGLoader.Soundtrack {
 			SongQueue.Add(new Track
 			{
 				clip = clip,
-				metadata = metadata.Split('/'),
+				metadata = metadata.Split('-'),
 				name = name,
 				type = type
 			});
@@ -99,8 +99,9 @@ namespace TNHBGLoader.Soundtrack {
 					GetCurrentAudioSource.loop = false;
 				GetCurrentAudioSource.Play();
 			}
-
-			GetCurrentAudioSource.time = curTime;
+			
+			if(seamlessTransition)
+				GetCurrentAudioSource.time = curTime;
 		}
 
 		public void Awake() {
@@ -135,11 +136,13 @@ namespace TNHBGLoader.Soundtrack {
 				Debug.Log($"End of song incoming. Playing next song.");
 				PlayNextSongInQueue();
 			}
-			else if (timeDif <= 0f && GetCurrentAudioSource.loop) {
+			// There's some natural variance when this is run roughly equal to 0.05s.
+			// We need this buffer or else there's a tiny time where there is no song playing and its a lil jarring
+			else if (timeDif <= 0.05f && GetCurrentAudioSource.loop) {
+				Debug.Log($"Looping at {GetCurrentAudioSource.time}");
 				//Handle looping. because the BUILT IN LOOP FUNCTION FOR UNITY DOESN'T ACTUALLY GODDAMN WORK PROPERLY
 				//UUUUUGGGHHH UNITY PLEASE
-				GetCurrentAudioSource.Stop();
-				GetCurrentAudioSource.Play();
+				GetCurrentAudioSource.time = 0;
 				songStartTime = Time.time;
 			}
 		}

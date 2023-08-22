@@ -63,7 +63,7 @@ namespace TNHBGLoader.Soundtrack {
 						track.metadata = new[] { "" };
 						track.name = fileSplit[1];
 					} else if (fileSplit.Length == 3) {
-						track.metadata = fileSplit[1].Split('/');
+						track.metadata = fileSplit[1].Split('-');
 						track.name = fileSplit[2];
 						//Verify the arguments in metadata are valid
 						foreach (var arg in track.metadata)
