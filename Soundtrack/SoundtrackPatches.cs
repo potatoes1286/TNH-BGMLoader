@@ -81,7 +81,7 @@ namespace TNHBGLoader.Soundtrack {
 		[HarmonyPatch(typeof(TNH_HoldPoint), "FailOut")]
 		[HarmonyPrefix]
 		public static bool Patch_FailOut_AddEndFailSong() {
-			if (!SoundtrackAPI.SoundtrackEnabled)
+			if (!SoundtrackAPI.SoundtrackEnabled || HoldMusic.EndFail.Length == 0)
 				return true;
 			//Replace end theme with the endfail theme
 			for (int i = 0; i < TnHSoundtrack.SongQueue.Count; i++)
