@@ -177,8 +177,16 @@ namespace TNHBGLoader.Soundtrack {
 				string[] metadata = Path.GetFileName(take).Split('_');
 				TakeData data = new TakeData();
 				data.Timing = metadata[1];
-				data.Name = metadata[2];
-				data.Track = WavUtility.ToAudioClip(take);
+				if (metadata.Length == 4) {
+					data.Track.metadata = metadata[2].Split('-');
+					data.Name = metadata[3];
+				}
+				else { //metadata.Length == 3
+					data.Track.metadata = new[] { "" };
+					data.Name = metadata[2];
+				}
+				
+				data.Track.clip = WavUtility.ToAudioClip(take);
 				takeDatas.Add(data);
 			}
 			manifest.Holds = sequenceDatas.ToArray();

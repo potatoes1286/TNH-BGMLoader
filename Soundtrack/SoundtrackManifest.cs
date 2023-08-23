@@ -64,6 +64,6 @@ namespace TNHBGLoader.Soundtrack {
 		public string    Name;
 		//Looping track during the take
 		//Takes don't have any metadata, so don't worry about it not being a Track and being an AudioClip.
-		public AudioClip Track;
+		public Track Track;
 	}
 }

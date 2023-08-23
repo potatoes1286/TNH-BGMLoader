@@ -37,7 +37,7 @@ namespace TNHBGLoader.Soundtrack {
 				if(HoldMusic.End.Length > 0)
 					TnHSoundtrack.Queue(HoldMusic.End[Random.Range(0, HoldMusic.End.Length)]); // End
 				var take = SoundtrackAPI.GetAudioclipsForTake(GM.TNH_Manager.m_level + 1);
-				TnHSoundtrack.Queue(take.Track, "loop", take.Name, "take"); // Take song after the hold
+				TnHSoundtrack.Queue(take.Track.clip, take.Track.metadata, take.Name, "take"); // Take song after the hold
 				
 				TnHSoundtrack.PlayNextSongInQueue(); // Plays next song, finishing Take and playing Intro (if exists, if not, Lo or Phases.)
 			}
@@ -112,7 +112,7 @@ namespace TNHBGLoader.Soundtrack {
 			if (!SoundtrackAPI.SoundtrackEnabled)
 				return true;
 			var track = SoundtrackAPI.GetAudioclipsForTake(-1);
-			TnHSoundtrack.SwitchSong(track.Track, track.Name, new []{"loop"} );
+			TnHSoundtrack.SwitchSong(track.Track.clip, track.Name, track.Track.metadata );
 			return true;
 		}
 		
@@ -122,7 +122,7 @@ namespace TNHBGLoader.Soundtrack {
 			if (!SoundtrackAPI.SoundtrackEnabled)
 				return true;
 			var track = SoundtrackAPI.GetAudioclipsForTake(-2);
-			TnHSoundtrack.SwitchSong(track.Track, track.Name, new []{"loop"} );
+			TnHSoundtrack.SwitchSong(track.Track.clip, track.Name, track.Track.metadata );
 			return true;
 		}
 		

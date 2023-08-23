@@ -29,6 +29,17 @@ namespace TNHBGLoader.Soundtrack {
 			});
 		}
 		
+		//feels redundant, probably is
+		public static void Queue(AudioClip clip, string[] metadata, string name, string type) {
+			SongQueue.Add(new Track
+			{
+				clip = clip,
+				metadata = metadata,
+				name = name,
+				type = type
+			});
+		}
+		
 		//oh now THIS is redundant.
 		public static void Queue(Track track) {
 			SongQueue.Add(track);
@@ -137,7 +148,8 @@ namespace TNHBGLoader.Soundtrack {
 			//In other words, instead of properly stopping FMOD, i am just making itself crash.
 			//Good code design.
 			Debug.Log("Gonna make it play now.");
-			SwitchSong(SoundtrackAPI.GetAudioclipsForTake(0).Track, "Take", new [] {"loop"}); //start playing take theme
+			var takeData = SoundtrackAPI.GetAudioclipsForTake(0);
+			SwitchSong(takeData.Track.clip, "Take", takeData.Track.metadata); //start playing take theme
 		}
 
 		public void Update() {
