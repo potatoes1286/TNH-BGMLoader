@@ -96,11 +96,20 @@ namespace TNHBGLoader.Soundtrack {
 		
 		[HarmonyPatch(typeof(TNH_Manager), "SetPhase_Dead")]
 		[HarmonyPrefix]
-		public static bool Patch_SetPhaseDead_PlayTake() {
+		public static bool Patch_SetPhaseDead_PlayDeadSong() {
 			if (!SoundtrackAPI.SoundtrackEnabled)
 				return true;
-			Debug.Log($"Playing dead song.");
 			var track = SoundtrackAPI.GetAudioclipsForTake(-1);
+			TnHSoundtrack.SwitchSong(track.Track, track.Name, new []{"loop"} );
+			return true;
+		}
+		
+		[HarmonyPatch(typeof(TNH_Manager), "SetPhase_Completed")]
+		[HarmonyPrefix]
+		public static bool Patch_SetPhaseCompleted_PlayWinSong() {
+			if (!SoundtrackAPI.SoundtrackEnabled)
+				return true;
+			var track = SoundtrackAPI.GetAudioclipsForTake(-2);
 			TnHSoundtrack.SwitchSong(track.Track, track.Name, new []{"loop"} );
 			return true;
 		}

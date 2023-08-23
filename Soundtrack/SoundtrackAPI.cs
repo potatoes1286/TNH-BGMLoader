@@ -116,8 +116,7 @@ namespace TNHBGLoader.Soundtrack {
 							if (fileSplit[0].Contains("phasetr")) {
 								fileSplit[0].Replace("phasetr", String.Empty);
 								isTransition = true;
-							}
-							if (fileSplit[0].Contains("phase")) {
+							} else if (fileSplit[0].Contains("phase")) {
 								fileSplit[0].Replace("phase", String.Empty);
 							}
 							var tp = int.TryParse(fileSplit[0], out int phase);
@@ -248,14 +247,17 @@ namespace TNHBGLoader.Soundtrack {
 				return true;
 			if (seqTiming == "fallback")
 				return false;
-			if (seqTiming == "death")
-				if (situation == -1) {
+			if (seqTiming == "death") {
+				if (situation == -1)
 					return true;
-				}
-				else {
-					return false;
-				}
-			
+				return false;
+			}
+			if (seqTiming == "win") {
+				if (situation == -2)
+					return true;
+				return false;
+			}
+
 
 			if (seqTiming.Contains(',')) {
 				//This is a split seqTiming. EG 1,3,5
