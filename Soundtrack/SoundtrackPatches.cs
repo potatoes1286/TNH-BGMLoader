@@ -78,6 +78,18 @@ namespace TNHBGLoader.Soundtrack {
 			return true;
 		}
 		
+		[HarmonyPatch(typeof(TNH_HoldPoint), "FailOut")]
+		[HarmonyPrefix]
+		public static bool Patch_FailOut_AddEndFailSong() {
+			if (!SoundtrackAPI.SoundtrackEnabled)
+				return true;
+			//Replace end theme with the endfail theme
+			for (int i = 0; i < TnHSoundtrack.SongQueue.Count; i++)
+				if(TnHSoundtrack.SongQueue[i].type == "end")
+					TnHSoundtrack.SongQueue[i] = HoldMusic.EndFail[Random.Range(0, HoldMusic.EndFail.Length)];
+			return true;
+		}
+		
 		[HarmonyPatch(typeof(TNH_Manager), "SetPhase_Take")]
 		[HarmonyPrefix]
 		public static bool Patch_SetPhaseTake_PlayEndAndTakeSong() {
@@ -85,7 +97,7 @@ namespace TNHBGLoader.Soundtrack {
 				return true;
 			// Just making sure it *skips* to End.
 			// i stg if this null throws
-			while (TnHSoundtrack.SongQueue[0].type != "end" && TnHSoundtrack.SongQueue[0].type != "take") {
+			while (TnHSoundtrack.SongQueue[0].type != "end" && TnHSoundtrack.SongQueue[0].type != "take" && TnHSoundtrack.SongQueue[0].type != "endfail") {
 				Debug.Log($"Skipping song {TnHSoundtrack.SongQueue[0].name} of type {TnHSoundtrack.SongQueue[0].type}");
 				TnHSoundtrack.SongQueue.RemoveAt(0);
 			}

@@ -41,6 +41,8 @@ namespace TNHBGLoader.Soundtrack {
 		public Track[] MedHi;
 		//End of the hold
 		public Track[] End;
+		//Alt end song for if you FAIL the hold, you loser.
+		public Track[] EndFail;
 		
 		//Alt system, Phases.
 		//Eh. Fuck it. List time.

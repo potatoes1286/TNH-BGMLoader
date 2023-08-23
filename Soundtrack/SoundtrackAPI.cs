@@ -47,6 +47,7 @@ namespace TNHBGLoader.Soundtrack {
 				var Transitions = new List<Track>();
 				var MedHis = new List<Track>();
 				var Ends = new List<Track>();
+				var EndFails = new List<Track>();
 				var Phases = new List<List<Track>>(); //2d list!
 				var PhaseTransitions = new List<List<Track>>();
 				var OrbActivates = new List<Track>();
@@ -96,6 +97,9 @@ namespace TNHBGLoader.Soundtrack {
 							break;
 						case "end":
 							Ends.Add(track);
+							break;
+						case "endfail":
+							EndFails.Add(track);
 							break;
 						case "orbactivate":
 							OrbActivates.Add(track);
@@ -151,6 +155,7 @@ namespace TNHBGLoader.Soundtrack {
 				data.Transition = Transitions.ToArray();
 				data.MedHi = MedHis.ToArray();
 				data.End = Ends.ToArray();
+				data.EndFail = EndFails.ToArray();
 				data.OrbActivate = OrbActivates.ToArray();
 				data.OrbHoldWave = OrbWave.ToArray();
 				data.OrbSuccess = OrbSuccess.ToArray();
