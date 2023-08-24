@@ -162,30 +162,31 @@ namespace TNHBGLoader.Soundtrack {
 				return true;
 			//Initialize holdmusic. This SHOULD be performed before Patch_SwitchTo_PlaySoundtrackSongs
 			HoldMusic = SoundtrackAPI.GetAudioclipsForHold(GM.TNH_Manager.m_level);
-
-			//If there's no OrbTouch, skip this
-			if (HoldMusic.OrbActivate.Length == 0)
-				return true;
+			
 			
 			//Convert tracks to a list of audioclips
 			var clips = new List<AudioClip>();
-			foreach (var track in HoldMusic.OrbActivate)
-				clips.Add(track.clip);
+			if (HoldMusic.OrbActivate.Length == 0)
+				foreach (var track in HoldMusic.OrbActivate)
+					clips.Add(track.clip); 
 			__instance.AUDEvent_HoldActivate.Clips = clips;
 			
 			clips = new List<AudioClip>();
-			foreach (var track in HoldMusic.OrbHoldWave)
-				clips.Add(track.clip);
+			if (HoldMusic.OrbActivate.Length == 0)
+				foreach (var track in HoldMusic.OrbHoldWave)
+					clips.Add(track.clip);
 			__instance.HoldPoint.AUDEvent_HoldWave.Clips = clips;
 			
 			clips = new List<AudioClip>();
-			foreach (var track in HoldMusic.OrbSuccess)
-				clips.Add(track.clip);
+			if (HoldMusic.OrbActivate.Length == 0)
+				foreach (var track in HoldMusic.OrbSuccess)
+					clips.Add(track.clip);
 			__instance.HoldPoint.AUDEvent_Success.Clips = clips;
 			
 			clips = new List<AudioClip>();
-			foreach (var track in HoldMusic.OrbFailure)
-				clips.Add(track.clip);
+			if (HoldMusic.OrbActivate.Length == 0)
+				foreach (var track in HoldMusic.OrbFailure)
+					clips.Add(track.clip);
 			__instance.HoldPoint.AUDEvent_Failure.Clips = clips;
 			
 			
