@@ -117,13 +117,14 @@ namespace TNHBGLoader.Soundtrack {
 							//handle phases
 							var isTransition = false;
 							//remove non-number parts
+							string phaseNumber = fileSplit[0];
 							if (fileSplit[0].Contains("phasetr")) {
-								fileSplit[0].Replace("phasetr", String.Empty);
+								phaseNumber = fileSplit[0].Replace("phasetr", String.Empty);
 								isTransition = true;
 							} else if (fileSplit[0].Contains("phase")) {
-								fileSplit[0].Replace("phase", String.Empty);
+								phaseNumber = fileSplit[0].Replace("phase", String.Empty);
 							}
-							var tp = int.TryParse(fileSplit[0], out int phase);
+							var tp = int.TryParse(phaseNumber, out int phase);
 							if (!tp) {
 								Debug.LogError($"Cannot categorize {file}!");
 								break;
@@ -147,8 +148,8 @@ namespace TNHBGLoader.Soundtrack {
 				
 				if((Phases.Any() || PhaseTransitions.Any()) && (Los.Any() || MedHis.Any()))
 					PluginMain.DebugLog.LogError($"{manifest.Guid}:{sequence} mixes together Phases and Lo/MedHi! This is unsupported! Defaulting to Phases.");
-				if(!Los.Any())
-					PluginMain.DebugLog.LogError($"{manifest.Guid}:{sequence} does not contain a Lo! This is unsupported!");
+				if(!Los.Any() && (Phases.Any() || PhaseTransitions.Any()))
+					PluginMain.DebugLog.LogError($"{manifest.Guid}:{sequence} does not contain a Lo nor any phases! This is unsupported!");
 
 				data.Intro = Intros.ToArray();
 				data.Lo = Los.ToArray();
