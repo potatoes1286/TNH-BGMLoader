@@ -166,25 +166,25 @@ namespace TNHBGLoader.Soundtrack {
 			
 			//Convert tracks to a list of audioclips
 			var clips = new List<AudioClip>();
-			if (HoldMusic.OrbActivate.Length == 0)
+			if (HoldMusic.OrbActivate.Length != 0)
 				foreach (var track in HoldMusic.OrbActivate)
 					clips.Add(track.clip); 
 			__instance.AUDEvent_HoldActivate.Clips = clips;
 			
 			clips = new List<AudioClip>();
-			if (HoldMusic.OrbActivate.Length == 0)
+			if (HoldMusic.OrbHoldWave.Length != 0)
 				foreach (var track in HoldMusic.OrbHoldWave)
 					clips.Add(track.clip);
 			__instance.HoldPoint.AUDEvent_HoldWave.Clips = clips;
 			
 			clips = new List<AudioClip>();
-			if (HoldMusic.OrbActivate.Length == 0)
+			if (HoldMusic.OrbSuccess.Length != 0)
 				foreach (var track in HoldMusic.OrbSuccess)
 					clips.Add(track.clip);
 			__instance.HoldPoint.AUDEvent_Success.Clips = clips;
 			
 			clips = new List<AudioClip>();
-			if (HoldMusic.OrbActivate.Length == 0)
+			if (HoldMusic.OrbFailure.Length != 0)
 				foreach (var track in HoldMusic.OrbFailure)
 					clips.Add(track.clip);
 			__instance.HoldPoint.AUDEvent_Failure.Clips = clips;
