@@ -13,6 +13,7 @@ namespace TNHBGLoader.Soundtrack {
 		public static List<SoundtrackManifest> Soundtracks = new List<SoundtrackManifest>();
 		//See PluginMain.IsSoundtrack.Value for var to check if is soundtrack.
 		public static int  SelectedSoundtrack;
+		public static bool IsMix;
 
 
 
@@ -70,12 +71,7 @@ namespace TNHBGLoader.Soundtrack {
 						track.format = "wav";
 					}
 					else if (ext == ".ogg") {
-						WWW www = new WWW($"file://{file}");
-						AudioClip clip = www.GetAudioClip(false);
-						while (clip.loadState == AudioDataLoadState.Loading)
-							Thread.Sleep(1);
-						clip.name = Path.GetFileName(file);
-						track.clip = clip;
+						track.clip = LoadOgg(file);
 						track.format = "ogg";
 					}
 					else
@@ -357,6 +353,18 @@ namespace TNHBGLoader.Soundtrack {
 			}
 			AudioClip clip = www.GetAudioClip(false);
 			clip.name = Path.GetFileName(path);
+			return clip;
+		}
+		public static AudioClip? GetSnippet(SoundtrackManifest manifest) {
+			string pathOgg = Path.Combine(Path.Combine(Path.GetDirectoryName(manifest.Path), manifest.Location), "snippet.ogg");
+			string pathWav = Path.Combine(Path.Combine(Path.GetDirectoryName(manifest.Path), manifest.Location), "snippet.wav");
+
+			AudioClip? clip = null;
+			
+			if(File.Exists(pathOgg))
+				clip = LoadOgg(pathOgg);
+			else if (File.Exists(pathWav))
+				clip = WavUtility.ToAudioClip(pathWav);
 			return clip;
 		}
 	}

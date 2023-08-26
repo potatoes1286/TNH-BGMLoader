@@ -375,7 +375,9 @@ namespace TNHBGLoader
 								SoundtrackAPI.IsMix = false;
 						}
 						else {
-							//TODO: Play snippet for soundtrack!
+							GameObject go = new GameObject();
+							go.AddComponent(typeof(PlaySoundtrackSnippet));
+							SoundtrackAPI.IsMix = false;
 						}
 
 						break;
