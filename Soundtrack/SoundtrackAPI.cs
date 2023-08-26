@@ -212,16 +212,7 @@ namespace TNHBGLoader.Soundtrack {
 					data.Track.format = "wav";
 				}
 				else if (ext == ".ogg") {
-					PluginMain.DebugLog.LogInfo($"Loading OGG File file://{take}");
-					WWW www = new WWW($"file://{take}");
-					AudioClip clip = www.GetAudioClip(false);
-					PluginMain.DebugLog.LogInfo($"Starting at {Time.time}");
-					while(clip.loadState == AudioDataLoadState.Loading)
-						Thread.Sleep(1);
-					PluginMain.DebugLog.LogInfo($"Finished at at {Time.time}");
-					PluginMain.DebugLog.LogInfo($"Length of {clip.length}");
-					clip.name = Path.GetFileName(take);
-					data.Track.clip = clip;
+					data.Track.clip = LoadOgg(take);
 					data.Track.format = "ogg";
 				}
 				else
