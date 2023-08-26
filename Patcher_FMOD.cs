@@ -52,7 +52,7 @@ namespace TNHBGLoader
 			{
 				if (!BankAPI.BanksEmptyOrNull) //i don't even think this is possible? it's not. i need to remove this sometime.
 				{
-					if (BankAPI.CurrentBankLocation != "Select Random" && BankAPI.CurrentBankLocation == "Your Mix") {
+					if (BankAPI.CurrentBankLocation != "Select Random" && BankAPI.CurrentBankLocation != "Your Mix") {
 						SoundtrackAPI.IsMix = false;
 						PluginMain.IsSoundtrack.Value = false;
 					}
@@ -76,9 +76,8 @@ namespace TNHBGLoader
 
 					if (BankAPI.CurrentBankLocation == "Your Mix" && SoundtrackAPI.Soundtracks.Count != 0) {
 						PluginMain.DebugLog.LogInfo($"Activated Your Mix");
-						//int num = UnityEngine.Random.Range(0, SoundtrackAPI.Soundtracks.Count);
 						PluginMain.IsSoundtrack.Value = true;
-						//SoundtrackAPI.SelectedSoundtrack = num;
+						return false;
 					}
 					
 					PluginMain.DebugLog.LogInfo($"IsSoudntrack at loading bank/soundtrack time: {PluginMain.IsSoundtrack.Value.ToString()}");
