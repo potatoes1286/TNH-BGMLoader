@@ -74,23 +74,28 @@ namespace TNHBGLoader.Soundtrack {
 			}
 		}
 		
-		public static void SwitchSong(AudioClip newSong, string name, string[] metadata) {
+		public static void SwitchSong(Track newSong) {
 			
-			bool loopNewSong = metadata.Any(x => x == "loop");
-			bool fadeOut = metadata.All(x => x != "dnf");
-			bool seamlessTransition = metadata.Any(x => x == "st");
-			bool failureSync = metadata.Any(x => x == "fs");
+			bool loopNewSong = newSong.metadata.Any(x => x == "loop");
+			bool fadeOut = newSong.metadata.All(x => x != "dnf");
+			bool seamlessTransition = newSong.metadata.Any(x => x == "st");
+			bool failureSync = newSong.metadata.Any(x => x == "fs");
+			
 
 			if(!seamlessTransition)
 				songStartTime = Time.time;
 			var curTime = GetCurrentAudioSource.time;
+			
 
 			// Who the fuck decided that the length of an audioclip would not represent the length of an audioclip?
 			// I hate unity with a burning passion.
 			//songLength = newSong.length;
-			songLength = (double)newSong.samples / (newSong.frequency * newSong.channels);
+			if(newSong.format == "wav")
+				songLength = (double)newSong.clip.samples / (newSong.clip.frequency * newSong.clip.channels);
+			else if (newSong.format == "ogg")
+				songLength = newSong.clip.length;
 			
-			Debug.Log($"Playing song {name} of length {songLength} ");
+			Debug.Log($"Playing song {newSong.name} of calculated length {songLength} (naive time {newSong.clip.length})");
 
 			//If current source is 0, new source is 1, and vice versa.
 			int newSource = CurrentAudioSource == 0 ? 1 : 0;
@@ -98,7 +103,7 @@ namespace TNHBGLoader.Soundtrack {
 				switchStartTime = Time.time;
 				CurrentAudioSource = newSource;
 				isSwitching = true;
-				GetCurrentAudioSource.clip = newSong;
+				GetCurrentAudioSource.clip = newSong.clip;
 				GetCurrentAudioSource.volume = 0;
 				if (loopNewSong)
 					GetCurrentAudioSource.loop = true;
@@ -109,7 +114,7 @@ namespace TNHBGLoader.Soundtrack {
 			else {
 				GetCurrentAudioSource.Stop();
 				CurrentAudioSource = newSource;
-				GetCurrentAudioSource.clip = newSong;
+				GetCurrentAudioSource.clip = newSong.clip;
 				GetCurrentAudioSource.volume = vol;
 				if (loopNewSong)
 					GetCurrentAudioSource.loop = true;
@@ -127,7 +132,7 @@ namespace TNHBGLoader.Soundtrack {
 					//Ensure the song is long enough.
 					if (timeToFail > songLength) {
 						PluginMain.DebugLog
-.LogError($"Soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack]}:{name} is TOO SHORT! Song length: {songLength}, Time to Fail: {timeToFail}! Lengthen your song!");
+.LogError($"Soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack]}:{newSong.name} is TOO SHORT! Song length: {songLength}, Time to Fail: {timeToFail}! Lengthen your song!");
 						return;
 					}
 					double playHead = songLength - timeToFail;
@@ -136,7 +141,7 @@ namespace TNHBGLoader.Soundtrack {
 				}
 				//It hasn't been identified yet. Just fucking throw.
 				else {
-					PluginMain.DebugLog.LogError($"Soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack]}:{name} DID NOT have enough time to get info about how long the hold is! (FailureSync). Please lengthen your transition or intro to give more buffer time for the info to load! It should be AT LEAST 5 seconds.");
+					PluginMain.DebugLog.LogError($"Soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack]}:{newSong.name} DID NOT have enough time to get info about how long the hold is! (FailureSync). Please lengthen your transition or intro to give more buffer time for the info to load! It should be AT LEAST 5 seconds.");
 				}
 			}
 		}
@@ -149,7 +154,7 @@ namespace TNHBGLoader.Soundtrack {
 			//Good code design.
 			Debug.Log("Gonna make it play now.");
 			var takeData = SoundtrackAPI.GetAudioclipsForTake(0);
-			SwitchSong(takeData.Track.clip, "Take", takeData.Track.metadata); //start playing take theme
+			SwitchSong(takeData.Track); //start playing take theme
 		}
 
 		public void Update() {
@@ -176,7 +181,11 @@ namespace TNHBGLoader.Soundtrack {
 			}
 			// There's some natural variance when this is run roughly equal to 0.05s.
 			// We need this buffer or else there's a tiny time where there is no song playing and its a lil jarring
-			else if (timeDif <= 0.05f && GetCurrentAudioSource.loop) {
+			// Okay, minor update. Wav files have an incorrect clip length according to unity, so we have to manually loop it.
+			// OGG length actually aligns with Unity's calculations, so we can let unity handle looping if its an OGG.
+			// We don't know if its a WAV or OGG at this time (whoops) so we just check if songLength and Unity's length are close enough:tm:
+			// And if it is, assume OGG and don't run this code.
+			else if (timeDif <= 0.05f && GetCurrentAudioSource.loop && !(Mathf.Abs(GetCurrentAudioSource.clip.length - (float)songLength) <= 0.01)) {
 				Debug.Log($"Looping at {GetCurrentAudioSource.time}");
 				//Handle looping. because the BUILT IN LOOP FUNCTION FOR UNITY DOESN'T ACTUALLY GODDAMN WORK PROPERLY
 				//UUUUUGGGHHH UNITY PLEASE
@@ -190,7 +199,7 @@ namespace TNHBGLoader.Soundtrack {
 			//Swap the songs out with juuuust enough time for the current song to end.
 			var song = SongQueue[0];
 			SongQueue.RemoveAt(0);
-			SwitchSong(song.clip, song.name, song.metadata);
+			SwitchSong(song);
 		}
 	}
 }

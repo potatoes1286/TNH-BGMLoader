@@ -114,7 +114,7 @@ namespace TNHBGLoader.Soundtrack {
 			if (!SoundtrackAPI.SoundtrackEnabled)
 				return true;
 			var track = SoundtrackAPI.GetAudioclipsForTake(-1);
-			TnHSoundtrack.SwitchSong(track.Track.clip, track.Name, track.Track.metadata );
+			TnHSoundtrack.SwitchSong(track.Track);
 			return true;
 		}
 		
@@ -124,7 +124,7 @@ namespace TNHBGLoader.Soundtrack {
 			if (!SoundtrackAPI.SoundtrackEnabled)
 				return true;
 			var track = SoundtrackAPI.GetAudioclipsForTake(-2);
-			TnHSoundtrack.SwitchSong(track.Track.clip, track.Name, track.Track.metadata );
+			TnHSoundtrack.SwitchSong(track.Track);
 			return true;
 		}
 		

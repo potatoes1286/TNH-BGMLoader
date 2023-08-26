@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using FistVR;
 using UnityEngine;
 
@@ -14,7 +16,7 @@ namespace TNHBGLoader.Soundtrack {
 		public static int                  SelectedSoundtrack;
 
 
-		
+
 		//Assemble a complete soundtrack manifest using the path of the file.
 		//Can be written as Ass Music for short, symbolizing what you're gonna do with it.
 		public static SoundtrackManifest AssembleMusicData(SoundtrackManifest manifest) {
@@ -55,15 +57,32 @@ namespace TNHBGLoader.Soundtrack {
 				var OrbSuccess = new List<Track>();
 				var OrbFailure = new List<Track>();
 				
-				// Go thru all .wavs and sort them with metadata, name, and track
+				// Go thru all .wavs and .mp3s and sort them with metadata, name, and track
 				var files = Directory.GetFiles(sequence, "*.wav", SearchOption.TopDirectoryOnly);
+				files = files.Concat(Directory.GetFiles(sequence, "*.ogg", SearchOption.TopDirectoryOnly)).ToArray();
 				foreach (var file in files) {
 					Debug.Log($"Handling file {file}");
 					var fileName = Path.GetFileNameWithoutExtension(file);
+					var ext = Path.GetExtension(file);
 					var track = new Track();
-					
-					track.clip = WavUtility.ToAudioClip(file);
-					
+
+					if (ext == ".wav") {
+						track.clip = WavUtility.ToAudioClip(file);
+						track.format = "wav";
+					}
+					else if (ext == ".ogg") {
+						WWW www = new WWW($"file://{file}");
+						AudioClip clip = www.GetAudioClip(false);
+						while (clip.loadState == AudioDataLoadState.Loading)
+							Thread.Sleep(1);
+						clip.name = Path.GetFileName(file);
+						track.clip = clip;
+						track.format = "ogg";
+					}
+					else
+						PluginMain.DebugLog.LogError($"{file} has an invalid extension! (Valid extensions: .ogg, .wav)");
+
+
 					var fileSplit = fileName.Split('_'); // Format: [Track type]_[metadata]_[identifier] or [Track type]_[identifier]
 					//populate metadata + name fields
 					if (fileSplit.Length == 2) {
@@ -171,9 +190,10 @@ namespace TNHBGLoader.Soundtrack {
 			//Get all the files that match the glob format of a take file (take_[timing]_[name])
 			//See _FORMAT.txt for more info.
 			string[] takes = Directory.GetFiles(dirPath, "take_*_*.wav", SearchOption.TopDirectoryOnly);
+			takes = takes.Concat(Directory.GetFiles(dirPath, "take_*_*.ogg", SearchOption.TopDirectoryOnly)).ToArray();
 			foreach (var take in takes) {
 				Debug.Log($"Ingesting takes {take}");
-				if (File.Exists(take) && !take.Contains(".wav")) //it was ingesting the fucking yaml :/
+				if (File.Exists(take) && !take.Contains(".wav") && !take.Contains(".ogg")) //it was ingesting the fucking yaml :/
 					continue;
 				string[] metadata = Path.GetFileName(take).Split('_');
 				TakeData data = new TakeData();
@@ -186,8 +206,27 @@ namespace TNHBGLoader.Soundtrack {
 					data.Track.metadata = new[] { "" };
 					data.Name = metadata[2];
 				}
-				
-				data.Track.clip = WavUtility.ToAudioClip(take);
+
+				string ext = Path.GetExtension(take);
+				if (ext == ".wav") {
+					data.Track.clip = WavUtility.ToAudioClip(take);
+					data.Track.format = "wav";
+				}
+				else if (ext == ".ogg") {
+					PluginMain.DebugLog.LogInfo($"Loading OGG File file://{take}");
+					WWW www = new WWW($"file://{take}");
+					AudioClip clip = www.GetAudioClip(false);
+					PluginMain.DebugLog.LogInfo($"Starting at {Time.time}");
+					while(clip.loadState == AudioDataLoadState.Loading)
+						Thread.Sleep(1);
+					PluginMain.DebugLog.LogInfo($"Finished at at {Time.time}");
+					PluginMain.DebugLog.LogInfo($"Length of {clip.length}");
+					clip.name = Path.GetFileName(take);
+					data.Track.clip = clip;
+					data.Track.format = "ogg";
+				}
+				else
+					PluginMain.DebugLog.LogError($"{take} has an invalid extension! (Valid extensions: .ogg, .wav)");
 				takeDatas.Add(data);
 			}
 			manifest.Holds = sequenceDatas.ToArray();
