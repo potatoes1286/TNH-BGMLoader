@@ -356,5 +356,17 @@ namespace TNHBGLoader.Soundtrack {
 		public static Texture2D GetIcon(int soundtrack) {
 			return GeneralAPI.GetIcon(Soundtracks[soundtrack].Guid, new[] { Path.Combine(Path.GetDirectoryName(Soundtracks[soundtrack].Path), "icon.png") });
 		}
+
+		public static AudioClip LoadOgg(string path) {
+			WWW www = new WWW($"file://{path}");
+			for (int t = 0; t < 500; t++) {
+				if (www.isDone)
+					break;
+				Thread.Sleep(10);
+			}
+			AudioClip clip = www.GetAudioClip(false);
+			clip.name = Path.GetFileName(path);
+			return clip;
+		}
 	}
 }
