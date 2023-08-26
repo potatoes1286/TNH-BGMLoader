@@ -17,30 +17,7 @@ namespace TNHBGLoader.Soundtrack {
 		public static AudioSource GetCurrentAudioSource => AudioSources[CurrentAudioSource];
 
 		public static List<Track> SongQueue = new List<Track>();
-
-		//feels redundant, probably is
-		public static void Queue(AudioClip clip, string metadata, string name, string type) {
-			SongQueue.Add(new Track
-			{
-				clip = clip,
-				metadata = metadata.Split('-'),
-				name = name,
-				type = type
-			});
-		}
 		
-		//feels redundant, probably is
-		public static void Queue(AudioClip clip, string[] metadata, string name, string type) {
-			SongQueue.Add(new Track
-			{
-				clip = clip,
-				metadata = metadata,
-				name = name,
-				type = type
-			});
-		}
-		
-		//oh now THIS is redundant.
 		public static void Queue(Track track) {
 			SongQueue.Add(track);
 		}
@@ -95,7 +72,7 @@ namespace TNHBGLoader.Soundtrack {
 			else if (newSong.format == "ogg")
 				songLength = newSong.clip.length;
 			
-			Debug.Log($"Playing song {newSong.name} of calculated length {songLength} (naive time {newSong.clip.length})");
+			Debug.Log($"Playing song {newSong.name} of calculated length {songLength} (naive time {newSong.clip.length}). Format type {newSong.format}");
 
 			//If current source is 0, new source is 1, and vice versa.
 			int newSource = CurrentAudioSource == 0 ? 1 : 0;

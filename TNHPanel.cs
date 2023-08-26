@@ -176,7 +176,7 @@ namespace TNHBGLoader
 				#endregion
 				#region Row Six
 				/*Cycle volume down*/	widget.AddChild((ButtonWidget button) => {
-					button.ButtonText.text = "Decrease volume 5%";
+					button.ButtonText.text = "Decrease volume";
 					button.AddButtonListener(UpdateVolume);
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 					_volControls[0] = button;
@@ -188,7 +188,7 @@ namespace TNHBGLoader
 					text.Text.fontSize += 5;
 				});
 				/*Cycle volume up*/		widget.AddChild((ButtonWidget button) => {
-					button.ButtonText.text = "Increase volume 5%";
+					button.ButtonText.text = "Increase volume";
 					button.AddButtonListener(UpdateVolume);
 					button.ButtonText.transform.localRotation = Quaternion.identity;
 					_volControls[1] = button;
@@ -271,6 +271,10 @@ namespace TNHBGLoader
 				CycleVLS(sender);
 				return;
 			}
+			else {
+				_volControls[0].ButtonText.text = "Decrease volume";
+				_volControls[1].ButtonText.text = "Increase volume";
+			}
 
 			float inc = 0f;
 			if (sender != null)
@@ -330,7 +334,7 @@ namespace TNHBGLoader
 				case TNHPstates.BGM:
 					if(!PluginMain.IsSoundtrack.Value)
 						return BankAPI.GetNameFromIndex(BankAPI.CurrentBankIndex, true);
-					return $"{BankAPI.LoadedBankLocations.Count + SoundtrackAPI.SelectedSoundtrack + 1}: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack]}";
+					return $"{BankAPI.LoadedBankLocations.Count + SoundtrackAPI.SelectedSoundtrack + 1}: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack].Name}";
 				case TNHPstates.Announcer:
 					return (AnnouncerAPI.CurrentAnnouncerIndex+1) + ": " + AnnouncerAPI.CurrentAnnouncer.Name;
 				case TNHPstates.Sosig_Voicelines:

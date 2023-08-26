@@ -52,7 +52,7 @@ namespace TNHBGLoader.Soundtrack {
 				
 				
 				var take = SoundtrackAPI.GetAudioclipsForTake(GM.TNH_Manager.m_level + 1);
-				TnHSoundtrack.Queue(take.Track.clip, take.Track.metadata, take.Name, "take"); // Take song after the hold
+				TnHSoundtrack.Queue(take.Track);
 				
 				TnHSoundtrack.PlayNextSongInQueue(); // Plays next song, finishing Take and playing Intro (if exists, if not, Lo or Phases.)
 			}
@@ -146,6 +146,7 @@ namespace TNHBGLoader.Soundtrack {
 		public static bool Patch_Start_AddTnHSoundtrack(ref TNH_Manager __instance) {
 			if(PluginMain.IsSoundtrack.Value || SoundtrackAPI.IsMix)
 				__instance.gameObject.AddComponent<TnHSoundtrack>();
+			Debug.Log($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack].Guid}, IsSOundtrack: {PluginMain.IsSoundtrack.Value}");
 			return true;
 		}
 		
