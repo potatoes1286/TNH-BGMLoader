@@ -21,7 +21,6 @@ namespace TNH_BGLoader
 		public static bool BanksEmptyOrNull => (LoadedBankLocations == null || LoadedBankLocations.Count == 0);
 		public static List<string> GetLegacyBanks() {
 			List<string> banks = new List<string>();
-			banks.Add("Select Random"); //if this is not first it can cause issues + don't rename this
 			banks.Add(Path.Combine(Application.streamingAssetsPath, "MX_TAH.bank")); //the loader patch just checks for MX_TAH, not the full root path so this bypasses the check
 			// surely this won't throw an access error!
 			banks = banks.Concat(Directory.GetFiles(Paths.PluginPath, "MX_TAH_*.bank", SearchOption.AllDirectories).ToList()).ToList();

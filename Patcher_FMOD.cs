@@ -59,17 +59,24 @@ namespace TNHBGLoader
 						if (num < BankAPI.LoadedBankLocations.Count) {
 							PluginMain.IsSoundtrack.Value = false;
 							BankAPI.CurrentBankIndex = num;
-							bankName = BankAPI.CurrentBankLocation;
 						}
 						else {
 							PluginMain.IsSoundtrack.Value = true;
 							SoundtrackAPI.SelectedSoundtrack = num - BankAPI.LoadedBankLocations.Count;
 						}
 					}
-					if(!PluginMain.IsSoundtrack.Value)
-						PluginMain.LogSpam("Injecting bank " + Path.GetFileName(BankAPI.CurrentBankLocation) + " into TNH!");
-					else
-						PluginMain.LogSpam($"Loading soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack].Guid} into TNH!");
+
+					if (!PluginMain.IsSoundtrack.Value) {
+						PluginMain.LogSpam("Injecting bank " + Path.GetFileName(BankAPI.CurrentBankLocation) +
+						                   " into TNH!");
+						bankName = BankAPI.CurrentBankLocation;
+					}
+					else {
+						PluginMain
+.LogSpam($"Loading soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack].Guid} into TNH!");
+						return false;
+					}
+
 				}
 			}
 			return true;
