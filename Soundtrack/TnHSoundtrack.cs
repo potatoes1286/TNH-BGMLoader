@@ -152,7 +152,15 @@ namespace TNHBGLoader.Soundtrack {
 			//I'm not too sure why? But hotswapping banks mid-game will completely break FMOD.
 			//In other words, instead of properly stopping FMOD, i am just making itself crash.
 			//Good code design.
+
+			//For some weird reason, this runs before TnHSoundtrack Awake.
+			if (SoundtrackAPI.IsMix) {
+				int num = Random.Range(0, SoundtrackAPI.Soundtracks.Count);
+				SoundtrackAPI.SelectedSoundtrack = num;
+			}
+
 			Debug.Log("Gonna make it play now.");
+			
 			var takeData = SoundtrackAPI.GetAudioclipsForTake(0);
 			SwitchSong(takeData.Track); //start playing take theme
 		}

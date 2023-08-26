@@ -38,6 +38,19 @@ namespace TNHBGLoader.Soundtrack {
 				}
 				if(HoldMusic.End.Length > 0)
 					TnHSoundtrack.Queue(HoldMusic.End[Random.Range(0, HoldMusic.End.Length)]); // End
+
+				if (SoundtrackAPI.IsMix && SoundtrackAPI.Soundtracks.Count != 1) {
+					var curSt = SoundtrackAPI.SelectedSoundtrack;
+					int newSt = curSt;
+					for (int i = 0; i < 10; i++) {
+						newSt = UnityEngine.Random.Range(0, SoundtrackAPI.Soundtracks.Count);
+						if (newSt != curSt)
+							break;
+					}
+					SoundtrackAPI.SelectedSoundtrack = newSt;
+				}
+				
+				
 				var take = SoundtrackAPI.GetAudioclipsForTake(GM.TNH_Manager.m_level + 1);
 				TnHSoundtrack.Queue(take.Track.clip, take.Track.metadata, take.Name, "take"); // Take song after the hold
 				

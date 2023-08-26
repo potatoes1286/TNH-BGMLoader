@@ -85,6 +85,11 @@ namespace TNH_BGLoader
 		//granted it's 256x256 (usually), how hard can it be to load that?
 		public static Texture2D GetBankIcon(string bankName)
 		{
+			if (bankName == "Your Mix") {
+				var mixes = Directory.GetFiles(PluginMain.AssemblyDirectory + "/default/", "your_mix_*.png", SearchOption.TopDirectoryOnly);
+				var mix = mixes[UnityEngine.Random.Range(0, mixes.Length)];
+				return GeneralAPI.GetIcon(bankName, new [] {mix});
+			}
 			//get the name and base path of the bank
 			var pbase = Path.GetDirectoryName(bankName) + "/";
 			var name = Path.GetFileNameWithoutExtension(bankName).Split('_').Last();
@@ -101,7 +106,6 @@ namespace TNH_BGLoader
 			//get default bank loc
 			if (bankName == Path.Combine(Application.streamingAssetsPath, "MX_TAH.bank"))
 				paths = new string[] {PluginMain.AssemblyDirectory + "/default/bank_default.png"};
-
 			return GeneralAPI.GetIcon(bankName, paths);
 		}
 	}

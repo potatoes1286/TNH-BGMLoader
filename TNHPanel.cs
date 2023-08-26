@@ -366,7 +366,13 @@ namespace TNHBGLoader
 						BankAPI.SwapBank(index);
 						if (index < BankAPI.LoadedBankLocations.Count) {
 							GameObject go = new GameObject();
-							go.AddComponent(typeof(PlayFModSnippet));
+							if(BankAPI.LoadedBankLocations[index] != "Your Mix" && BankAPI.LoadedBankLocations[index] != "Select Random")
+								go.AddComponent(typeof(PlayFModSnippet));
+							PluginMain.DebugLog.LogInfo($"index: {index}, index bank: {BankAPI.LoadedBankLocations[index]}");
+							if (BankAPI.LoadedBankLocations[index] == "Your Mix")
+								SoundtrackAPI.IsMix = true;
+							else
+								SoundtrackAPI.IsMix = false;
 						}
 						else {
 							//TODO: Play snippet for soundtrack!
@@ -413,10 +419,13 @@ namespace TNHBGLoader
 		private void SetIcon()
 		{
 			if (icondisplay == null) return;
+			Debug.Log($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurBank: {GetCurrentBankName()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack].Guid}");
 			switch (TNHPstate)
 			{
 				case TNHPstates.BGM:
-					if(!PluginMain.IsSoundtrack.Value)
+					if(SoundtrackAPI.IsMix)
+						icondisplay.texture = BankAPI.GetBankIcon("Your Mix");
+					else if(!PluginMain.IsSoundtrack.Value)
 						icondisplay.texture = BankAPI.GetBankIcon(BankAPI.CurrentBankLocation);
 					else
 						icondisplay.texture = SoundtrackAPI.GetIcon(SoundtrackAPI.SelectedSoundtrack);
