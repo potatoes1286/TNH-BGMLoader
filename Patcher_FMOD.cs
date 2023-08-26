@@ -1,8 +1,11 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using FMOD;
 using FMODUnity;
 using HarmonyLib;
 using TNH_BGLoader;
+using TNHBGLoader.Soundtrack;
 using UnityEngine;
 
 namespace TNHBGLoader
@@ -50,9 +53,23 @@ namespace TNHBGLoader
 				if (!BankAPI.BanksEmptyOrNull) //i don't even think this is possible? it's not. i need to remove this sometime.
 				{
 					//this relies on Select Random being first. don't fucking touch it
-					if (BankAPI.CurrentBankLocation == "Select Random") BankAPI.CurrentBankIndex = UnityEngine.Random.Range(1, BankAPI.LoadedBankLocations.Count);
-					PluginMain.LogSpam("Injecting bank " + Path.GetFileName(BankAPI.CurrentBankLocation) + " into TNH!");
-					bankName = BankAPI.CurrentBankLocation;
+					//And that Your Mix is second
+					if (BankAPI.CurrentBankLocation == "Select Random") {
+						int num = UnityEngine.Random.Range(1, BankAPI.LoadedBankLocations.Count + SoundtrackAPI.Soundtracks.Count);
+						if (num < BankAPI.LoadedBankLocations.Count) {
+							PluginMain.IsSoundtrack.Value = false;
+							BankAPI.CurrentBankIndex = num;
+							bankName = BankAPI.CurrentBankLocation;
+						}
+						else {
+							PluginMain.IsSoundtrack.Value = true;
+							SoundtrackAPI.SelectedSoundtrack = num - BankAPI.LoadedBankLocations.Count;
+						}
+					}
+					if(!PluginMain.IsSoundtrack.Value)
+						PluginMain.LogSpam("Injecting bank " + Path.GetFileName(BankAPI.CurrentBankLocation) + " into TNH!");
+					else
+						PluginMain.LogSpam($"Loading soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack].Guid} into TNH!");
 				}
 			}
 			return true;

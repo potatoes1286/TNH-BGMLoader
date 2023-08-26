@@ -55,7 +55,7 @@ namespace TNH_BGLoader
 			} else { //If not overflow, do outdated Bank method.
 				//Ensure the game doesn't think we're doing soundtrack method.
 				//Flagging is done in SoundtrackAPI.LoadSoundtrack.
-				SoundtrackAPI.SoundtrackEnabled = false;
+				PluginMain.IsSoundtrack.Value = false;
 				UnloadBankHard(CurrentBankLocation); //force it to be unloaded
 				CurrentBankIndex = newBank; //set banknum to new bank
 				NukeSongSnippets();

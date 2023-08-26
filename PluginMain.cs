@@ -76,11 +76,7 @@ namespace TNHBGLoader
 			SosigVLSAPI.LoadedSosigVLSs.Add(SosigManifest.RandomSosigVLS());
 			SosigVLSAPI.LoadedSosigVLSs.Add(SosigManifest.DefaultSosigVLS());
 			SosigVLSAPI.LoadedSosigVLSs.Add(SosigManifest.DefaultZosigVLS());
-			
-			// Setup soundtrack info
 
-			SoundtrackAPI.SoundtrackEnabled = IsSoundtrack.Value;
-			
 			//patch yo things
 			Harmony.CreateAndPatchAll(typeof(Patcher_FMOD));
 			Harmony.CreateAndPatchAll(typeof(Patcher_FistVR));

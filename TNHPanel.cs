@@ -310,7 +310,7 @@ namespace TNHBGLoader
 					if (index < BankAPI.LoadedBankLocations.Count)
 						return BankAPI.GetNameFromIndex(index, true);
 					if (index < BankAPI.LoadedBankLocations.Count + SoundtrackAPI.Soundtracks.Count)
-						return $"{index - BankAPI.LoadedBankLocations.Count + 1}: {SoundtrackAPI.Soundtracks[index - BankAPI.LoadedBankLocations.Count].Name}";
+						return $"{index + 1}: {SoundtrackAPI.Soundtracks[index - BankAPI.LoadedBankLocations.Count].Name}";
 					break;
 				case TNHPstates.Announcer:
 					if (index < AnnouncerAPI.LoadedAnnouncers.Count)
@@ -328,7 +328,7 @@ namespace TNHBGLoader
 			switch (TNHPstate)
 			{
 				case TNHPstates.BGM:
-					if(!SoundtrackAPI.SoundtrackEnabled)
+					if(!PluginMain.IsSoundtrack.Value)
 						return BankAPI.GetNameFromIndex(BankAPI.CurrentBankIndex, true);
 					return $"{BankAPI.LoadedBankLocations.Count + SoundtrackAPI.SelectedSoundtrack + 1}: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack]}";
 				case TNHPstates.Announcer:
@@ -416,7 +416,7 @@ namespace TNHBGLoader
 			switch (TNHPstate)
 			{
 				case TNHPstates.BGM:
-					if(!SoundtrackAPI.SoundtrackEnabled)
+					if(!PluginMain.IsSoundtrack.Value)
 						icondisplay.texture = BankAPI.GetBankIcon(BankAPI.CurrentBankLocation);
 					else
 						icondisplay.texture = SoundtrackAPI.GetIcon(SoundtrackAPI.SelectedSoundtrack);

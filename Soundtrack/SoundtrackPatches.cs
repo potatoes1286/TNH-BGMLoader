@@ -11,7 +11,7 @@ namespace TNHBGLoader.Soundtrack {
 		[HarmonyPatch(typeof(FVRFMODController), "SwitchTo")]
 		[HarmonyPrefix]
 		public static bool Patch_SwitchTo_PlaySoundtrackSongs(ref int musicIndex, ref float timeDelayStart, ref bool shouldStop, ref bool shouldDeadStop) {
-			if (!SoundtrackAPI.SoundtrackEnabled)
+			if (!PluginMain.IsSoundtrack.Value)
 				return true;
 			//In the code, musicIndex 0 is the take theme and 1 is the hold theme.
 			if (musicIndex == 1) {
@@ -49,7 +49,7 @@ namespace TNHBGLoader.Soundtrack {
 		[HarmonyPatch(typeof(TNH_HoldPoint), "BeginPhase")]
 		[HarmonyPrefix]
 		public static bool Patch_BeginPhase_HandlePhases() {
-			if (!SoundtrackAPI.SoundtrackEnabled)
+			if (!PluginMain.IsSoundtrack.Value)
 				return true;
 			
 			//If the next song is NOT a phase, just skip this whole bit.
@@ -63,7 +63,7 @@ namespace TNHBGLoader.Soundtrack {
 		[HarmonyPatch(typeof(TNH_Manager), "SetHoldWaveIntensity")]
 		[HarmonyPrefix]
 		public static bool Patch_SetHoldWaveIntensity_TransitionToMedHi(ref int intensity) {
-			if (!SoundtrackAPI.SoundtrackEnabled || intensity != 2)
+			if (!PluginMain.IsSoundtrack.Value || intensity != 2)
 				return true;
 			//If there's no MedHi queued, just skip it.
 			if (TnHSoundtrack.SongQueue.All(x => x.type != "medhi"))
@@ -83,7 +83,7 @@ namespace TNHBGLoader.Soundtrack {
 		[HarmonyPatch(typeof(TNH_HoldPoint), "FailOut")]
 		[HarmonyPrefix]
 		public static bool Patch_FailOut_AddEndFailSong() {
-			if (!SoundtrackAPI.SoundtrackEnabled || HoldMusic.EndFail.Length == 0)
+			if (!PluginMain.IsSoundtrack.Value || HoldMusic.EndFail.Length == 0)
 				return true;
 			//Replace end theme with the endfail theme
 			for (int i = 0; i < TnHSoundtrack.SongQueue.Count; i++)
@@ -95,7 +95,7 @@ namespace TNHBGLoader.Soundtrack {
 		[HarmonyPatch(typeof(TNH_Manager), "SetPhase_Take")]
 		[HarmonyPrefix]
 		public static bool Patch_SetPhaseTake_PlayEndAndTakeSong() {
-			if (!SoundtrackAPI.SoundtrackEnabled || TnHSoundtrack.SongQueue.Count == 0)
+			if (!PluginMain.IsSoundtrack.Value || TnHSoundtrack.SongQueue.Count == 0)
 				return true;
 			// Just making sure it *skips* to End.
 			// i stg if this null throws
@@ -111,7 +111,7 @@ namespace TNHBGLoader.Soundtrack {
 		[HarmonyPatch(typeof(TNH_Manager), "SetPhase_Dead")]
 		[HarmonyPrefix]
 		public static bool Patch_SetPhaseDead_PlayDeadSong() {
-			if (!SoundtrackAPI.SoundtrackEnabled)
+			if (!PluginMain.IsSoundtrack.Value)
 				return true;
 			var track = SoundtrackAPI.GetAudioclipsForTake(-1);
 			TnHSoundtrack.SwitchSong(track.Track);
@@ -121,7 +121,7 @@ namespace TNHBGLoader.Soundtrack {
 		[HarmonyPatch(typeof(TNH_Manager), "SetPhase_Completed")]
 		[HarmonyPrefix]
 		public static bool Patch_SetPhaseCompleted_PlayWinSong() {
-			if (!SoundtrackAPI.SoundtrackEnabled)
+			if (!PluginMain.IsSoundtrack.Value)
 				return true;
 			var track = SoundtrackAPI.GetAudioclipsForTake(-2);
 			TnHSoundtrack.SwitchSong(track.Track);
@@ -131,7 +131,7 @@ namespace TNHBGLoader.Soundtrack {
 		[HarmonyPatch(typeof(TNH_Manager), "Start")]
 		[HarmonyPrefix]
 		public static bool Patch_Start_AddTnHSoundtrack(ref TNH_Manager __instance) {
-			if(SoundtrackAPI.SoundtrackEnabled)
+			if(PluginMain.IsSoundtrack.Value)
 				__instance.gameObject.AddComponent<TnHSoundtrack>();
 			return true;
 		}
@@ -160,7 +160,7 @@ namespace TNHBGLoader.Soundtrack {
 		[HarmonyPatch(typeof(TNH_HoldPointSystemNode), "Start")]
 		[HarmonyPrefix]
 		public static bool Patch_Start_AddOrbTouchSong(ref TNH_HoldPointSystemNode __instance) {
-			if (!SoundtrackAPI.SoundtrackEnabled)
+			if (!PluginMain.IsSoundtrack.Value)
 				return true;
 			//Initialize holdmusic. This SHOULD be performed before Patch_SwitchTo_PlaySoundtrackSongs
 			HoldMusic = SoundtrackAPI.GetAudioclipsForHold(GM.TNH_Manager.m_level);

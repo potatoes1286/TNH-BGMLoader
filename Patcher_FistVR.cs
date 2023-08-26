@@ -9,6 +9,7 @@ using HarmonyLib;
 using Microsoft.Win32;
 using TNH_BGLoader;
 using TNHBGLoader.Sosig;
+using TNHBGLoader.Soundtrack;
 using UnityEngine;
 using UnityEngine.UI;
 using Debug = FMOD.Debug;
@@ -113,8 +114,12 @@ namespace TNHBGLoader
 			wait.bgmpanel = bgmpanel;
 			
 			//get the bank last loaded and set banknum to it; if it doesnt exist it just defaults to 0
-			for (int i = 0; i < BankAPI.LoadedBankLocations.Count; i++)
-				if (Path.GetFileNameWithoutExtension(BankAPI.LoadedBankLocations[i]) == PluginMain.LastLoadedBank.Value) { BankAPI.SwapBank(i); break; }
+			if(!PluginMain.IsSoundtrack.Value)
+				for (int i = 0; i < BankAPI.LoadedBankLocations.Count; i++)
+					if (Path.GetFileNameWithoutExtension(BankAPI.LoadedBankLocations[i]) == PluginMain.LastLoadedBank.Value) { BankAPI.SwapBank(i); break; }
+
+			if (PluginMain.IsSoundtrack.Value)
+				SoundtrackAPI.EnableSoundtrackFromGUID(PluginMain.LastLoadedSoundtrack.Value);
 			//set last loaded announcer
 			AnnouncerAPI.CurrentAnnouncerIndex = AnnouncerAPI.GetAnnouncerIndexFromGUID(PluginMain.LastLoadedAnnouncer.Value);
 			//set last loaded SosigVLS

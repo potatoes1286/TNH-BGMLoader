@@ -11,9 +11,8 @@ namespace TNHBGLoader.Soundtrack {
 	public static class SoundtrackAPI {
 
 		public static List<SoundtrackManifest> Soundtracks = new List<SoundtrackManifest>();
-		//If enabled, use soundtracks. If not, use Banks.
-		public static bool                 SoundtrackEnabled;
-		public static int                  SelectedSoundtrack;
+		//See PluginMain.IsSoundtrack.Value for var to check if is soundtrack.
+		public static int  SelectedSoundtrack;
 
 
 
@@ -247,7 +246,6 @@ namespace TNHBGLoader.Soundtrack {
 		//Loads new soundtrack to be ran.
 		public static void LoadSoundtrack(int index) {
 			//Flag the game that we're doing soundtrack. Unflagging is done in BankAPI.SwapBanks.
-			SoundtrackEnabled = true;
 			PluginMain.IsSoundtrack.Value = true;
 			SelectedSoundtrack = index;
 			PluginMain.LastLoadedSoundtrack.Value = Soundtracks[SelectedSoundtrack].Guid;
@@ -347,6 +345,12 @@ namespace TNHBGLoader.Soundtrack {
 			if (situation == int.Parse(seqTiming))
 				return true;
 			return false;
+		}
+
+		public static void EnableSoundtrackFromGUID(string guid) {
+			for (int i = 0; i < Soundtracks.Count; i++)
+				if (Soundtracks[i].Guid == guid)
+					SelectedSoundtrack = i;
 		}
 
 		public static Texture2D GetIcon(int soundtrack) {
