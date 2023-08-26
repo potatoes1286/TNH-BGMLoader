@@ -144,7 +144,7 @@ namespace TNHBGLoader.Soundtrack {
 		[HarmonyPatch(typeof(TNH_Manager), "Start")]
 		[HarmonyPrefix]
 		public static bool Patch_Start_AddTnHSoundtrack(ref TNH_Manager __instance) {
-			if(PluginMain.IsSoundtrack.Value)
+			if(PluginMain.IsSoundtrack.Value || SoundtrackAPI.IsMix)
 				__instance.gameObject.AddComponent<TnHSoundtrack>();
 			return true;
 		}
