@@ -124,19 +124,17 @@ namespace TNHBGLoader.Soundtrack {
 		}
 
 		public void Awake() {
+			PluginMain.DebugLog.LogInfo("TnHSoundtrack initialized!");
 			vol = PluginMain.AnnouncerMusicVolume.Value / 4f;
 			CreateAudioSources();
-			//I'm not too sure why? But hotswapping banks mid-game will completely break FMOD.
-			//In other words, instead of properly stopping FMOD, i am just making itself crash.
-			//Good code design.
-
-			//For some weird reason, this runs before TnHSoundtrack Awake.
-			if (SoundtrackAPI.IsMix) {
+			
+			//FMOD is muted in SoundtrackPatches on tnhmanager start.
+			//For some reason TnHManager hasnt inited yet here, so itll null throw if i do it here.
+			
+			/*if (SoundtrackAPI.IsMix) {
 				int num = Random.Range(0, SoundtrackAPI.Soundtracks.Count);
 				SoundtrackAPI.SelectedSoundtrack = num;
-			}
-
-			Debug.Log("Gonna make it play now.");
+			}*/
 			
 			var takeData = SoundtrackAPI.GetAudioclipsForTake(0);
 			SwitchSong(takeData.Track); //start playing take theme

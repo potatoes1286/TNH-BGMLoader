@@ -48,6 +48,7 @@ namespace TNHBGLoader.Soundtrack {
 							break;
 					}
 					SoundtrackAPI.SelectedSoundtrack = newSt;
+					PluginMain.DebugLog.LogDebug($"IsMix: {SoundtrackAPI.IsMix}, Switched from old soundtrack {SoundtrackAPI.Soundtracks[curSt].Guid} to {SoundtrackAPI.Soundtracks[newSt].Guid}");
 				}
 				
 				
@@ -67,7 +68,7 @@ namespace TNHBGLoader.Soundtrack {
 			
 			//If the next song is NOT a phase, just skip this whole bit.
 			//This also handles phase overflow! if it overlfows, the next song would be End and itll just keep playing the highest phase until the actual end
-			if (!TnHSoundtrack.SongQueue[0].type.Contains("phasetr"))
+			if (TnHSoundtrack.SongQueue.Count > 0 && !TnHSoundtrack.SongQueue[0].type.Contains("phasetr"))
 				return true;
 			TnHSoundtrack.PlayNextSongInQueue();
 			return true;
@@ -142,13 +143,17 @@ namespace TNHBGLoader.Soundtrack {
 		}
 		
 		[HarmonyPatch(typeof(TNH_Manager), "Start")]
-		[HarmonyPrefix]
-		public static bool Patch_Start_AddTnHSoundtrack(ref TNH_Manager __instance) {
+		[HarmonyPostfix]
+		public static void Patch_Start_AddTnHSoundtrack(ref TNH_Manager __instance) {
 			if(PluginMain.IsSoundtrack.Value || SoundtrackAPI.IsMix)
 				__instance.gameObject.AddComponent<TnHSoundtrack>();
+			// Turn off fmod.
+			GM.TNH_Manager.FMODController.MasterBus.setMute(true);
 			Debug.Log($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack].Guid}, IsSOundtrack: {PluginMain.IsSoundtrack.Value}");
-			return true;
 		}
+		
+		
+		
 		
 		/*[HarmonyPatch(typeof(TNH_Manager), "Start")]
 		[HarmonyPostfix]

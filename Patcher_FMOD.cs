@@ -52,18 +52,19 @@ namespace TNHBGLoader
 			{
 				if (!BankAPI.BanksEmptyOrNull) //i don't even think this is possible? it's not. i need to remove this sometime.
 				{
-					if (BankAPI.CurrentBankLocation != "Select Random" && BankAPI.CurrentBankLocation != "Your Mix") {
+					/*if (BankAPI.CurrentBankLocation != "Select Random" && BankAPI.CurrentBankLocation != "Your Mix") {
 						SoundtrackAPI.IsMix = false;
 						PluginMain.IsSoundtrack.Value = false;
-					}
+					}*/
 					
 					
 					//this relies on Select Random being first. don't fucking touch it
 					//And that Your Mix is second
 					//The second check here (Your Mix + Soundtrack.Count == 0) is so that if there isnt any soundtracks, itll just act as Select Random.
-					if (BankAPI.CurrentBankLocation == "Select Random" || (BankAPI.CurrentBankLocation == "Your Mix" && SoundtrackAPI.Soundtracks.Count == 0)) {
-						PluginMain.DebugLog.LogInfo($"Activated Random/YourMix Count0");
+					if (BankAPI.CurrentBankLocation == "Select Random"/* || (BankAPI.CurrentBankLocation == "Your Mix" && SoundtrackAPI.Soundtracks.Count == 0)*/) {
+						PluginMain.DebugLog.LogInfo($"Activated Random/YourMix Count0. Current Bank: {BankAPI.CurrentBankLocation}");
 						int num = UnityEngine.Random.Range(1, BankAPI.LoadedBankLocations.Count + SoundtrackAPI.Soundtracks.Count);
+						PluginMain.DebugLog.LogInfo($"Selected: {num}");
 						if (num < BankAPI.LoadedBankLocations.Count) {
 							PluginMain.IsSoundtrack.Value = false;
 							BankAPI.CurrentBankIndex = num;
@@ -74,13 +75,13 @@ namespace TNHBGLoader
 						}
 					}
 
-					if (BankAPI.CurrentBankLocation == "Your Mix" && SoundtrackAPI.Soundtracks.Count != 0) {
+					/*if (BankAPI.CurrentBankLocation == "Your Mix" && SoundtrackAPI.Soundtracks.Count != 0) {
 						PluginMain.DebugLog.LogInfo($"Activated Your Mix");
 						PluginMain.IsSoundtrack.Value = true;
 						return false;
-					}
+					}*/
 					
-					PluginMain.DebugLog.LogInfo($"IsSoudntrack at loading bank/soundtrack time: {PluginMain.IsSoundtrack.Value.ToString()}");
+					PluginMain.DebugLog.LogInfo($"IsSoundtrack loading bank/soundtrack time: {PluginMain.IsSoundtrack.Value.ToString()}");
 					if (!PluginMain.IsSoundtrack.Value) {
 						PluginMain.DebugLog.LogInfo("Injecting bank " + Path.GetFileName(BankAPI.CurrentBankLocation) +
 						                   " into TNH!");

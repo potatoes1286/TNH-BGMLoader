@@ -60,7 +60,7 @@ namespace TNHBGLoader
 			BankAPI.LoadedBankLocations = BankAPI.LoadedBankLocations.Distinct().ToList();
 			
 			BankAPI.LoadedBankLocations.Insert(0, "Select Random"); //if this is not first it can cause issues + don't rename this
-			BankAPI.LoadedBankLocations.Insert(1, "Your Mix"); //if this is not second it can cause issues + don't rename this
+			//BankAPI.LoadedBankLocations.Insert(1, "Your Mix"); //if this is not second it can cause issues + don't rename this
 
 			//start YAML deserializer
 			_deserializer = new DeserializerBuilder().WithNamingConvention(UnderscoredNamingConvention.Instance).Build();
