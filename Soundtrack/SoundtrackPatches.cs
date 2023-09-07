@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace TNHBGLoader.Soundtrack {
 	public class SoundtrackPatches {
-		private static HoldData? HoldMusic;
+		
 		
 		[HarmonyPatch(typeof(FVRFMODController), "SwitchTo")]
 		[HarmonyPrefix]
@@ -16,28 +16,28 @@ namespace TNHBGLoader.Soundtrack {
 			//In the code, musicIndex 0 is the take theme and 1 is the hold theme.
 			if (musicIndex == 1) {
 				//HoldMusic should be initialized by now in Patch_Start_AddOrbTouchSong
-				if(HoldMusic == null)
+				if(TnHSoundtrack.HoldMusic == null)
 					PluginMain.DebugLog.LogError("Failed to initialize soundtrack hold data! What did you do!?");
-				if(HoldMusic.Intro.Length > 0)
-					TnHSoundtrack.Queue(HoldMusic.Intro[Random.Range(0, HoldMusic.Intro.Length)]); // Intro
-				if (HoldMusic.Phase.Count != 0) { // Using phases.
+				if(TnHSoundtrack.HoldMusic.Intro.Length > 0)
+					TnHSoundtrack.Queue(TnHSoundtrack.HoldMusic.Intro[Random.Range(0, TnHSoundtrack.HoldMusic.Intro.Length)]); // Intro
+				if (TnHSoundtrack.HoldMusic.Phase.Count != 0) { // Using phases.
 					PluginMain.DebugLog.LogInfo("Using Phases.");
-					for (int phase = 0; phase < HoldMusic.Phase.Count; phase++) {
-						TnHSoundtrack.Queue(HoldMusic.Phase[phase][Random.Range(0, HoldMusic.Phase[phase].Count)]); // Phase
+					for (int phase = 0; phase < TnHSoundtrack.HoldMusic.Phase.Count; phase++) {
+						TnHSoundtrack.Queue(TnHSoundtrack.HoldMusic.Phase[phase][Random.Range(0, TnHSoundtrack.HoldMusic.Phase[phase].Count)]); // Phase
 						
-						if(phase < HoldMusic.PhaseTransition.Count && HoldMusic.PhaseTransition[phase].Count > 0)
-							TnHSoundtrack.Queue(HoldMusic.PhaseTransition[phase][Random.Range(0, HoldMusic.PhaseTransition[phase].Count)]); // Phase Transition
+						if(phase < TnHSoundtrack.HoldMusic.PhaseTransition.Count && TnHSoundtrack.HoldMusic.PhaseTransition[phase].Count > 0)
+							TnHSoundtrack.Queue(TnHSoundtrack.HoldMusic.PhaseTransition[phase][Random.Range(0, TnHSoundtrack.HoldMusic.PhaseTransition[phase].Count)]); // Phase Transition
 					}
 				}
 				else { // Not using Phases. Continue as normal.
-					TnHSoundtrack.Queue(HoldMusic.Lo[Random.Range(0, HoldMusic.Lo.Length)]); // Lo
-					if(HoldMusic.Transition.Length > 0)
-						TnHSoundtrack.Queue(HoldMusic.Transition[Random.Range(0, HoldMusic.Transition.Length)]); // Transition
-					if(HoldMusic.MedHi.Length > 0)
-						TnHSoundtrack.Queue(HoldMusic.MedHi[Random.Range(0, HoldMusic.MedHi.Length)]); // MedHi
+					TnHSoundtrack.Queue(TnHSoundtrack.HoldMusic.Lo[Random.Range(0, TnHSoundtrack.HoldMusic.Lo.Length)]); // Lo
+					if(TnHSoundtrack.HoldMusic.Transition.Length > 0)
+						TnHSoundtrack.Queue(TnHSoundtrack.HoldMusic.Transition[Random.Range(0, TnHSoundtrack.HoldMusic.Transition.Length)]); // Transition
+					if(TnHSoundtrack.HoldMusic.MedHi.Length > 0)
+						TnHSoundtrack.Queue(TnHSoundtrack.HoldMusic.MedHi[Random.Range(0, TnHSoundtrack.HoldMusic.MedHi.Length)]); // MedHi
 				}
-				if(HoldMusic.End.Length > 0)
-					TnHSoundtrack.Queue(HoldMusic.End[Random.Range(0, HoldMusic.End.Length)]); // End
+				if(TnHSoundtrack.HoldMusic.End.Length > 0)
+					TnHSoundtrack.Queue(TnHSoundtrack.HoldMusic.End[Random.Range(0, TnHSoundtrack.HoldMusic.End.Length)]); // End
 
 				/*if (SoundtrackAPI.IsMix && SoundtrackAPI.Soundtracks.Count != 1) {
 					var curSt = SoundtrackAPI.SelectedSoundtrackIndex;
@@ -50,11 +50,14 @@ namespace TNHBGLoader.Soundtrack {
 					SoundtrackAPI.SelectedSoundtrackIndex = newSt;
 					PluginMain.DebugLog.LogDebug($"IsMix: {SoundtrackAPI.IsMix}, Switched from old soundtrack {SoundtrackAPI.Soundtracks[curSt].Guid} to {SoundtrackAPI.Soundtracks[newSt].Guid}");
 				}*/
-				
-				
-				var take = SoundtrackAPI.GetAudioclipsForTake(GM.TNH_Manager.m_level + 1);
-				TnHSoundtrack.Queue(take.Track);
-				
+
+				Track take;
+				TnHSoundtrack.HoldMusic = SoundtrackAPI.GetAudioclipsForHold(GM.TNH_Manager.m_level + 1);
+				if (TnHSoundtrack.HoldMusic.Take.Length == 0)
+					take = SoundtrackAPI.GetAudioclipsForTake(GM.TNH_Manager.m_level + 1).Track;
+				else
+					take = TnHSoundtrack.HoldMusic.Take[Random.Range(0, TnHSoundtrack.HoldMusic.Take.Length)];
+				TnHSoundtrack.Queue(take);
 				TnHSoundtrack.PlayNextSongInQueue(); // Plays next song, finishing Take and playing Intro (if exists, if not, Lo or Phases.)
 			}
 			return false;
@@ -97,12 +100,12 @@ namespace TNHBGLoader.Soundtrack {
 		[HarmonyPatch(typeof(TNH_HoldPoint), "FailOut")]
 		[HarmonyPrefix]
 		public static bool Patch_FailOut_AddEndFailSong() {
-			if (!PluginMain.IsSoundtrack.Value || HoldMusic.EndFail.Length == 0)
+			if (!PluginMain.IsSoundtrack.Value || TnHSoundtrack.HoldMusic.EndFail.Length == 0)
 				return true;
 			//Replace end theme with the endfail theme
 			for (int i = 0; i < TnHSoundtrack.SongQueue.Count; i++)
 				if(TnHSoundtrack.SongQueue[i].type == "end")
-					TnHSoundtrack.SongQueue[i] = HoldMusic.EndFail[Random.Range(0, HoldMusic.EndFail.Length)];
+					TnHSoundtrack.SongQueue[i] = TnHSoundtrack.HoldMusic.EndFail[Random.Range(0, TnHSoundtrack.HoldMusic.EndFail.Length)];
 			return true;
 		}
 		
@@ -149,6 +152,8 @@ namespace TNHBGLoader.Soundtrack {
 				__instance.gameObject.AddComponent<TnHSoundtrack>();
 			// Turn off fmod.
 			GM.TNH_Manager.FMODController.MasterBus.setMute(true);
+			//Set hold music.
+			TnHSoundtrack.HoldMusic = SoundtrackAPI.GetAudioclipsForHold(GM.TNH_Manager.m_level);
 			Debug.Log($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Guid}, IsSOundtrack: {PluginMain.IsSoundtrack.Value}");
 		}
 		
@@ -181,35 +186,32 @@ namespace TNHBGLoader.Soundtrack {
 		public static bool Patch_Start_AddOrbTouchSong(ref TNH_HoldPointSystemNode __instance) {
 			if (!PluginMain.IsSoundtrack.Value)
 				return true;
-			//Initialize holdmusic. This SHOULD be performed before Patch_SwitchTo_PlaySoundtrackSongs
-			HoldMusic = SoundtrackAPI.GetAudioclipsForHold(GM.TNH_Manager.m_level);
-			
 			
 			//Convert tracks to a list of audioclips
 			var clips = new List<AudioClip>();
-			if (HoldMusic.OrbActivate.Length != 0) {
-				foreach (var track in HoldMusic.OrbActivate)
+			if (TnHSoundtrack.HoldMusic.OrbActivate.Length != 0) {
+				foreach (var track in TnHSoundtrack.HoldMusic.OrbActivate)
 					clips.Add(track.clip);
 				__instance.AUDEvent_HoldActivate.Clips = clips;
 			}
 			
 			clips = new List<AudioClip>();
-			if (HoldMusic.OrbHoldWave.Length != 0) {
-				foreach (var track in HoldMusic.OrbHoldWave)
+			if (TnHSoundtrack.HoldMusic.OrbHoldWave.Length != 0) {
+				foreach (var track in TnHSoundtrack.HoldMusic.OrbHoldWave)
 					clips.Add(track.clip);
 				__instance.HoldPoint.AUDEvent_HoldWave.Clips = clips;
 			}
 
 			clips = new List<AudioClip>();
-			if (HoldMusic.OrbSuccess.Length != 0) {
-				foreach (var track in HoldMusic.OrbSuccess)
+			if (TnHSoundtrack.HoldMusic.OrbSuccess.Length != 0) {
+				foreach (var track in TnHSoundtrack.HoldMusic.OrbSuccess)
 					clips.Add(track.clip);
 				__instance.HoldPoint.AUDEvent_Success.Clips = clips;
 			}
 			
 			clips = new List<AudioClip>();
-			if (HoldMusic.OrbFailure.Length != 0) {
-				foreach (var track in HoldMusic.OrbFailure)
+			if (TnHSoundtrack.HoldMusic.OrbFailure.Length != 0) {
+				foreach (var track in TnHSoundtrack.HoldMusic.OrbFailure)
 					clips.Add(track.clip);
 				__instance.HoldPoint.AUDEvent_Failure.Clips = clips;
 			}

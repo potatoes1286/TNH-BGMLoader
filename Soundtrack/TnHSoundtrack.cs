@@ -18,6 +18,8 @@ namespace TNHBGLoader.Soundtrack {
 
 		public static List<Track> SongQueue = new List<Track>();
 		
+		public static HoldData? HoldMusic;
+		
 		public static void Queue(Track track) {
 			SongQueue.Add(track);
 		}
@@ -141,8 +143,12 @@ namespace TNHBGLoader.Soundtrack {
 			if(!SoundtrackAPI.GetCurrentSoundtrack.Loaded)
 				SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].AssembleMusicData();
 			
-			var takeData = SoundtrackAPI.GetAudioclipsForTake(0);
-			SwitchSong(takeData.Track); //start playing take theme
+			Track take;
+			if (HoldMusic.Take.Length == 0)
+				take = SoundtrackAPI.GetAudioclipsForTake(0).Track;
+			else
+				take = HoldMusic.Take[Random.Range(0, HoldMusic.Take.Length)];
+			SwitchSong(take); //start playing take theme
 		}
 
 		public void Update() {

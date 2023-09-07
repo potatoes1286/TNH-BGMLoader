@@ -47,6 +47,8 @@ namespace TNHBGLoader.Soundtrack {
 		public Track[] End;
 		//Alt end song for if you FAIL the hold, you loser.
 		public Track[] EndFail;
+
+		public Track[] Take;
 		
 		//Alt system, Phases.
 		//Eh. Fuck it. List time.

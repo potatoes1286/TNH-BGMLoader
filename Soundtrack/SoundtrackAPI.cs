@@ -57,6 +57,7 @@ namespace TNHBGLoader.Soundtrack {
 				var OrbWave = new List<Track>();
 				var OrbSuccess = new List<Track>();
 				var OrbFailure = new List<Track>();
+				var Takes = new List<Track>();
 				
 				// Go thru all .wavs and .mp3s and sort them with metadata, name, and track
 				var files = Directory.GetFiles(sequence, "*.wav", SearchOption.TopDirectoryOnly);
@@ -128,6 +129,9 @@ namespace TNHBGLoader.Soundtrack {
 						case "orbfailure":
 							OrbFailure.Add(track);
 							break;
+						case "take":
+							Takes.Add(track);
+							break;
 						default:
 							//handle phases
 							var isTransition = false;
@@ -178,6 +182,7 @@ namespace TNHBGLoader.Soundtrack {
 				data.OrbFailure = OrbFailure.ToArray();
 				data.Phase = Phases;
 				data.PhaseTransition = PhaseTransitions;
+				data.Take = Takes.ToArray();
 				sequenceDatas.Add(data);
 			}
 			
@@ -273,6 +278,7 @@ namespace TNHBGLoader.Soundtrack {
 			}
 			var number = UnityEngine.Random.Range(0, takes.Count());
 			var data = takes.ToArray()[number];
+			
 			Debug.Log($"Selected {data.Name}");
 			return data;
 		}
