@@ -39,7 +39,7 @@ namespace TNHBGLoader.Soundtrack {
 				if(HoldMusic.End.Length > 0)
 					TnHSoundtrack.Queue(HoldMusic.End[Random.Range(0, HoldMusic.End.Length)]); // End
 
-				if (SoundtrackAPI.IsMix && SoundtrackAPI.Soundtracks.Count != 1) {
+				/*if (SoundtrackAPI.IsMix && SoundtrackAPI.Soundtracks.Count != 1) {
 					var curSt = SoundtrackAPI.SelectedSoundtrackIndex;
 					int newSt = curSt;
 					for (int i = 0; i < 10; i++) {
@@ -49,7 +49,7 @@ namespace TNHBGLoader.Soundtrack {
 					}
 					SoundtrackAPI.SelectedSoundtrackIndex = newSt;
 					PluginMain.DebugLog.LogDebug($"IsMix: {SoundtrackAPI.IsMix}, Switched from old soundtrack {SoundtrackAPI.Soundtracks[curSt].Guid} to {SoundtrackAPI.Soundtracks[newSt].Guid}");
-				}
+				}*/
 				
 				
 				var take = SoundtrackAPI.GetAudioclipsForTake(GM.TNH_Manager.m_level + 1);
