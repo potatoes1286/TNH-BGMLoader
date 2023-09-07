@@ -109,7 +109,7 @@ namespace TNHBGLoader.Soundtrack {
 					//Ensure the song is long enough.
 					if (timeToFail > songLength) {
 						PluginMain.DebugLog
-.LogError($"Soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack]}:{newSong.name} is TOO SHORT! Song length: {songLength}, Time to Fail: {timeToFail}! Lengthen your song!");
+.LogError($"Soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex]}:{newSong.name} is TOO SHORT! Song length: {songLength}, Time to Fail: {timeToFail}! Lengthen your song!");
 						return;
 					}
 					double playHead = songLength - timeToFail;
@@ -118,7 +118,7 @@ namespace TNHBGLoader.Soundtrack {
 				}
 				//It hasn't been identified yet. Just fucking throw.
 				else {
-					PluginMain.DebugLog.LogError($"Soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack]}:{newSong.name} DID NOT have enough time to get info about how long the hold is! (FailureSync). Please lengthen your transition or intro to give more buffer time for the info to load! It should be AT LEAST 5 seconds.");
+					PluginMain.DebugLog.LogError($"Soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex]}:{newSong.name} DID NOT have enough time to get info about how long the hold is! (FailureSync). Please lengthen your transition or intro to give more buffer time for the info to load! It should be AT LEAST 5 seconds.");
 				}
 			}
 		}
@@ -135,6 +135,11 @@ namespace TNHBGLoader.Soundtrack {
 				int num = Random.Range(0, SoundtrackAPI.Soundtracks.Count);
 				SoundtrackAPI.SelectedSoundtrack = num;
 			}*/
+			
+			//Load the soundtrack if it aint.
+			//TODO: Unload it when done
+			if(!SoundtrackAPI.GetCurrentSoundtrack.Loaded)
+				SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].AssembleMusicData();
 			
 			var takeData = SoundtrackAPI.GetAudioclipsForTake(0);
 			SwitchSong(takeData.Track); //start playing take theme

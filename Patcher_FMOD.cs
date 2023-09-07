@@ -71,7 +71,7 @@ namespace TNHBGLoader
 						}
 						else {
 							PluginMain.IsSoundtrack.Value = true;
-							SoundtrackAPI.SelectedSoundtrack = num - BankAPI.LoadedBankLocations.Count;
+							SoundtrackAPI.SelectedSoundtrackIndex = num - BankAPI.LoadedBankLocations.Count;
 						}
 					}
 
@@ -89,7 +89,7 @@ namespace TNHBGLoader
 					}
 					else {
 						PluginMain
-.DebugLog.LogInfo($"Loading soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack].Guid} into TNH!");
+.DebugLog.LogInfo($"Loading soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Guid} into TNH!");
 					}
 
 				}

@@ -11,7 +11,10 @@ namespace TNHBGLoader.Soundtrack {
 		public string    format; //wav or ogg (NO PERIOD)
 	}
 	
-	public class SoundtrackManifest {
+	public class SoundtrackManifest
+	{
+		//Check to ensure the soundtrack is actually loaded
+		public bool Loaded;
 		//Name of the soundtrack
 		public string         Name;
 		//Path of the soundtrack in the filesystem

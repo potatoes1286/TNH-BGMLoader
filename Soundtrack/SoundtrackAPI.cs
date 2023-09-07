@@ -12,14 +12,15 @@ namespace TNHBGLoader.Soundtrack {
 
 		public static List<SoundtrackManifest> Soundtracks = new List<SoundtrackManifest>();
 		//See PluginMain.IsSoundtrack.Value for var to check if is soundtrack.
-		public static int  SelectedSoundtrack;
+		public static int  SelectedSoundtrackIndex;
 		public static bool IsMix;
 
+		public static SoundtrackManifest GetCurrentSoundtrack => Soundtracks[SelectedSoundtrackIndex];
 
 
 		//Assemble a complete soundtrack manifest using the path of the file.
 		//Can be written as Ass Music for short, symbolizing what you're gonna do with it.
-		public static SoundtrackManifest AssembleMusicData(SoundtrackManifest manifest) {
+		public static void AssembleMusicData(this SoundtrackManifest manifest) {
 			string dirPath = Path.Combine(Path.GetDirectoryName(manifest.Path), manifest.Location);
 			//ingest sequences
 			List<HoldData> sequenceDatas = new List<HoldData>();
@@ -217,7 +218,7 @@ namespace TNHBGLoader.Soundtrack {
 			}
 			manifest.Holds = sequenceDatas.ToArray();
 			manifest.Takes = takeDatas.ToArray();
-			return manifest;
+			manifest.Loaded = true;
 		}
 		
 		//Convert a Yamlfest into a Manifest. As Yamlfest doesnt contain its path, it gotta be manually added.
@@ -227,6 +228,7 @@ namespace TNHBGLoader.Soundtrack {
 			manifest.Guid = yamlfest.Guid;
 			manifest.Path = path;
 			manifest.Location = yamlfest.location;
+			manifest.Loaded = false;
 			return manifest;
 		}
 		
@@ -234,14 +236,14 @@ namespace TNHBGLoader.Soundtrack {
 		public static void LoadSoundtrack(int index) {
 			//Flag the game that we're doing soundtrack. Unflagging is done in BankAPI.SwapBanks.
 			PluginMain.IsSoundtrack.Value = true;
-			SelectedSoundtrack = index;
-			PluginMain.LastLoadedSoundtrack.Value = Soundtracks[SelectedSoundtrack].Guid;
+			SelectedSoundtrackIndex = index;
+			PluginMain.LastLoadedSoundtrack.Value = Soundtracks[SelectedSoundtrackIndex].Guid;
 		}
 
 		//I am a big hater of DRY
 		//no particular reason 
 		public static HoldData GetAudioclipsForHold(int situation) {
-			var soundtrack = Soundtracks[SelectedSoundtrack];
+			var soundtrack = Soundtracks[SelectedSoundtrackIndex];
 			var holds = soundtrack.Holds.Where(x => x.Timing.TimingsMatch(situation));
 			if (holds.Count() == 0)
 				holds = soundtrack.Holds.Where(x => x.Timing == "fallback");
@@ -259,7 +261,7 @@ namespace TNHBGLoader.Soundtrack {
 		}
 		
 		public static TakeData GetAudioclipsForTake(int situation) {
-			var soundtrack = Soundtracks[SelectedSoundtrack];
+			var soundtrack = Soundtracks[SelectedSoundtrackIndex];
 			var takes = soundtrack.Takes.Where(x => x.Timing.TimingsMatch(situation));
 			if (!takes.Any())
 				takes = soundtrack.Takes.Where(x => x.Timing == "fallback");
@@ -337,7 +339,7 @@ namespace TNHBGLoader.Soundtrack {
 		public static void EnableSoundtrackFromGUID(string guid) {
 			for (int i = 0; i < Soundtracks.Count; i++)
 				if (Soundtracks[i].Guid == guid)
-					SelectedSoundtrack = i;
+					SelectedSoundtrackIndex = i;
 		}
 
 		public static Texture2D GetIcon(int soundtrack) {

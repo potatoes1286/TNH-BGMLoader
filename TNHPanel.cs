@@ -334,7 +334,7 @@ namespace TNHBGLoader
 				case TNHPstates.BGM:
 					if(!PluginMain.IsSoundtrack.Value)
 						return BankAPI.GetNameFromIndex(BankAPI.CurrentBankIndex, true);
-					return $"{BankAPI.LoadedBankLocations.Count + SoundtrackAPI.SelectedSoundtrack + 1}: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack].Name}";
+					return $"{BankAPI.LoadedBankLocations.Count + SoundtrackAPI.SelectedSoundtrackIndex + 1}: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Name}";
 				case TNHPstates.Announcer:
 					return (AnnouncerAPI.CurrentAnnouncerIndex+1) + ": " + AnnouncerAPI.CurrentAnnouncer.Name;
 				case TNHPstates.Sosig_Voicelines:
@@ -425,7 +425,7 @@ namespace TNHBGLoader
 		private void SetIcon()
 		{
 			if (icondisplay == null) return;
-			Debug.Log($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurBank: {GetCurrentBankName()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack].Guid}");
+			Debug.Log($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurBank: {GetCurrentBankName()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Guid}");
 			switch (TNHPstate)
 			{
 				case TNHPstates.BGM:
@@ -434,7 +434,7 @@ namespace TNHBGLoader
 					else if(!PluginMain.IsSoundtrack.Value)
 						icondisplay.texture = BankAPI.GetBankIcon(BankAPI.CurrentBankLocation);
 					else
-						icondisplay.texture = SoundtrackAPI.GetIcon(SoundtrackAPI.SelectedSoundtrack);
+						icondisplay.texture = SoundtrackAPI.GetIcon(SoundtrackAPI.SelectedSoundtrackIndex);
 					break;
 				case TNHPstates.Announcer:
 					icondisplay.texture = AnnouncerAPI.GetAnnouncerIcon(AnnouncerAPI.CurrentAnnouncer);

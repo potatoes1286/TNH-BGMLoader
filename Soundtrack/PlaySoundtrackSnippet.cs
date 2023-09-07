@@ -44,7 +44,7 @@ namespace TNH_BGLoader
 			source.spatialBlend = 0;
 			source.loop = true; //lets just fucking assume huh
 
-			var clip = SoundtrackAPI.GetSnippet(SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack]);
+			var clip = SoundtrackAPI.GetSnippet(SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex]);
 
 			if (clip == null)
 				CleanUp();

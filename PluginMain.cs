@@ -147,15 +147,14 @@ namespace TNHBGLoader
 		public Empty LoadSoundtrack(FileSystemInfo handle) {
 			var file = handle.ConsumeFile();
 			SoundtrackYamlfest yamlfest = _deserializer.Deserialize<SoundtrackYamlfest>(File.ReadAllText(file.FullName));
-			Debug.Log($"Loading soundtrack {yamlfest.Name}");
-			var manifest = SoundtrackAPI.AssembleMusicData(yamlfest.ToManifest(file.FullName)); //Convert Yamlfest to Manifest and forward to AMD.
-			if (SoundtrackAPI.Soundtracks == null) {
-				Debug.Log("retard");
-				SoundtrackAPI.Soundtracks = new List<SoundtrackManifest>();
-			}
+			DebugLog.LogInfo($"Soundtrack detected: {yamlfest.Name}");
+			//Notably, we do not load the soundtrack here! (Performed by SoundtrackAPI.AssembleMusicData)
+			//music mods can get STUPIDLY large- ESPECIALLY if wavs are used. This fucks up your RAM.
+			//Instead, we load it at TnH start.
+			var manifest = yamlfest.ToManifest(file.FullName);
 			SoundtrackAPI.Soundtracks.Add(manifest);
-			if (manifest.Guid == LastLoadedSoundtrack.Value)
-				SoundtrackAPI.SelectedSoundtrack = SoundtrackAPI.Soundtracks.Count - 1;
+			if (yamlfest.Guid == LastLoadedSoundtrack.Value)
+				SoundtrackAPI.SelectedSoundtrackIndex = SoundtrackAPI.Soundtracks.Count - 1;
 			return new Empty();
 		}
 		

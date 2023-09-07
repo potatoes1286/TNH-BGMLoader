@@ -40,14 +40,14 @@ namespace TNHBGLoader.Soundtrack {
 					TnHSoundtrack.Queue(HoldMusic.End[Random.Range(0, HoldMusic.End.Length)]); // End
 
 				if (SoundtrackAPI.IsMix && SoundtrackAPI.Soundtracks.Count != 1) {
-					var curSt = SoundtrackAPI.SelectedSoundtrack;
+					var curSt = SoundtrackAPI.SelectedSoundtrackIndex;
 					int newSt = curSt;
 					for (int i = 0; i < 10; i++) {
 						newSt = UnityEngine.Random.Range(0, SoundtrackAPI.Soundtracks.Count);
 						if (newSt != curSt)
 							break;
 					}
-					SoundtrackAPI.SelectedSoundtrack = newSt;
+					SoundtrackAPI.SelectedSoundtrackIndex = newSt;
 					PluginMain.DebugLog.LogDebug($"IsMix: {SoundtrackAPI.IsMix}, Switched from old soundtrack {SoundtrackAPI.Soundtracks[curSt].Guid} to {SoundtrackAPI.Soundtracks[newSt].Guid}");
 				}
 				
@@ -149,7 +149,7 @@ namespace TNHBGLoader.Soundtrack {
 				__instance.gameObject.AddComponent<TnHSoundtrack>();
 			// Turn off fmod.
 			GM.TNH_Manager.FMODController.MasterBus.setMute(true);
-			Debug.Log($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrack].Guid}, IsSOundtrack: {PluginMain.IsSoundtrack.Value}");
+			Debug.Log($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Guid}, IsSOundtrack: {PluginMain.IsSoundtrack.Value}");
 		}
 		
 		
