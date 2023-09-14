@@ -11,6 +11,7 @@ namespace TNHBGLoader.Soundtrack {
 		//soundtrack: soundtrack"
 		//Seems useless. Surely wont bite me back in the future. I'll just doink it.
 		//Update. It bit me. I'm renaming it to location.
-		public string location { get; set; }
+		public string Location { get; set; }
+		public string GameMode { get; set; }
 	}
 }

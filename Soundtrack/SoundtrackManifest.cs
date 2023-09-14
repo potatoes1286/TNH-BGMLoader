@@ -10,6 +10,13 @@ namespace TNHBGLoader.Soundtrack {
 		public string    type;
 		public string    format; //wav or ogg (NO PERIOD)
 	}
+
+	public struct TrackSet {
+		public Track[]  Tracks;
+		public string[] Metadata;
+		public string   Name;
+		public string   Type;
+	}
 	
 	public class SoundtrackManifest
 	{
