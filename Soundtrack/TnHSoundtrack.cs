@@ -8,6 +8,7 @@ using UnityEngine;
 
 namespace TNHBGLoader.Soundtrack {
 
+	//Runs TnH soundtracks. Needs refactoring. This is ugly as hell.
 	public class TnHSoundtrack : MonoBehaviour {
 		
 		public static AudioSource[] AudioSources;
@@ -139,10 +140,13 @@ namespace TNHBGLoader.Soundtrack {
 			}*/
 			
 			//Load the soundtrack if it aint.
+			//It should be loaded by now, actually. Just making sure.
 			//TODO: Unload it when done
-			if(!SoundtrackAPI.GetCurrentSoundtrack.Loaded)
+			if (!SoundtrackAPI.GetCurrentSoundtrack.Loaded) {
 				SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].AssembleMusicData();
-			
+				HoldMusic = SoundtrackAPI.GetAudioclipsForHold(GM.TNH_Manager.m_level + 1);
+			}
+
 			Track take;
 			if (HoldMusic.Take.Length == 0)
 				take = SoundtrackAPI.GetAudioclipsForTake(0).Track;
@@ -163,6 +167,7 @@ namespace TNHBGLoader.Soundtrack {
 				if (progress >= 1) {
 					isSwitching = false;
 					GetNotCurrentAudioSource.Stop();
+					Debug.Log($"Phaseout complete at {Time.time}. Current track time: {GetCurrentAudioSource.time}");
 				}
 			}
 			

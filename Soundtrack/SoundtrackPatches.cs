@@ -5,9 +5,9 @@ using HarmonyLib;
 using UnityEngine;
 
 namespace TNHBGLoader.Soundtrack {
+	
+	//Patches to H3VR code to allow soundtracks to play during TnH runs.
 	public class SoundtrackPatches {
-		
-		
 		[HarmonyPatch(typeof(FVRFMODController), "SwitchTo")]
 		[HarmonyPrefix]
 		public static bool Patch_SwitchTo_PlaySoundtrackSongs(ref int musicIndex, ref float timeDelayStart, ref bool shouldStop, ref bool shouldDeadStop) {
@@ -53,10 +53,14 @@ namespace TNHBGLoader.Soundtrack {
 
 				Track take;
 				TnHSoundtrack.HoldMusic = SoundtrackAPI.GetAudioclipsForHold(GM.TNH_Manager.m_level + 1);
-				if (TnHSoundtrack.HoldMusic.Take.Length == 0)
+				if (TnHSoundtrack.HoldMusic.Take.Length == 0) {
+					Debug.Log($"Getting audioclips for take {GM.TNH_Manager.m_level + 1}.");
 					take = SoundtrackAPI.GetAudioclipsForTake(GM.TNH_Manager.m_level + 1).Track;
-				else
+				}
+				else {
 					take = TnHSoundtrack.HoldMusic.Take[Random.Range(0, TnHSoundtrack.HoldMusic.Take.Length)];
+				}
+
 				TnHSoundtrack.Queue(take);
 				TnHSoundtrack.PlayNextSongInQueue(); // Plays next song, finishing Take and playing Intro (if exists, if not, Lo or Phases.)
 			}
@@ -153,6 +157,7 @@ namespace TNHBGLoader.Soundtrack {
 			// Turn off fmod.
 			GM.TNH_Manager.FMODController.MasterBus.setMute(true);
 			//Set hold music.
+
 			TnHSoundtrack.HoldMusic = SoundtrackAPI.GetAudioclipsForHold(GM.TNH_Manager.m_level);
 			Debug.Log($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Guid}, IsSOundtrack: {PluginMain.IsSoundtrack.Value}");
 		}

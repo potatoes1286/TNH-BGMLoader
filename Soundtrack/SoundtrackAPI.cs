@@ -8,6 +8,8 @@ using FistVR;
 using UnityEngine;
 
 namespace TNHBGLoader.Soundtrack {
+	
+	//Handles much of the backend workings of soundtracks.
 	public static class SoundtrackAPI {
 
 		public static List<SoundtrackManifest> Soundtracks = new List<SoundtrackManifest>();
@@ -232,7 +234,7 @@ namespace TNHBGLoader.Soundtrack {
 			manifest.Name = yamlfest.Name;
 			manifest.Guid = yamlfest.Guid;
 			manifest.Path = path;
-			manifest.Location = yamlfest.location;
+			manifest.Location = yamlfest.Location;
 			manifest.Loaded = false;
 			return manifest;
 		}
