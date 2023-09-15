@@ -12,7 +12,7 @@ namespace TNHBGLoader.Soundtrack {
 	//Runs TnH soundtracks. Needs refactoring. This is ugly as hell.
 	public class SoundtrackPlayer : MonoBehaviour {
 
-		public static SoundtrackPlayer? Player;
+		public static SoundtrackPlayer? Instance;
 
 		public static SoundtrackManifest? CurrentSoundtrack;
 		
@@ -23,6 +23,8 @@ namespace TNHBGLoader.Soundtrack {
 		public static AudioSource GetCurrentAudioSource => AudioSources[CurrentAudioSource];
 
 		public static List<Track> SongQueue = new List<Track>();
+
+		public static string GameMode;
 		
 		public virtual void Queue(Track track) {
 			SongQueue.Add(track);
@@ -104,8 +106,9 @@ namespace TNHBGLoader.Soundtrack {
 				GetCurrentAudioSource.time = timeOverride;
 		}
 
-		public void Initialize(SoundtrackManifest soundtrack, float switchLength, float volume) {
-			Player = this;
+		public void Initialize(string gameMode, SoundtrackManifest soundtrack, float switchLength, float volume) {
+			GameMode = gameMode;
+			Instance = this;
 			SwitchLength = switchLength;
 			CurrentSoundtrack = soundtrack;
 			Volume = volume;
