@@ -29,7 +29,7 @@ namespace TNHBGLoader.Soundtrack {
 			string[] sequences = Directory.GetDirectories(dirPath);
 			foreach (var sequence in sequences) {
 				Debug.Log($"Ingesting hold sequence {sequence}");
-				if (File.Exists(sequence) && !sequence.Contains(".wav")) //it was ingesting the fucking yaml :/
+				if (File.Exists(sequence) && !sequence.Contains(".ogg")) //it was ingesting the fucking yaml :/
 					continue;
 				//split directory name into sequence, timing, and name
 				//See _FORMAT.txt for more.
@@ -44,7 +44,7 @@ namespace TNHBGLoader.Soundtrack {
 				//Fill in the metadata for timing and name.
 				data.Timing = metadata[1];
 				data.Name = metadata[2];
-				//get the wav files; turn to audio clips and all that jazz
+				//get the ogg files; turn to audio clips and all that jazz
 				
 				//Put them all into lists before we populate the manifest arrays
 				var Intros = new List<Track>();
@@ -61,25 +61,15 @@ namespace TNHBGLoader.Soundtrack {
 				var OrbFailure = new List<Track>();
 				var Takes = new List<Track>();
 				
-				// Go thru all .wavs and .mp3s and sort them with metadata, name, and track
-				var files = Directory.GetFiles(sequence, "*.wav", SearchOption.TopDirectoryOnly);
-				files = files.Concat(Directory.GetFiles(sequence, "*.ogg", SearchOption.TopDirectoryOnly)).ToArray();
+				// Go thru all .oggs and sort them with metadata, name, and track
+				var files = Directory.GetFiles(sequence, "*.ogg", SearchOption.TopDirectoryOnly);
 				foreach (var file in files) {
 					Debug.Log($"Handling file {file}");
 					var fileName = Path.GetFileNameWithoutExtension(file);
-					var ext = Path.GetExtension(file);
 					var track = new Track();
-
-					if (ext == ".wav") {
-						track.clip = WavUtility.ToAudioClip(file);
-						track.format = "wav";
-					}
-					else if (ext == ".ogg") {
-						track.clip = LoadOgg(file);
-						track.format = "ogg";
-					}
-					else
-						PluginMain.DebugLog.LogError($"{file} has an invalid extension! (Valid extensions: .ogg, .wav)");
+					track.clip = LoadOgg(file);
+					if (Path.GetExtension(file) != ".ogg")
+							PluginMain.DebugLog.LogError($"{file} has an invalid extension! (Valid extensions: .ogg)");
 
 
 					var fileSplit = fileName.Split('_'); // Format: [Track type]_[metadata]_[identifier] or [Track type]_[identifier]
@@ -188,15 +178,15 @@ namespace TNHBGLoader.Soundtrack {
 				sequenceDatas.Add(data);
 			}
 			
+			
 			//ingest takes
 			List<TakeData> takeDatas = new List<TakeData>();
 			//Get all the files that match the glob format of a take file (take_[timing]_[name])
 			//See _FORMAT.txt for more info.
-			string[] takes = Directory.GetFiles(dirPath, "take_*_*.wav", SearchOption.TopDirectoryOnly);
-			takes = takes.Concat(Directory.GetFiles(dirPath, "take_*_*.ogg", SearchOption.TopDirectoryOnly)).ToArray();
+			string[] takes = Directory.GetFiles(dirPath, "take_*_*.ogg", SearchOption.TopDirectoryOnly);
 			foreach (var take in takes) {
 				Debug.Log($"Ingesting takes {take}");
-				if (File.Exists(take) && !take.Contains(".wav") && !take.Contains(".ogg")) //it was ingesting the fucking yaml :/
+				if (File.Exists(take) && !take.Contains(".ogg")) //it was ingesting the fucking yaml :/
 					continue;
 				string[] metadata = Path.GetFileName(take).Split('_');
 				TakeData data = new TakeData();
@@ -209,18 +199,11 @@ namespace TNHBGLoader.Soundtrack {
 					data.Track.metadata = new[] { "" };
 					data.Name = metadata[2];
 				}
+				
+				data.Track.clip = LoadOgg(take);
 
-				string ext = Path.GetExtension(take);
-				if (ext == ".wav") {
-					data.Track.clip = WavUtility.ToAudioClip(take);
-					data.Track.format = "wav";
-				}
-				else if (ext == ".ogg") {
-					data.Track.clip = LoadOgg(take);
-					data.Track.format = "ogg";
-				}
-				else
-					PluginMain.DebugLog.LogError($"{take} has an invalid extension! (Valid extensions: .ogg, .wav)");
+				if(Path.GetExtension(take) != ".ogg")
+					PluginMain.DebugLog.LogError($"{take} has an invalid extension! (Valid extensions: .ogg)");
 				takeDatas.Add(data);
 			}
 			manifest.Holds = sequenceDatas.ToArray();
@@ -359,7 +342,7 @@ namespace TNHBGLoader.Soundtrack {
 			for (int t = 0; t < 500; t++) {
 				if (www.isDone)
 					break;
-				Thread.Sleep(10);
+				Thread.Sleep(10); //Multithreading? never heard o' her!
 			}
 			AudioClip clip = www.GetAudioClip(false);
 			clip.name = Path.GetFileName(path);
@@ -367,14 +350,9 @@ namespace TNHBGLoader.Soundtrack {
 		}
 		public static AudioClip? GetSnippet(SoundtrackManifest manifest) {
 			string pathOgg = Path.Combine(Path.Combine(Path.GetDirectoryName(manifest.Path), manifest.Location), "snippet.ogg");
-			string pathWav = Path.Combine(Path.Combine(Path.GetDirectoryName(manifest.Path), manifest.Location), "snippet.wav");
-
 			AudioClip? clip = null;
-			
 			if(File.Exists(pathOgg))
 				clip = LoadOgg(pathOgg);
-			else if (File.Exists(pathWav))
-				clip = WavUtility.ToAudioClip(pathWav);
 			return clip;
 		}
 	}

@@ -8,7 +8,6 @@ namespace TNHBGLoader.Soundtrack {
 		public string[]  metadata; //sip (Skip In Place), dnf (Do Not Fade), loop, etc
 		public string    name;
 		public string    type;
-		public string    format; //wav or ogg (NO PERIOD)
 	}
 
 	public struct TrackSet {

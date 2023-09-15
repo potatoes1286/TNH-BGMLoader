@@ -64,15 +64,10 @@ namespace TNHBGLoader.Soundtrack {
 			var curTime = GetCurrentAudioSource.time;
 			
 
-			// Who the fuck decided that the length of an audioclip would not represent the length of an audioclip?
-			// I hate unity with a burning passion.
-			//songLength = newSong.length;
-			if(newSong.format == "wav")
-				SongLength = (double)newSong.clip.samples / (newSong.clip.frequency * newSong.clip.channels);
-			else if (newSong.format == "ogg")
-				SongLength = newSong.clip.length;
+
+			SongLength = newSong.clip.length;
 			
-			Debug.Log($"Playing song {newSong.name} of calculated length {SongLength} (naive time {newSong.clip.length}). Format type {newSong.format}");
+			Debug.Log($"Playing song {newSong.name} of calculated length {SongLength} (naive time {newSong.clip.length}).");
 
 			//If current source is 0, new source is 1, and vice versa.
 			int newSource = CurrentAudioSource == 0 ? 1 : 0;
@@ -151,19 +146,6 @@ namespace TNHBGLoader.Soundtrack {
 			if (timeDif <= SwitchLength && !GetCurrentAudioSource.loop && SongQueue.Count > 0) {
 				Debug.Log($"End of song incoming. Playing next song.");
 				PlayNextSongInQueue();
-			}
-			// There's some natural variance when this is run roughly equal to 0.05s.
-			// We need this buffer or else there's a tiny time where there is no song playing and its a lil jarring
-			// Okay, minor update. Wav files have an incorrect clip length according to unity, so we have to manually loop it.
-			// OGG length actually aligns with Unity's calculations, so we can let unity handle looping if its an OGG.
-			// We don't know if its a WAV or OGG at this time (whoops) so we just check if songLength and Unity's length are close enough:tm:
-			// And if it is, assume OGG and don't run this code.
-			else if (timeDif <= 0.05f && GetCurrentAudioSource.loop && !(Mathf.Abs(GetCurrentAudioSource.clip.length - (float)SongLength) <= 0.01)) {
-				Debug.Log($"Looping at {GetCurrentAudioSource.time}");
-				//Handle looping. because the BUILT IN LOOP FUNCTION FOR UNITY DOESN'T ACTUALLY GODDAMN WORK PROPERLY
-				//UUUUUGGGHHH UNITY PLEASE
-				GetCurrentAudioSource.time = 0;
-				SongStartTime = Time.time;
 			}
 		}
 		
