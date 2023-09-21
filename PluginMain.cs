@@ -39,6 +39,8 @@ namespace TNHBGLoader
 		public static ConfigEntry<bool>   EnableDebugLogging;
 		public static ConfigEntry<string> LastLoadedSoundtrack;
 		public static ConfigEntry<bool>   IsSoundtrack;
+
+		public static ConfigEntry<bool> LoadSoundtracksOnStartup;
 		public static string AssemblyDirectory { get {
 				string codeBase = Assembly.GetExecutingAssembly().CodeBase;
 				UriBuilder uri = new UriBuilder(codeBase);
@@ -99,6 +101,7 @@ namespace TNHBGLoader
 			LastLoadedSosigVLS = Config.Bind("no touchy", "Saved Sosig VLS", "h3vr.default", "Not meant to be changed manually. This autosaves your last sosig set used, so you don't have to reset it every time you launch H3.");
 			LastLoadedSoundtrack = Config.Bind("no touchy", "Saved Soundtrack", "", "Not meant to be changed manually. This autosaves your last sosig set used, so you don't have to reset it every time you launch H3.");
 			IsSoundtrack = Config.Bind("no touchy", "Saved Is Soundtrack", false, "Not meant to be changed manually. This autosaves your last sosig set used, so you don't have to reset it every time you launch H3.");
+			LoadSoundtracksOnStartup = Config.Bind("no touchy", "Load Soundtracks On Startup", false, "Debug. Loads ALL soundtracks on H3 start, not the current soundtrack when loading TnH. Enable only to catch soundtrack loading bugs on start.");
 		}
 
 		//stratum loading
@@ -149,9 +152,11 @@ namespace TNHBGLoader
 			SoundtrackYamlfest yamlfest = _deserializer.Deserialize<SoundtrackYamlfest>(File.ReadAllText(file.FullName));
 			DebugLog.LogInfo($"Soundtrack detected: {yamlfest.Name}");
 			//Notably, we do not load the soundtrack here! (Performed by SoundtrackAPI.AssembleMusicData)
-			//music mods can get STUPIDLY large- ESPECIALLY if wavs are used. This fucks up your RAM.
+			//music mods can get STUPIDLY large. This fucks up your RAM.
 			//Instead, we load it at TnH start.
 			var manifest = yamlfest.ToManifest(file.FullName);
+			if(LoadSoundtracksOnStartup.Value)
+				manifest.AssembleMusicData(); // Unless we enable it manually.
 			SoundtrackAPI.Soundtracks.Add(manifest);
 			if (yamlfest.Guid == LastLoadedSoundtrack.Value)
 				SoundtrackAPI.SelectedSoundtrackIndex = SoundtrackAPI.Soundtracks.Count - 1;
