@@ -33,7 +33,6 @@ namespace TNH_BGLoader
 		}
 		
 		public void Start() {
-			PluginMain.LogSpam("Playing snippet " + BankAPI.GetNameFromIndex(BankAPI.CurrentBankIndex));
 			if(existingSnippet != null)
 				existingSnippet.CleanUp();
 			existingSnippet = this;

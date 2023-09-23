@@ -46,6 +46,9 @@ namespace TNH_BGLoader
 		{
 			//If over the # of banks, overflow into Soundtrack API.
 			if (newBank > LoadedBankLocations.Count - 1) {
+				//Due to some changes, it should never reach this point.
+				//Not gonna touch it though. Too scared it'll still break smthn.
+				
 				//Shit over the workload to the soundtrack API.
 				//newBank - LoadedBankLocations.Count results in the # as it corresponds to in the soundtrack data
 				//Ex: If you have 5 Banks, and you ask for Index 5 (6th bank), it corresponds to Index 0 (1st soundtrack)

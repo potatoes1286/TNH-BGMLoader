@@ -102,7 +102,7 @@ namespace TNHBGLoader
 		[HarmonyPostfix]
 		public static void TNH_UIManager_SpawnPanel()
 		{
-			var bgmpanel = new TNHPanel();
+			var bgmpanel = new TNHPanel("tnh", true, true, true);
 			GameObject panel = bgmpanel.Panel.GetOrCreatePanel();
 			panel.transform.position = new Vector3(0.0561f, 1f, 7.1821f);
 			panel.transform.localEulerAngles = new Vector3(315, 0, 0);

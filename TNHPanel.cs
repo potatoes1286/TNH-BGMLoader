@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -24,11 +25,61 @@ namespace TNHBGLoader
 		public enum TNHPstates { BGM, Announcer, Sosig_Voicelines }
 		public TNHPstates TNHPstate = TNHPstates.BGM;
 
-		public TNHPanel()
-		{
+		public string                 GameMode;
+		public List<BankOrSoundtrack> BGMs;
+
+
+		public bool HasBgms = true;
+		public bool HasVls = true;
+		public bool HasAnnouncers  = true;
+
+		public TNHPanel(string gameMode, bool hasBgms = true, bool hasVls = false, bool hasAnnouncers = false) {
+			GameMode = gameMode;
+			HasBgms = hasBgms;
+			HasVls = hasVls;
+			HasAnnouncers = hasAnnouncers;
 			Panel = new LockablePanel();
 			Panel.Configure += ConfigurePanel;
 			Panel.TextureOverride = SodaliteUtils.LoadTextureFromBytes(Assembly.GetExecutingAssembly().GetResource("panel.png"));
+			
+			//Set default panel
+			if (!hasBgms) {
+				if (!hasAnnouncers)
+					TNHPstate = TNHPstates.Sosig_Voicelines;
+				if (!hasVls)
+					TNHPstate = TNHPstates.Announcer;
+			}
+
+
+
+				//Assemble list of BGMs
+			BGMs = new List<BankOrSoundtrack>();
+			if (GameMode == "tnh") {
+				foreach (var bank in BankAPI.LoadedBankLocations) {
+					var bos = new BankOrSoundtrack();
+					bos.IsBank = true;
+					bos.BankGuid = bank;
+					bos.Name = BankAPI.GetNameFromLocation(bank);
+					BGMs.Add(bos);
+				}
+			}
+
+			foreach (var soundtrack in SoundtrackAPI.Soundtracks) {
+				if (soundtrack.GameMode != GameMode)
+					continue;
+				var bos = new BankOrSoundtrack();
+				bos.IsBank = false;
+				bos.SoundtrackGuid = soundtrack.Guid;
+				bos.Name = soundtrack.Name;
+				BGMs.Add(bos);
+			}
+		}
+
+		public struct BankOrSoundtrack {
+			public bool   IsBank;
+			public string BankGuid;
+			public string SoundtrackGuid;
+			public string Name;
 		}
 		
 		private TextWidget   _bankText;
@@ -92,7 +143,7 @@ namespace TNHBGLoader
 				#endregion
 				#region Row Two
 				/*current mindex*/		widget.AddChild((TextWidget text) => {
-					text.Text.text = "Selected:\n" + GetCurrentBankName();
+					text.Text.text = "Selected:\n" + GetCurrentSelectedItemName();
 					_bankText = text;
 					text.Text.alignment = TextAnchor.MiddleCenter;
 					text.Text.fontSize += 0;
@@ -199,13 +250,28 @@ namespace TNHBGLoader
 
 		public void SwitchState(object sender, ButtonClickEventArgs args)
 		{
-			//beauty.
-				 if (TNHPstate == TNHPstates.BGM) {TNHPstate = TNHPstates.Announcer;}
-			else if (TNHPstate == TNHPstates.Announcer) {TNHPstate = TNHPstates.Sosig_Voicelines;} 
-			else if (TNHPstate == TNHPstates.Sosig_Voicelines) {TNHPstate = TNHPstates.BGM;}
+			// There's 100% an easier way to do this. I'm too lazy.
+			if (TNHPstate == TNHPstates.BGM) {
+				if(HasAnnouncers)
+					TNHPstate = TNHPstates.Announcer;
+				else if(HasVls)
+					TNHPstate = TNHPstates.Sosig_Voicelines;
+			}
+			if (TNHPstate == TNHPstates.Announcer) {
+				if(HasAnnouncers)
+					TNHPstate = TNHPstates.Sosig_Voicelines;
+				else if(HasVls)
+					TNHPstate = TNHPstates.BGM;
+			}
+			if (TNHPstate == TNHPstates.Sosig_Voicelines) {
+				if(HasAnnouncers)
+					TNHPstate = TNHPstates.BGM;
+				else if(HasVls)
+					TNHPstate = TNHPstates.Announcer;
+			}
 				 
 			_switchstate.ButtonText.text = TNHPstate.ToString().Replace('_', ' ');
-			_bankText.Text.text = "Selected:\n" + GetCurrentBankName();
+			_bankText.Text.text = "Selected:\n" + GetCurrentSelectedItemName();
 			_firstMusicIndex = 0;
 			int index = 0;
 			UpdateMusicList(null, null); //always use null as an arg, kids
@@ -230,7 +296,7 @@ namespace TNHBGLoader
 			bool oob = NewFirstMusicIndex < 0;
 			switch (TNHPstate) {
 				case TNHPstates.BGM:
-					if (NewFirstMusicIndex >= BankAPI.LoadedBankLocations.Count + SoundtrackAPI.Soundtracks.Count) oob = true;
+					if (NewFirstMusicIndex >= BGMs.Count) oob = true;
 					break;
 				case TNHPstates.Announcer:
 					if (NewFirstMusicIndex >= AnnouncerAPI.LoadedAnnouncers.Count) oob = true;
@@ -311,10 +377,8 @@ namespace TNHBGLoader
 			int index = _firstMusicIndex + offset;
 			switch (TNHPstate) {
 				case TNHPstates.BGM:
-					if (index < BankAPI.LoadedBankLocations.Count)
-						return BankAPI.GetNameFromIndex(index, true);
-					if (index < BankAPI.LoadedBankLocations.Count + SoundtrackAPI.Soundtracks.Count)
-						return $"{index + 1}: {SoundtrackAPI.Soundtracks[index - BankAPI.LoadedBankLocations.Count].Name}";
+					if (index < BGMs.Count)
+						return $"{index + 1}: {BGMs[index].Name}";
 					break;
 				case TNHPstates.Announcer:
 					if (index < AnnouncerAPI.LoadedAnnouncers.Count)
@@ -328,7 +392,7 @@ namespace TNHBGLoader
 			return "";
 		}
 
-		private string GetCurrentBankName() {
+		private string GetCurrentSelectedItemName() {
 			switch (TNHPstate)
 			{
 				case TNHPstates.BGM:
@@ -367,8 +431,8 @@ namespace TNHBGLoader
 				switch (TNHPstate)
 				{
 					case TNHPstates.BGM:
-						BankAPI.SwapBank(index);
-						if (index < BankAPI.LoadedBankLocations.Count) {
+						if (BGMs[index].IsBank) {
+							BankAPI.SwapBank(index);
 							GameObject go = new GameObject();
 							if(BankAPI.LoadedBankLocations[index] != "Your Mix" && BankAPI.LoadedBankLocations[index] != "Select Random")
 								go.AddComponent(typeof(PlayFModSnippet));
@@ -379,6 +443,7 @@ namespace TNHBGLoader
 								SoundtrackAPI.IsMix = false;
 						}
 						else {
+							SoundtrackAPI.EnableSoundtrackFromGUID(BGMs[index].SoundtrackGuid);
 							GameObject go = new GameObject();
 							go.AddComponent(typeof(PlaySoundtrackSnippet));
 							SoundtrackAPI.IsMix = false;
@@ -397,7 +462,7 @@ namespace TNHBGLoader
 						break;
 				}
 				SetIcon();
-				_bankText.Text.text = "Selected:\n" + GetCurrentBankName(); //set new bank
+				_bankText.Text.text = "Selected:\n" + GetCurrentSelectedItemName(); //set new bank
 			}
 		}
 		public void PlaySnippet(AudioClip snip)
@@ -425,7 +490,7 @@ namespace TNHBGLoader
 		private void SetIcon()
 		{
 			if (icondisplay == null) return;
-			Debug.Log($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurBank: {GetCurrentBankName()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Guid}");
+			Debug.Log($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurBank: {GetCurrentSelectedItemName()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Guid}");
 			switch (TNHPstate)
 			{
 				case TNHPstates.BGM:
