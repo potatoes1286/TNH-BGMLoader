@@ -25,9 +25,31 @@ namespace TNHBGLoader.Soundtrack {
 		public static List<Track> SongQueue = new List<Track>();
 
 		public static string GameMode;
+
+		
+		public virtual void QueueRandomOfType(TrackSet set, string type, bool mandatory = true) {
+			var tracks = set.Tracks.Where(x => x.Type == type).ToArray();
+			if(tracks.Any())
+				QueueRandom(tracks);
+			else if(mandatory)
+				PluginMain.DebugLog.LogError($"Track set {set.Name} did not contain mandatory track type {type}!");
+		}
+
+		public virtual void QueueRandom(Track[] track) {
+			SongQueue.Add(track[Random.Range(0, track.Length)]);
+		}
+		
+		public virtual void QueueMany(Track[] tracks) {
+			foreach (var track in tracks)
+				SongQueue.Add(track);
+		}
 		
 		public virtual void Queue(Track track) {
 			SongQueue.Add(track);
+		}
+
+		public virtual void ClearQueue() {
+			SongQueue = new List<Track>();
 		}
 
 		private static bool  isSwitching; //if true, is switching between songs
@@ -55,9 +77,9 @@ namespace TNHBGLoader.Soundtrack {
 		
 		public virtual void SwitchSong(Track newSong, float timeOverride = -1) {
 			
-			bool loopNewSong = newSong.metadata.Any(x => x == "loop");
-			bool fadeOut = newSong.metadata.All(x => x != "dnf");
-			bool seamlessTransition = newSong.metadata.Any(x => x == "st");
+			bool loopNewSong = newSong.Metadata.Any(x => x == "loop");
+			bool fadeOut = newSong.Metadata.All(x => x != "dnf");
+			bool seamlessTransition = newSong.Metadata.Any(x => x == "st");
 
 			if(!seamlessTransition)
 				SongStartTime = Time.time;
@@ -65,9 +87,9 @@ namespace TNHBGLoader.Soundtrack {
 			
 
 
-			SongLength = newSong.clip.length;
+			SongLength = newSong.Clip.length;
 			
-			Debug.Log($"Playing song {newSong.name} of calculated length {SongLength} (naive time {newSong.clip.length}).");
+			Debug.Log($"Playing song {newSong.Name} of calculated length {SongLength} (naive time {newSong.Clip.length}).");
 
 			//If current source is 0, new source is 1, and vice versa.
 			int newSource = CurrentAudioSource == 0 ? 1 : 0;
@@ -75,7 +97,7 @@ namespace TNHBGLoader.Soundtrack {
 				switchStartTime = Time.time;
 				CurrentAudioSource = newSource;
 				isSwitching = true;
-				GetCurrentAudioSource.clip = newSong.clip;
+				GetCurrentAudioSource.clip = newSong.Clip;
 				GetCurrentAudioSource.volume = 0;
 				if (loopNewSong)
 					GetCurrentAudioSource.loop = true;
@@ -86,7 +108,7 @@ namespace TNHBGLoader.Soundtrack {
 			else {
 				GetCurrentAudioSource.Stop();
 				CurrentAudioSource = newSource;
-				GetCurrentAudioSource.clip = newSong.clip;
+				GetCurrentAudioSource.clip = newSong.Clip;
 				GetCurrentAudioSource.volume = Volume;
 				if (loopNewSong)
 					GetCurrentAudioSource.loop = true;
@@ -102,7 +124,7 @@ namespace TNHBGLoader.Soundtrack {
 		}
 
 		public void Initialize(string gameMode, SoundtrackManifest soundtrack, float switchLength, float volume) {
-			GameMode = gameMode;
+			GameMode = gameMode; // this doesn't actually do anything but its a good sanity check i think
 			Instance = this;
 			SwitchLength = switchLength;
 			CurrentSoundtrack = soundtrack;

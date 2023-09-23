@@ -4,14 +4,16 @@ using UnityEngine;
 namespace TNHBGLoader.Soundtrack {
 	
 	public struct Track {
-		public AudioClip clip;
-		public string[]  metadata; //sip (Skip In Place), dnf (Do Not Fade), loop, etc
-		public string    name;
-		public string    type;
+		public AudioClip Clip;
+		public string    Situation;
+		public string[]  Metadata; //sip (Skip In Place), dnf (Do Not Fade), loop, etc
+		public string    Name;
+		public string    Type;
 	}
 
 	public struct TrackSet {
-		public Track[]  Tracks;
+		public List<Track>  Tracks;
+		public string   Situation;
 		public string[] Metadata;
 		public string   Name;
 		public string   Type;
@@ -29,12 +31,14 @@ namespace TNHBGLoader.Soundtrack {
 		public string         Guid;
 		//Location of where the soundtracks are located, relative to the yamlfest.
 		public string		  Location;
-		//List of potential Hold songs
-		public HoldData[]	  Holds;
-		//List of potential Take songs
-		public TakeData[]     Takes;
+		//List of sets
+		public List<TrackSet> Sets;
+		//tnh for Take and Hold
+		public string GameMode;
 	}
 	
+	
+	/*
 	//Audio files used during the Hold phase
 	public class HoldData {
 		//Timing dictates when and where the sequence may be played
@@ -77,5 +81,5 @@ namespace TNHBGLoader.Soundtrack {
 		//Looping track during the take
 		//Takes don't have any metadata, so don't worry about it not being a Track and being an AudioClip.
 		public Track Track;
-	}
+	}*/
 }

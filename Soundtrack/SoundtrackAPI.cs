@@ -20,197 +20,67 @@ namespace TNHBGLoader.Soundtrack {
 		public static SoundtrackManifest GetCurrentSoundtrack => Soundtracks[SelectedSoundtrackIndex];
 
 
+
 		//Assemble a complete soundtrack manifest using the path of the file.
 		//Can be written as Ass Music for short, symbolizing what you're gonna do with it.
 		public static void AssembleMusicData(this SoundtrackManifest manifest) {
+			//Get path of the soundtrack.
 			string dirPath = Path.Combine(Path.GetDirectoryName(manifest.Path), manifest.Location);
-			//ingest sequences
-			List<HoldData> sequenceDatas = new List<HoldData>();
-			string[] sequences = Directory.GetDirectories(dirPath);
-			foreach (var sequence in sequences) {
-				Debug.Log($"Ingesting hold sequence {sequence}");
-				if (File.Exists(sequence) && !sequence.Contains(".ogg")) //it was ingesting the fucking yaml :/
+			//Get a list of all the folders in the soundtrack folder.
+			string[] rawSets = Directory.GetDirectories(dirPath);
+			
+			//All the sets assembled.
+			var sets = new List<TrackSet>();
+			foreach (var rawSet in rawSets) {
+				//Standard format of a set [Type]_[Situation]_[Metadata1]-[Metadata2]..._[Name]
+				//Metadata part is optional. Sans metadata, [Type]_[Situation]_[Name]
+				string[] splitName = Path.GetFileName(rawSet).Split('_');
+				if (File.Exists(rawSet) && !rawSet.Contains(".ogg")) //it was ingesting the fucking yaml :/
 					continue;
-				//split directory name into sequence, timing, and name
-				//See _FORMAT.txt for more.
-				//Despite the confusing name, GetFileName works here. Changes C:\folder1\folder2 -> folder2
-				string[] metadata = Path.GetFileName(sequence).Split('_');
-				//Verify the sequence info is valid
-				if (metadata[0] != "sequence" || metadata.Length != 3) {
-					Debug.LogError($"Soundtrack {manifest.Name} has an incorrect sequence info name at file {Path.GetFileName(sequence)}!");
-					continue;
+				var set = new TrackSet();
+				set.Tracks = new List<Track>();
+				set.Type = splitName[0];
+				set.Situation = splitName[1];
+				if (splitName.Length == 3) { //if metadata does not exist
+					set.Metadata = new[] { "" }; //i don wanna deal w nulls
+					set.Name = splitName[2];
 				}
-				HoldData data = new HoldData();
-				//Fill in the metadata for timing and name.
-				data.Timing = metadata[1];
-				data.Name = metadata[2];
-				//get the ogg files; turn to audio clips and all that jazz
+				else { //if metadata exists
+					set.Metadata = splitName[2].Split('-');
+					set.Name = splitName[3];
+				}
 				
-				//Put them all into lists before we populate the manifest arrays
-				var Intros = new List<Track>();
-				var Los = new List<Track>();
-				var Transitions = new List<Track>();
-				var MedHis = new List<Track>();
-				var Ends = new List<Track>();
-				var EndFails = new List<Track>();
-				var Phases = new List<List<Track>>(); //2d list!
-				var PhaseTransitions = new List<List<Track>>();
-				var OrbActivates = new List<Track>();
-				var OrbWave = new List<Track>();
-				var OrbSuccess = new List<Track>();
-				var OrbFailure = new List<Track>();
-				var Takes = new List<Track>();
-				
-				// Go thru all .oggs and sort them with metadata, name, and track
-				var files = Directory.GetFiles(sequence, "*.ogg", SearchOption.TopDirectoryOnly);
-				foreach (var file in files) {
-					Debug.Log($"Handling file {file}");
-					var fileName = Path.GetFileNameWithoutExtension(file);
+				// Go thru all tracks in each folder
+				var rawTracks = Directory.GetFiles(rawSet, "*.ogg", SearchOption.TopDirectoryOnly);
+				foreach (var rawTrack in rawTracks) {
+					//Standard format of a track [Type]_[Metadata1]-[Metadata2]..._[Name]
+					//Metadata part is optional. Sans metadata, [Type]_[Name]
+					var fileName = Path.GetFileNameWithoutExtension(rawTrack);
 					var track = new Track();
-					track.clip = LoadOgg(file);
-					if (Path.GetExtension(file) != ".ogg")
-							PluginMain.DebugLog.LogError($"{file} has an invalid extension! (Valid extensions: .ogg)");
-
-
-					var fileSplit = fileName.Split('_'); // Format: [Track type]_[metadata]_[identifier] or [Track type]_[identifier]
-					//populate metadata + name fields
-					if (fileSplit.Length == 2) {
-						track.metadata = new[] { "" };
-						track.name = fileSplit[1];
-					} else if (fileSplit.Length == 3) {
-						track.metadata = fileSplit[1].Split('-');
-						track.name = fileSplit[2];
-						//Verify the arguments in metadata are valid
-						foreach (var arg in track.metadata)
-							if (arg != "st" && arg != "dnf" && arg != "loop" && arg != "fs")
-								Debug.LogError($"File {file} has invalid metadata: {arg}!");
+					if (Path.GetExtension(fileName) != ".ogg")
+						PluginMain.DebugLog.LogError($"{fileName} has an invalid extension! (Valid extensions: .ogg)");
+					else
+						track.Clip = LoadOgg(fileName);
+					
+					string[] splitTrackName = Path.GetFileName(rawTrack).Split('_');
+					track.Type = splitTrackName[0];
+					track.Situation = set.Situation; //Copy over the set situation info into here, just in case its needed.
+					if (splitTrackName.Length == 2) { //metadata does not exist
+						track.Metadata = new[] { "" }; //i don wanna deal w nulls
+						track.Name = splitTrackName[1];
 					}
-					else {
-						Debug.LogError($"File {file} has an invalid name!");
+					else { //metadata exists
+						track.Metadata = splitTrackName[1].Split('-');
+						track.Name = splitTrackName[2];
 					}
-					//put them into the correct track types
-					track.type = fileSplit[0];
-					switch (fileSplit[0]) {
-						case "intro":
-							Intros.Add(track);
-							break;
-						case "lo":
-							Los.Add(track);
-							break;
-						case "transition":
-							Transitions.Add(track);
-							break;
-						case "medhi":
-							MedHis.Add(track);
-							break;
-						case "end":
-							Ends.Add(track);
-							break;
-						case "endfail":
-							EndFails.Add(track);
-							break;
-						case "orbactivate":
-							OrbActivates.Add(track);
-							break;
-						case "orbwave":
-							OrbWave.Add(track);
-							break;
-						case "orbsuccess":
-							OrbSuccess.Add(track);
-							break;
-						case "orbfailure":
-							OrbFailure.Add(track);
-							break;
-						case "take":
-							Takes.Add(track);
-							break;
-						default:
-							//handle phases
-							var isTransition = false;
-							//remove non-number parts
-							string phaseNumber = fileSplit[0];
-							if (fileSplit[0].Contains("phasetr")) {
-								phaseNumber = fileSplit[0].Replace("phasetr", String.Empty);
-								isTransition = true;
-							} else if (fileSplit[0].Contains("phase")) {
-								phaseNumber = fileSplit[0].Replace("phase", String.Empty);
-							}
-							var tp = int.TryParse(phaseNumber, out int phase);
-							if (!tp) {
-								Debug.LogError($"Cannot categorize {file}!");
-								break;
-							}
-							//There must be 1 more Phase.Count than phase. phase starts at 0
-							//If there's not enough Phases, then we just keep adding until we have enough
-							if (!isTransition) {
-								while (phase >= Phases.Count)
-									Phases.Add(new List<Track>());
-								Phases[phase].Add(track);
-							}
-							else {
-								while (phase >= PhaseTransitions.Count)
-									PhaseTransitions.Add(new List<Track>());
-								PhaseTransitions[phase].Add(track);
-							}
-
-							break;
-					}
+					set.Tracks.Add(track);
 				}
-				
-				if((Phases.Any() || PhaseTransitions.Any()) && (Los.Any() || MedHis.Any()))
-					PluginMain.DebugLog.LogError($"{manifest.Guid}:{sequence} mixes together Phases and Lo/MedHi! This is unsupported! Defaulting to Phases.");
-				if(!Los.Any() && (Phases.Any() || PhaseTransitions.Any()))
-					PluginMain.DebugLog.LogError($"{manifest.Guid}:{sequence} does not contain a Lo nor any phases! This is unsupported!");
-
-				data.Intro = Intros.ToArray();
-				data.Lo = Los.ToArray();
-				data.Transition = Transitions.ToArray();
-				data.MedHi = MedHis.ToArray();
-				data.End = Ends.ToArray();
-				data.EndFail = EndFails.ToArray();
-				data.OrbActivate = OrbActivates.ToArray();
-				data.OrbHoldWave = OrbWave.ToArray();
-				data.OrbSuccess = OrbSuccess.ToArray();
-				data.OrbFailure = OrbFailure.ToArray();
-				data.Phase = Phases;
-				data.PhaseTransition = PhaseTransitions;
-				data.Take = Takes.ToArray();
-				sequenceDatas.Add(data);
+				sets.Add(set);
 			}
-			
-			
-			//ingest takes
-			List<TakeData> takeDatas = new List<TakeData>();
-			//Get all the files that match the glob format of a take file (take_[timing]_[name])
-			//See _FORMAT.txt for more info.
-			string[] takes = Directory.GetFiles(dirPath, "take_*_*.ogg", SearchOption.TopDirectoryOnly);
-			foreach (var take in takes) {
-				Debug.Log($"Ingesting takes {take}");
-				if (File.Exists(take) && !take.Contains(".ogg")) //it was ingesting the fucking yaml :/
-					continue;
-				string[] metadata = Path.GetFileName(take).Split('_');
-				TakeData data = new TakeData();
-				data.Timing = metadata[1];
-				if (metadata.Length == 4) {
-					data.Track.metadata = metadata[2].Split('-');
-					data.Name = metadata[3];
-				}
-				else { //metadata.Length == 3
-					data.Track.metadata = new[] { "" };
-					data.Name = metadata[2];
-				}
-				
-				data.Track.clip = LoadOgg(take);
-
-				if(Path.GetExtension(take) != ".ogg")
-					PluginMain.DebugLog.LogError($"{take} has an invalid extension! (Valid extensions: .ogg)");
-				takeDatas.Add(data);
-			}
-			manifest.Holds = sequenceDatas.ToArray();
-			manifest.Takes = takeDatas.ToArray();
+			manifest.Sets = sets;
 			manifest.Loaded = true;
 		}
-		
+
 		//Convert a Yamlfest into a Manifest. As Yamlfest doesnt contain its path, it gotta be manually added.
 		public static SoundtrackManifest ToManifest(this SoundtrackYamlfest yamlfest, string path) {
 			var manifest = new SoundtrackManifest();
@@ -230,7 +100,23 @@ namespace TNHBGLoader.Soundtrack {
 			PluginMain.LastLoadedSoundtrack.Value = Soundtracks[SelectedSoundtrackIndex].Guid;
 		}
 
-		//I am a big hater of DRY
+		public static TrackSet GetSet(string type, int situation) {
+			var soundtrack = Soundtracks[SelectedSoundtrackIndex];
+			var sets = soundtrack.Sets
+			   .Where(x => x.Type == type)
+			   .Where(x => x.Situation.TimingsMatch(situation))
+			   .ToArray();
+			if(!sets.Any()) //If there are no sets that match, get fallback ones.
+				sets = soundtrack.Sets
+				   .Where(x => x.Type == type)
+				   .Where(x => x.Situation == "fallback")
+				   .ToArray();
+			
+			var setIndex = UnityEngine.Random.Range(0, sets.Length);
+			return sets[setIndex];
+		}
+
+		/*//I am a big hater of DRY
 		//no particular reason 
 		public static HoldData GetAudioclipsForHold(int situation) {
 			var soundtrack = Soundtracks[SelectedSoundtrackIndex];
@@ -266,7 +152,7 @@ namespace TNHBGLoader.Soundtrack {
 			
 			Debug.Log($"Selected {data.Name}");
 			return data;
-		}
+		}*/
 		
 		//Does not account for fallback.
 		//Compares sequencetiming format (See _FORMAT.txt) and the current situation provided by TnH
