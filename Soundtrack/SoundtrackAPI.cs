@@ -51,18 +51,18 @@ namespace TNHBGLoader.Soundtrack {
 				}
 				
 				// Go thru all tracks in each folder
-				var rawTracks = Directory.GetFiles(rawSet, "*.ogg", SearchOption.TopDirectoryOnly);
-				foreach (var rawTrack in rawTracks) {
+				var rawTrackLocations = Directory.GetFiles(rawSet, "*.ogg", SearchOption.TopDirectoryOnly);
+				foreach (var rawTrackLocation in rawTrackLocations) {
 					//Standard format of a track [Type]_[Metadata1]-[Metadata2]..._[Name]
 					//Metadata part is optional. Sans metadata, [Type]_[Name]
-					var fileName = Path.GetFileNameWithoutExtension(rawTrack);
+					var fileName = Path.GetFileName(rawTrackLocation);
 					var track = new Track();
 					if (Path.GetExtension(fileName) != ".ogg")
-						PluginMain.DebugLog.LogError($"{fileName} has an invalid extension! (Valid extensions: .ogg)");
+						PluginMain.DebugLog.LogError($"{fileName} has an invalid extension! (Valid extensions: .ogg, file extension: {Path.GetExtension(fileName)})");
 					else
-						track.Clip = LoadOgg(fileName);
+						track.Clip = LoadOgg(rawTrackLocation);
 					
-					string[] splitTrackName = Path.GetFileName(rawTrack).Split('_');
+					string[] splitTrackName = Path.GetFileNameWithoutExtension(rawTrackLocation).Split('_');
 					track.Type = splitTrackName[0];
 					track.Situation = set.Situation; //Copy over the set situation info into here, just in case its needed.
 					if (splitTrackName.Length == 2) { //metadata does not exist
@@ -101,6 +101,7 @@ namespace TNHBGLoader.Soundtrack {
 		}
 
 		public static TrackSet GetSet(string type, int situation) {
+			PluginMain.DebugLog.LogInfo($"Getting set of type {type}, {situation}");
 			var soundtrack = Soundtracks[SelectedSoundtrackIndex];
 			var sets = soundtrack.Sets
 			   .Where(x => x.Type == type)
@@ -111,7 +112,8 @@ namespace TNHBGLoader.Soundtrack {
 				   .Where(x => x.Type == type)
 				   .Where(x => x.Situation == "fallback")
 				   .ToArray();
-			
+			if(!sets.Any())
+				PluginMain.DebugLog.LogError("No set!");
 			var setIndex = UnityEngine.Random.Range(0, sets.Length);
 			return sets[setIndex];
 		}

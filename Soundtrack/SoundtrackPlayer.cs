@@ -19,8 +19,8 @@ namespace TNHBGLoader.Soundtrack {
 		public static AudioSource[] AudioSources;
 		public static int           CurrentAudioSource;
 		
-		public static AudioSource GetNotCurrentAudioSource => AudioSources[CurrentAudioSource == 0 ? 1 : 0];
-		public static AudioSource GetCurrentAudioSource => AudioSources[CurrentAudioSource];
+		public AudioSource GetNotCurrentAudioSource => AudioSources[CurrentAudioSource == 0 ? 1 : 0];
+		public AudioSource GetCurrentAudioSource => AudioSources[CurrentAudioSource];
 
 		public static List<Track> SongQueue = new List<Track>();
 
@@ -36,15 +36,16 @@ namespace TNHBGLoader.Soundtrack {
 		}
 
 		public virtual void QueueRandom(Track[] track) {
-			SongQueue.Add(track[Random.Range(0, track.Length)]);
+			Queue(track[Random.Range(0, track.Length)]);
 		}
 		
 		public virtual void QueueMany(Track[] tracks) {
 			foreach (var track in tracks)
-				SongQueue.Add(track);
+				Queue(track);
 		}
 		
 		public virtual void Queue(Track track) {
+			PluginMain.DebugLog.LogInfo($"Queueing {track.Type}, {track.Name} of situation {track.Situation}");
 			SongQueue.Add(track);
 		}
 
@@ -174,9 +175,23 @@ namespace TNHBGLoader.Soundtrack {
 		//Gets next item in queue and plays it. Simple as.
 		public virtual void PlayNextSongInQueue() {
 			//Swap the songs out with juuuust enough time for the current song to end.
-			var song = SongQueue[0];
-			SongQueue.RemoveAt(0);
-			SwitchSong(song);
+			if (SongQueue.Count == 0)
+				PluginMain.DebugLog.LogError("Ran out of songs in the queue!");
+			else {
+				var song = SongQueue[0];
+				SongQueue.RemoveAt(0);
+				SwitchSong(song);
+			}
+		}
+
+		public virtual void PlayNextSongInQueueOfType(string type) => PlayNextSongInQueueOfType(new[] { type });
+
+		public virtual void PlayNextSongInQueueOfType(string[] types) {
+			while (!types.Contains(SongQueue[0].Type)) {
+				Debug.Log($"Skipping song {SongQueue[0].Name} of type {SongQueue[0].Type}");
+				SongQueue.RemoveAt(0);
+			}
+			PlayNextSongInQueue();
 		}
 	}
 }

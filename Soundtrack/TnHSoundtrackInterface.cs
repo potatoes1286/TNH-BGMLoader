@@ -96,8 +96,10 @@ namespace TNHBGLoader.Soundtrack {
 			if (HoldMusic.Tracks.Any(x => x.Type == "take"))
 				QueueTake(HoldMusic);
 			else //Otherwise, get a take theme.
-				QueueTake(SoundtrackAPI.GetSet("take", 0));
+				QueueTake(SoundtrackAPI.GetSet("take", GM.TNH_Manager.m_level + 1));
 			
+			Instance.PlayNextSongInQueueOfType(new [] {"intro", "lo"});
+				
 			return false;
 		}
 		
@@ -111,7 +113,6 @@ namespace TNHBGLoader.Soundtrack {
 			//This also handles phase overflow! if it overlfows, the next song would be End and itll just keep playing the highest phase until the actual end
 			if (SongQueue.Count > 0 && !SongQueue[0].Type.Contains("phasetr"))
 				return true;
-			Instance.PlayNextSongInQueue();
 			return true;
 		}
 		
@@ -126,12 +127,7 @@ namespace TNHBGLoader.Soundtrack {
 			// Just making sure it *skips* to Transition.
 			// There's like, NO good reason this should be needed.
 			// But i dont want to risk it.
-			// i stg if this null throws
-			while (SongQueue[0].Type != "transition" && SongQueue[0].Type != "medhi") {
-				Debug.Log($"Skipping song {SongQueue[0].Name} of type {SongQueue[0].Type}");
-				SongQueue.RemoveAt(0);
-			}
-			Instance.PlayNextSongInQueue();
+			Instance.PlayNextSongInQueueOfType(new [] {"transition", "medhi"});
 			return true;
 		}
 		
@@ -156,13 +152,7 @@ namespace TNHBGLoader.Soundtrack {
 			if (!PluginMain.IsSoundtrack.Value || SongQueue.Count == 0)
 				return true;
 			// Just making sure it *skips* to End.
-			// i stg if this null throws
-			while (SongQueue[0].Type != "end" && SongQueue[0].Type != "take" && SongQueue[0].Type != "endfail") {
-				Debug.Log($"Skipping song {SongQueue[0].Name} of type {SongQueue[0].Type}");
-				SongQueue.RemoveAt(0);
-			}
-			Debug.Log($"Playing end song.");
-			Instance.PlayNextSongInQueue();
+			Instance.PlayNextSongInQueueOfType(new [] {"end", "take", "takeintro", "endfail"});
 			return true;
 		}
 
@@ -172,14 +162,8 @@ namespace TNHBGLoader.Soundtrack {
 		}
 		
 		public static void QueueTake(TrackSet set) {
-			var track = set.Tracks.FirstOrDefault(x => x.Type == "takeintro"); //If intro doesn't exist, it should just get the first element which SHOULD be a take.
-			if (track.Type == "intro") {
-				Instance.Queue(track);
-				Instance.Queue(set.Tracks.First(x => x.Type == "take"));
-			}
-			else { //Track type is take
-				Instance.Queue(track);
-			}
+			Instance.QueueRandomOfType(set, "takeintro", false);
+			Instance.QueueRandomOfType(set, "take");
 		}
 		
 		[HarmonyPatch(typeof(TNH_Manager), "SetPhase_Dead")]
@@ -212,8 +196,8 @@ namespace TNHBGLoader.Soundtrack {
 			// Turn off fmod.
 			GM.TNH_Manager.FMODController.MasterBus.setMute(true);
 			//Set hold music.
-
-			HoldMusic = SoundtrackAPI.GetSet("hold", GM.TNH_Manager.m_level);
+			
+			//HoldMusic = SoundtrackAPI.GetSet("hold", GM.TNH_Manager.m_level);
 			Debug.Log($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Guid}, IsSOundtrack: {PluginMain.IsSoundtrack.Value}");
 		}
 		
