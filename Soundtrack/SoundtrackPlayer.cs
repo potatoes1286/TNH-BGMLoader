@@ -27,6 +27,12 @@ namespace TNHBGLoader.Soundtrack {
 		public static string GameMode;
 
 		
+		/// <summary>
+		/// Queues a random track from a TrackSet, given a track type.
+		/// </summary>
+		/// <param name="set">TrackSet with tracks that can be chosen from.</param>
+		/// <param name="type">The type the track must be to be added.</param>
+		/// <param name="mandatory">If true, will throw an error if no tracks match the requirements. If false, will not.</param>
 		public virtual void QueueRandomOfType(TrackSet set, string type, bool mandatory = true) {
 			var tracks = set.Tracks.Where(x => x.Type == type).ToArray();
 			if(tracks.Any())
@@ -35,27 +41,42 @@ namespace TNHBGLoader.Soundtrack {
 				PluginMain.DebugLog.LogError($"Track set {set.Name} did not contain mandatory track type {type}!");
 		}
 
+		/// <summary>
+		/// Adds a single track from an array of tracks to the queue, selected at random by Unity's random generator.
+		/// </summary>
+		/// <param name="track">Array of tracks that can be picked from. Order not relevant.</param>
 		public virtual void QueueRandom(Track[] track) {
 			Queue(track[Random.Range(0, track.Length)]);
 		}
 		
+		/// <summary>
+		/// Adds several tracks to the queue.
+		/// </summary>
+		/// <param name="tracks">Array of tracks to be added to the queue. Items are added in order of index.</param>
 		public virtual void QueueMany(Track[] tracks) {
 			foreach (var track in tracks)
 				Queue(track);
 		}
 		
+		/// <summary>
+		/// Adds a track to the song queue.
+		/// </summary>
+		/// <param name="track">Track to add to the queue.</param>
 		public virtual void Queue(Track track) {
 			PluginMain.DebugLog.LogInfo($"Queueing {track.Type}, {track.Name} of situation {track.Situation}");
 			SongQueue.Add(track);
 		}
 
+		/// <summary>
+		/// Removes all tracks in the queue. Does not affect currently played track.
+		/// </summary>
 		public virtual void ClearQueue() {
 			SongQueue = new List<Track>();
 		}
 
 		private static bool  isSwitching; //if true, is switching between songs
 		private static float switchStartTime; //When the switch began via Time.time
-		public static float SwitchLength = 1.5f; //how long the switch lasts, in seconds
+		public static float TrackFadeTime = 1.5f; //how long the switch lasts, in seconds
 		public static float Volume = 1; //volume set by settings (Maximum is naturally 1)
 		
 		public static double SongLength; // amount of time in seconds the current song lasts
@@ -76,11 +97,17 @@ namespace TNHBGLoader.Soundtrack {
 			}
 		}
 		
-		public virtual void SwitchSong(Track newSong, float timeOverride = -1) {
+		/// <summary>
+		/// Switches currently played track. Does not affect queue.
+		/// </summary>
+		/// <param name="newTrack">New track to play.</param>
+		/// <param name="timeOverride">Sets playhead position on start, in seconds. Values under 0 are discarded.
+		/// As an example, inputting 30 will cause the song to start playing 30 seconds into the song.</param>
+		public virtual void SwitchSong(Track newTrack, float timeOverride = -1) {
 			
-			bool loopNewSong = newSong.Metadata.Any(x => x == "loop");
-			bool fadeOut = newSong.Metadata.All(x => x != "dnf");
-			bool seamlessTransition = newSong.Metadata.Any(x => x == "st");
+			bool loopNewSong = newTrack.Metadata.Any(x => x == "loop");
+			bool fadeOut = newTrack.Metadata.All(x => x != "dnf");
+			bool seamlessTransition = newTrack.Metadata.Any(x => x == "st");
 
 			if(!seamlessTransition)
 				SongStartTime = Time.time;
@@ -88,9 +115,9 @@ namespace TNHBGLoader.Soundtrack {
 			
 
 
-			SongLength = newSong.Clip.length;
+			SongLength = newTrack.Clip.length;
 			
-			Debug.Log($"Playing song {newSong.Name} of calculated length {SongLength} (naive time {newSong.Clip.length}).");
+			PluginMain.DebugLog.LogInfo($"Playing song {newTrack.Name} of calculated length {SongLength} (naive time {newTrack.Clip.length}).");
 
 			//If current source is 0, new source is 1, and vice versa.
 			int newSource = CurrentAudioSource == 0 ? 1 : 0;
@@ -98,7 +125,7 @@ namespace TNHBGLoader.Soundtrack {
 				switchStartTime = Time.time;
 				CurrentAudioSource = newSource;
 				isSwitching = true;
-				GetCurrentAudioSource.clip = newSong.Clip;
+				GetCurrentAudioSource.clip = newTrack.Clip;
 				GetCurrentAudioSource.volume = 0;
 				if (loopNewSong)
 					GetCurrentAudioSource.loop = true;
@@ -109,7 +136,7 @@ namespace TNHBGLoader.Soundtrack {
 			else {
 				GetCurrentAudioSource.Stop();
 				CurrentAudioSource = newSource;
-				GetCurrentAudioSource.clip = newSong.Clip;
+				GetCurrentAudioSource.clip = newTrack.Clip;
 				GetCurrentAudioSource.volume = Volume;
 				if (loopNewSong)
 					GetCurrentAudioSource.loop = true;
@@ -124,10 +151,21 @@ namespace TNHBGLoader.Soundtrack {
 				GetCurrentAudioSource.time = timeOverride;
 		}
 
-		public void Initialize(string gameMode, SoundtrackManifest soundtrack, float switchLength, float volume) {
+		/// <summary>
+		/// Must be called directly after instantiation, to prevent issues. Initializes the Soundtrack Player.
+		/// </summary>
+		/// <param name="gameMode">The current gamemode. As an example, Take and Hold is 'tnh'. Doesn't do
+		/// anything right now.</param>
+		/// <param name="soundtrack">Soundtrack to pull TrackSets and other info from. gameMode and soundtrack.GameMode
+		/// should agree with each other.</param>
+		/// <param name="trackFadeTime">Time allotted for tracks to fade into each other in seconds.
+		/// Default is 1.5.</param>
+		/// <param name="volume">Volume for the soundtrack to be played at. Ranges from 0-4, with 1 being the default
+		/// value.</param>
+		public void Initialize(string gameMode, SoundtrackManifest soundtrack, float trackFadeTime, float volume) {
 			GameMode = gameMode; // this doesn't actually do anything but its a good sanity check i think
 			Instance = this;
-			SwitchLength = switchLength;
+			TrackFadeTime = trackFadeTime;
 			CurrentSoundtrack = soundtrack;
 			Volume = volume;
 			CreateAudioSources();
@@ -152,7 +190,7 @@ namespace TNHBGLoader.Soundtrack {
 			float timeDif = 0;
 			if (isSwitching) {
 				timeDif = Time.time - switchStartTime; //get time dif between start and now
-				float progress = timeDif / SwitchLength; //pcnt progress on how far into switching it is
+				float progress = timeDif / TrackFadeTime; //pcnt progress on how far into switching it is
 				float newVol = progress * Volume; //Linear progression sadly. TODO: Add easing function
 				GetCurrentAudioSource.volume = newVol;
 				GetNotCurrentAudioSource.volume = Volume - newVol;
@@ -166,13 +204,15 @@ namespace TNHBGLoader.Soundtrack {
 			//Handle Queue
 			timeDif = (float)SongLength - (Time.time - SongStartTime);
 			//Note for a potential bug- songStartTime will NOT reset if the song is looping.
-			if (timeDif <= SwitchLength && !GetCurrentAudioSource.loop && SongQueue.Count > 0) {
+			if (timeDif <= TrackFadeTime && !GetCurrentAudioSource.loop && SongQueue.Count > 0) {
 				Debug.Log($"End of song incoming. Playing next song.");
 				PlayNextSongInQueue();
 			}
 		}
 		
-		//Gets next item in queue and plays it. Simple as.
+		/// <summary>
+		/// Plays the next song in the queue.
+		/// </summary>
 		public virtual void PlayNextSongInQueue() {
 			//Swap the songs out with juuuust enough time for the current song to end.
 			if (SongQueue.Count == 0)
@@ -184,9 +224,21 @@ namespace TNHBGLoader.Soundtrack {
 			}
 		}
 
-		public virtual void PlayNextSongInQueueOfType(string type) => PlayNextSongInQueueOfType(new[] { type });
+		/// <summary>
+		/// Plays the next track in the queue of an accepted type. If the next song is not the accepted
+		/// type, it will remove the next queued item and continue until a track of the accepted type is found.
+		/// Ensure that there is a track of the accepted type in the queue- or else there may be an error thrown.
+		/// </summary>
+		/// <param name="type">Accepted type.</param>
+		public virtual void PlayNextTrackInQueueOfType(string type) => PlayNextTrackInQueueOfType(new[] { type });
 
-		public virtual void PlayNextSongInQueueOfType(string[] types) {
+		/// <summary>
+		/// Plays the next track in the queue of a given set of accepted types. If the next song is not an accepted
+		/// type, it will remove the next queued item and continue until a track of accepted type is found.
+		/// Ensure that there is a track of accepted type in the queue- or else there may be an error thrown.
+		/// </summary>
+		/// <param name="types">Array of accepted types.</param>
+		public virtual void PlayNextTrackInQueueOfType(string[] types) {
 			while (!types.Contains(SongQueue[0].Type)) {
 				Debug.Log($"Skipping song {SongQueue[0].Name} of type {SongQueue[0].Type}");
 				SongQueue.RemoveAt(0);

@@ -29,9 +29,9 @@ namespace TNHBGLoader.Soundtrack {
 				QueueTake(SoundtrackAPI.GetSet("take", 0));
 		}
 
-		public override void SwitchSong(Track newSong, float timeOverride = -1f) {
+		public override void SwitchSong(Track newTrack, float timeOverride = -1f) {
 			//Implement failure sync specific to TnH before passing off to generic SwitchSong
-			bool failureSync = newSong.Metadata.Any(x => x == "fs");
+			bool failureSync = newTrack.Metadata.Any(x => x == "fs");
 			float playHead = timeOverride;
 			if (failureSync) {
 				//The info is already there and waiting for us.
@@ -39,7 +39,7 @@ namespace TNHBGLoader.Soundtrack {
 					float timeToFail = (timeFail - timeIdentified) - (Time.time - timeIdentified);
 					//Ensure the song is long enough.
 					if (timeToFail > SongLength) {
-						PluginMain.DebugLog.LogError($"Soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex]}:{newSong.Name} is TOO SHORT! Song length: {SoundtrackPlayer.SongLength}, Time to Fail: {timeToFail}! Lengthen your song!");
+						PluginMain.DebugLog.LogError($"Soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex]}:{newTrack.Name} is TOO SHORT! Song length: {SoundtrackPlayer.SongLength}, Time to Fail: {timeToFail}! Lengthen your song!");
 						return;
 					}
 					playHead = (float)SongLength - timeToFail;
@@ -47,11 +47,11 @@ namespace TNHBGLoader.Soundtrack {
 				}
 				//It hasn't been identified yet. Just fucking throw.
 				else {
-					PluginMain.DebugLog.LogError($"Soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex]}:{newSong.Name} DID NOT have enough time to get info about how long the hold is! (FailureSync). Please lengthen your transition or intro to give more buffer time for the info to load! It should be AT LEAST 5 seconds.");
+					PluginMain.DebugLog.LogError($"Soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex]}:{newTrack.Name} DID NOT have enough time to get info about how long the hold is! (FailureSync). Please lengthen your transition or intro to give more buffer time for the info to load! It should be AT LEAST 5 seconds.");
 				}
 			}
 			//Pass on to generic SwitchSong
-			base.SwitchSong(newSong, playHead);
+			base.SwitchSong(newTrack, playHead);
 		}
 
 		[HarmonyPatch(typeof(FVRFMODController), "SwitchTo")]
@@ -98,7 +98,7 @@ namespace TNHBGLoader.Soundtrack {
 			else //Otherwise, get a take theme.
 				QueueTake(SoundtrackAPI.GetSet("take", GM.TNH_Manager.m_level + 1));
 			
-			Instance.PlayNextSongInQueueOfType(new [] {"intro", "lo"});
+			Instance.PlayNextTrackInQueueOfType(new [] {"intro", "lo"});
 				
 			return false;
 		}
@@ -128,7 +128,7 @@ namespace TNHBGLoader.Soundtrack {
 			// Just making sure it *skips* to Transition.
 			// There's like, NO good reason this should be needed.
 			// But i dont want to risk it.
-			Instance.PlayNextSongInQueueOfType(new [] {"transition", "medhi"});
+			Instance.PlayNextTrackInQueueOfType(new [] {"transition", "medhi"});
 			return true;
 		}
 		
@@ -153,7 +153,7 @@ namespace TNHBGLoader.Soundtrack {
 			if (!PluginMain.IsSoundtrack.Value || SongQueue.Count == 0)
 				return true;
 			// Just making sure it *skips* to End.
-			Instance.PlayNextSongInQueueOfType(new [] {"end", "take", "takeintro", "endfail"});
+			Instance.PlayNextTrackInQueueOfType(new [] {"end", "take", "takeintro", "endfail"});
 			return true;
 		}
 
