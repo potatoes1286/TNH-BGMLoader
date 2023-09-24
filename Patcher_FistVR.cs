@@ -102,7 +102,8 @@ namespace TNHBGLoader
 		[HarmonyPostfix]
 		public static void TNH_UIManager_SpawnPanel()
 		{
-			var bgmpanel = new TNHPanel("tnh", true, true, true);
+			var bgmpanel = new TNHPanel();
+			bgmpanel.Initialize("tnh", true, true, true);
 			GameObject panel = bgmpanel.Panel.GetOrCreatePanel();
 			panel.transform.position = new Vector3(0.0561f, 1f, 7.1821f);
 			panel.transform.localEulerAngles = new Vector3(315, 0, 0);
@@ -117,7 +118,7 @@ namespace TNHBGLoader
 			if(!PluginMain.IsSoundtrack.Value)
 				for (int i = 0; i < BankAPI.LoadedBankLocations.Count; i++)
 					if (Path.GetFileNameWithoutExtension(BankAPI.LoadedBankLocations[i]) == PluginMain.LastLoadedBank.Value) { BankAPI.SwapBank(i); break; }
-
+			
 			if (PluginMain.IsSoundtrack.Value)
 				SoundtrackAPI.EnableSoundtrackFromGUID(PluginMain.LastLoadedSoundtrack.Value);
 			//set last loaded announcer

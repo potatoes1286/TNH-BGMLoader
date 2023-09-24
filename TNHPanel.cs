@@ -33,14 +33,13 @@ namespace TNHBGLoader
 		public bool HasVls = true;
 		public bool HasAnnouncers  = true;
 
-		public TNHPanel(string gameMode, bool hasBgms = true, bool hasVls = false, bool hasAnnouncers = false) {
+		public void Initialize(string gameMode, bool hasBgms = true, bool hasVls = false, bool hasAnnouncers = false) {
+			PluginMain.DebugLog.LogInfo($"Initializing. Gamemode: {gameMode}, {hasBgms} {hasVls} {hasAnnouncers}");
 			GameMode = gameMode;
 			HasBgms = hasBgms;
 			HasVls = hasVls;
 			HasAnnouncers = hasAnnouncers;
-			Panel = new LockablePanel();
-			Panel.Configure += ConfigurePanel;
-			Panel.TextureOverride = SodaliteUtils.LoadTextureFromBytes(Assembly.GetExecutingAssembly().GetResource("panel.png"));
+			PluginMain.DebugLog.LogInfo($"Initialized. Gamemode: {GameMode}, {HasBgms} {HasVls} {HasAnnouncers}");
 			
 			//Set default panel
 			if (!hasBgms) {
@@ -49,10 +48,8 @@ namespace TNHBGLoader
 				if (!hasVls)
 					TNHPstate = TNHPstates.Announcer;
 			}
-
-
-
-				//Assemble list of BGMs
+			
+			//Assemble list of BGMs
 			BGMs = new List<BankOrSoundtrack>();
 			if (GameMode == "tnh") {
 				foreach (var bank in BankAPI.LoadedBankLocations) {
@@ -65,6 +62,7 @@ namespace TNHBGLoader
 			}
 
 			foreach (var soundtrack in SoundtrackAPI.Soundtracks) {
+				PluginMain.DebugLog.LogInfo($"Gamemode: {GameMode}, Soundtrack GM: {soundtrack.GameMode} of {soundtrack.Guid}");
 				if (soundtrack.GameMode != GameMode)
 					continue;
 				var bos = new BankOrSoundtrack();
@@ -73,6 +71,12 @@ namespace TNHBGLoader
 				bos.Name = soundtrack.Name;
 				BGMs.Add(bos);
 			}
+		}
+		
+		public TNHPanel() {
+			Panel = new LockablePanel();
+			Panel.Configure += ConfigurePanel;
+			Panel.TextureOverride = SodaliteUtils.LoadTextureFromBytes(Assembly.GetExecutingAssembly().GetResource("panel.png"));
 		}
 
 		public struct BankOrSoundtrack {
@@ -251,11 +255,18 @@ namespace TNHBGLoader
 		public void SwitchState(object sender, ButtonClickEventArgs args)
 		{
 			// There's 100% an easier way to do this. I'm too lazy.
+			/*
 			if (TNHPstate == TNHPstates.BGM) {
-				if(HasAnnouncers)
+				PluginMain.DebugLog.LogInfo($"Switching from BGM");
+				if (HasAnnouncers) {
+					PluginMain.DebugLog.LogInfo($"HasAnnouncers. Switching to announcer.");
 					TNHPstate = TNHPstates.Announcer;
-				else if(HasVls)
+				}
+				else if (HasVls) {
+					PluginMain.DebugLog.LogInfo($"HasVLS. Switching to VLS.");
 					TNHPstate = TNHPstates.Sosig_Voicelines;
+				} else
+					PluginMain.DebugLog.LogInfo($"Cannot switch!");
 			}
 			if (TNHPstate == TNHPstates.Announcer) {
 				if(HasAnnouncers)
@@ -268,7 +279,10 @@ namespace TNHBGLoader
 					TNHPstate = TNHPstates.BGM;
 				else if(HasVls)
 					TNHPstate = TNHPstates.Announcer;
-			}
+			}*/
+				 if (TNHPstate == TNHPstates.BGM) {TNHPstate = TNHPstates.Announcer;}
+			else if (TNHPstate == TNHPstates.Announcer) {TNHPstate = TNHPstates.Sosig_Voicelines;} 
+			else if (TNHPstate == TNHPstates.Sosig_Voicelines) {TNHPstate = TNHPstates.BGM;}
 				 
 			_switchstate.ButtonText.text = TNHPstate.ToString().Replace('_', ' ');
 			_bankText.Text.text = "Selected:\n" + GetCurrentSelectedItemName();
@@ -443,6 +457,7 @@ namespace TNHBGLoader
 								SoundtrackAPI.IsMix = false;
 						}
 						else {
+							PluginMain.IsSoundtrack.Value = true;
 							SoundtrackAPI.EnableSoundtrackFromGUID(BGMs[index].SoundtrackGuid);
 							GameObject go = new GameObject();
 							go.AddComponent(typeof(PlaySoundtrackSnippet));

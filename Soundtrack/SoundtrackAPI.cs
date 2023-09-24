@@ -89,6 +89,7 @@ namespace TNHBGLoader.Soundtrack {
 			manifest.Path = path;
 			manifest.Location = yamlfest.Location;
 			manifest.Loaded = false;
+			manifest.GameMode = yamlfest.GameMode;
 			return manifest;
 		}
 		
