@@ -446,6 +446,9 @@ namespace TNHBGLoader
 				{
 					case TNHPstates.BGM:
 						if (BGMs[index].IsBank) {
+							// Handle Random option
+							index = UnityEngine.Random.Range(0, BGMs.Count);
+							
 							BankAPI.SwapBank(index);
 							GameObject go = new GameObject();
 							if(BankAPI.LoadedBankLocations[index] != "Your Mix" && BankAPI.LoadedBankLocations[index] != "Select Random")
