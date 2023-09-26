@@ -49,6 +49,7 @@ namespace TNH_BGLoader
 				CleanUp();
 			else {
 				source.clip = clip;
+				maxVolLength = clip.length - 2 * windUpTime;
 				source.Play();
 				playing = true;
 			}
