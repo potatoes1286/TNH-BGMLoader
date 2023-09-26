@@ -145,6 +145,7 @@ namespace TNHBGLoader.Soundtrack {
 				GetCurrentAudioSource.Play();
 			}
 			
+			GetCurrentAudioSource.time = 0;
 			if(seamlessTransition)
 				GetCurrentAudioSource.time = curTime;
 			if(timeOverride >= 0)
