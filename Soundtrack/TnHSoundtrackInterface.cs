@@ -45,11 +45,11 @@ namespace TNHBGLoader.Soundtrack {
 				if (failureSyncInfoReady) {
 					float timeToFail = (timeFail - timeIdentified) - (Time.time - timeIdentified);
 					//Ensure the song is long enough.
-					if (timeToFail > SongLength) {
-						PluginMain.DebugLog.LogError($"Soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex]}:{newTrack.Name} is TOO SHORT! Song length: {SoundtrackPlayer.SongLength}, Time to Fail: {timeToFail}! Lengthen your song!");
+					if (timeToFail > newTrack.Clip.length) {
+						PluginMain.DebugLog.LogError($"Soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex]}:{newTrack.Name} is TOO SHORT! Song length: {newTrack.Clip.length}, Time to Fail: {timeToFail}! Lengthen your song!");
 						return;
 					}
-					playHead = (float)SongLength - timeToFail;
+					playHead = newTrack.Clip.length - timeToFail;
 					failureSyncInfoReady = false;
 				}
 				//It hasn't been identified yet. Just fucking throw.
