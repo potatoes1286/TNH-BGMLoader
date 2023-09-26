@@ -14,10 +14,15 @@ namespace TNHBGLoader.Soundtrack {
 		public static bool  failureSyncInfoReady;
 		public static float timeIdentified;
 		public static float timeFail;
+
+		public static int Level;
 		
 		
 		public void Awake() {
 			Initialize("tnh", SoundtrackAPI.GetCurrentSoundtrack, 1.5f, PluginMain.AnnouncerMusicVolume.Value / 4f);
+			
+			ClearQueue();
+			Level = 0;
 			
 			// Initialize holdmusic
 			HoldMusic = SoundtrackAPI.GetSet("hold",Level + 1);
@@ -28,7 +33,7 @@ namespace TNHBGLoader.Soundtrack {
 			if (HoldMusic.Tracks.Any(x => x.Type == "take"))
 				QueueTake(HoldMusic);
 			else //Otherwise, get a take theme.
-				QueueTake(SoundtrackAPI.GetSet("take", 0));
+				QueueTake(SoundtrackAPI.GetSet("take", Level));
 		}
 
 		public override void SwitchSong(Track newTrack, float timeOverride = -1f) {
@@ -95,13 +100,13 @@ namespace TNHBGLoader.Soundtrack {
 			PluginMain.DebugLog.LogInfo($"Level: {Level}");
 			
 			// Initialize holdmusic for next hold/take
-			HoldMusic = SoundtrackAPI.GetSet("hold",GM.TNH_Manager.m_level + 1);
+			HoldMusic = SoundtrackAPI.GetSet("hold",Level);
 			
 			// If the hold music has its own take theme, play it
 			if (HoldMusic.Tracks.Any(x => x.Type == "take"))
 				QueueTake(HoldMusic);
 			else //Otherwise, get a take theme.
-				QueueTake(SoundtrackAPI.GetSet("take", GM.TNH_Manager.m_level + 1));
+				QueueTake(SoundtrackAPI.GetSet("take", Level));
 			
 			Instance.PlayNextTrackInQueueOfType(new [] {"intro", "lo"});
 				
