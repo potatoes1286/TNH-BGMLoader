@@ -20,7 +20,9 @@ namespace TNHBGLoader.Soundtrack {
 			Initialize("tnh", SoundtrackAPI.GetCurrentSoundtrack, 1.5f, PluginMain.AnnouncerMusicVolume.Value / 4f);
 			
 			// Initialize holdmusic
-			HoldMusic = SoundtrackAPI.GetSet("hold",GM.TNH_Manager.m_level + 1);
+			HoldMusic = SoundtrackAPI.GetSet("hold",Level + 1);
+			
+			PluginMain.DebugLog.LogInfo($"Level: {Level}");
 
 			// If the hold music has its own take theme, play it
 			if (HoldMusic.Tracks.Any(x => x.Type == "take"))
@@ -88,6 +90,9 @@ namespace TNHBGLoader.Soundtrack {
 			}
 			//Queue end, if exists
 			Instance.QueueRandomOfType(HoldMusic, "end", false);
+
+			Level++;
+			PluginMain.DebugLog.LogInfo($"Level: {Level}");
 			
 			// Initialize holdmusic for next hold/take
 			HoldMusic = SoundtrackAPI.GetSet("hold",GM.TNH_Manager.m_level + 1);
@@ -199,7 +204,7 @@ namespace TNHBGLoader.Soundtrack {
 			//Set hold music.
 			
 			//HoldMusic = SoundtrackAPI.GetSet("hold", GM.TNH_Manager.m_level);
-			Debug.Log($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Guid}, IsSOundtrack: {PluginMain.IsSoundtrack.Value}");
+			PluginMain.DebugLog.LogInfo($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Guid}, IsSOundtrack: {PluginMain.IsSoundtrack.Value}");
 		}
 		
 		

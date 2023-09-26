@@ -117,7 +117,7 @@ namespace TNHBGLoader.Soundtrack {
 
 			SongLength = newTrack.Clip.length;
 			
-			PluginMain.DebugLog.LogInfo($"Playing song {newTrack.Name} of calculated length {SongLength} (naive time {newTrack.Clip.length}).");
+			PluginMain.DebugLog.LogInfo($"{Time.time}: Playing track {newTrack.Name} of calculated length {SongLength} (naive time {newTrack.Clip.length}) with override time {timeOverride}.");
 
 			//If current source is 0, new source is 1, and vice versa.
 			int newSource = CurrentAudioSource == 0 ? 1 : 0;
@@ -197,7 +197,7 @@ namespace TNHBGLoader.Soundtrack {
 				if (progress >= 1) {
 					isSwitching = false;
 					GetNotCurrentAudioSource.Stop();
-					Debug.Log($"Phaseout complete at {Time.time}. Current track time: {GetCurrentAudioSource.time}");
+					Debug.Log($"{Time.time}: Phaseout complete at {Time.time}. Current track time: {GetCurrentAudioSource.time}");
 				}
 			}
 			

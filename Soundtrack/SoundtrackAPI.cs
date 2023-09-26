@@ -77,6 +77,13 @@ namespace TNHBGLoader.Soundtrack {
 				}
 				sets.Add(set);
 			}
+			
+			//logging
+			foreach (var set in sets) {
+				PluginMain.DebugLog.LogInfo($"Loading set {set.Name}, {set.Type}, {set.Tracks.Count}, {set.Situation}");
+			}
+			
+			
 			manifest.Sets = sets;
 			manifest.Loaded = true;
 		}
@@ -102,7 +109,7 @@ namespace TNHBGLoader.Soundtrack {
 		}
 
 		public static TrackSet GetSet(string type, int situation) {
-			PluginMain.DebugLog.LogInfo($"Getting set of type {type}, {situation}");
+			PluginMain.DebugLog.LogInfo($"Getting set of type {type}, {situation}. Cur soundtrack: {Soundtracks[SelectedSoundtrackIndex].Guid}");
 			var soundtrack = Soundtracks[SelectedSoundtrackIndex];
 			var sets = soundtrack.Sets
 			   .Where(x => x.Type == type)
