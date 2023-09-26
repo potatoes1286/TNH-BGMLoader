@@ -119,8 +119,8 @@ namespace TNHBGLoader
 				for (int i = 0; i < BankAPI.LoadedBankLocations.Count; i++)
 					if (Path.GetFileNameWithoutExtension(BankAPI.LoadedBankLocations[i]) == PluginMain.LastLoadedBank.Value) { BankAPI.SwapBank(i); break; }
 			
-			if (PluginMain.IsSoundtrack.Value)
-				SoundtrackAPI.EnableSoundtrackFromGUID(PluginMain.LastLoadedSoundtrack.Value);
+			//if (PluginMain.IsSoundtrack.Value)
+			//	SoundtrackAPI.EnableSoundtrackFromGUID(PluginMain.LastLoadedSoundtrack.Value);
 			//set last loaded announcer
 			AnnouncerAPI.CurrentAnnouncerIndex = AnnouncerAPI.GetAnnouncerIndexFromGUID(PluginMain.LastLoadedAnnouncer.Value);
 			//set last loaded SosigVLS

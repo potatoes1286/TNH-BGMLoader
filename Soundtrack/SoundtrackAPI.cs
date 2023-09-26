@@ -105,7 +105,7 @@ namespace TNHBGLoader.Soundtrack {
 			//Flag the game that we're doing soundtrack. Unflagging is done in BankAPI.SwapBanks.
 			PluginMain.IsSoundtrack.Value = true;
 			SelectedSoundtrackIndex = index;
-			PluginMain.LastLoadedSoundtrack.Value = Soundtracks[SelectedSoundtrackIndex].Guid;
+			//PluginMain.LastLoadedSoundtrack.Value = Soundtracks[SelectedSoundtrackIndex].Guid;
 		}
 
 		public static TrackSet GetSet(string type, int situation) {
