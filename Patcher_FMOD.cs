@@ -61,7 +61,7 @@ namespace TNHBGLoader
 					//this relies on Select Random being first. don't fucking touch it
 					//And that Your Mix is second
 					//The second check here (Your Mix + Soundtrack.Count == 0) is so that if there isnt any soundtracks, itll just act as Select Random.
-					if (BankAPI.CurrentBankLocation == "Select Random"/* || (BankAPI.CurrentBankLocation == "Your Mix" && SoundtrackAPI.Soundtracks.Count == 0)*/) {
+					if (BankAPI.CurrentBankLocation == "Select Random" && PluginMain.IsSoundtrack.Value == false/* || (BankAPI.CurrentBankLocation == "Your Mix" && SoundtrackAPI.Soundtracks.Count == 0)*/) {
 						PluginMain.DebugLog.LogInfo($"Activated Random/YourMix Count0. Current Bank: {BankAPI.CurrentBankLocation}");
 						int num = UnityEngine.Random.Range(1, BankAPI.LoadedBankLocations.Count + SoundtrackAPI.Soundtracks.Count);
 						PluginMain.DebugLog.LogInfo($"Selected: {num}");
