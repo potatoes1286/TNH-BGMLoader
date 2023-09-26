@@ -25,7 +25,7 @@ namespace TNHBGLoader.Soundtrack {
 			Level = 0;
 			
 			// Initialize holdmusic
-			HoldMusic = SoundtrackAPI.GetSet("hold",Level + 1);
+			HoldMusic = SoundtrackAPI.GetSet("hold",Level);
 			
 			PluginMain.DebugLog.LogInfo($"Level: {Level}");
 
