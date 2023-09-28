@@ -45,7 +45,7 @@ namespace TNH_BGLoader
 		public static void SwapBank(int newBank)
 		{
 			//If over the # of banks, overflow into Soundtrack API.
-			if (newBank > LoadedBankLocations.Count - 1) {
+			//if (newBank > LoadedBankLocations.Count - 1) {
 				//Due to some changes, it should never reach this point.
 				//Not gonna touch it though. Too scared it'll still break smthn.
 				
@@ -53,8 +53,8 @@ namespace TNH_BGLoader
 				//newBank - LoadedBankLocations.Count results in the # as it corresponds to in the soundtrack data
 				//Ex: If you have 5 Banks, and you ask for Index 5 (6th bank), it corresponds to Index 0 (1st soundtrack)
 				//Yeah, its hacky. But the man who plans still hasn't started and my code works.
-				SoundtrackAPI.LoadSoundtrack(newBank - LoadedBankLocations.Count);
-			} else { //If not overflow, do outdated Bank method.
+				//SoundtrackAPI.LoadSoundtrack(newBank - LoadedBankLocations.Count);
+			//} else { //If not overflow, do outdated Bank method.
 				//Ensure the game doesn't think we're doing soundtrack method.
 				//Flagging is done in SoundtrackAPI.LoadSoundtrack.
 				PluginMain.IsSoundtrack.Value = false;
@@ -65,7 +65,7 @@ namespace TNH_BGLoader
 				RuntimeManager.LoadBank("MX_TAH"); 
 				PluginMain.LastLoadedBank.Value =
 					Path.GetFileNameWithoutExtension(CurrentBankLocation); //set last loaded bank
-			}
+			//}
 		}
 		public static void NukeSongSnippets()
 		{
@@ -74,10 +74,12 @@ namespace TNH_BGLoader
 		//literal copy of RuntimeManager.UnloadBank but hard unloads
 		public static void UnloadBankHard(string bankName)
 		{
-			PluginMain.LogSpam("Hard unloading " + Path.GetFileName(bankName));
+			PluginMain.DebugLog.LogInfo("Hard unloading " + Path.GetFileName(bankName));
 			RuntimeManager.LoadedBank value;
-			if (RuntimeManager.Instance.loadedBanks.TryGetValue(bankName, out value))
-			{
+			if (RuntimeManager.Instance.loadedBanks.TryGetValue(bankName, out value)) {
+				string name = "";
+				value.Bank.getPath(out name);
+				PluginMain.DebugLog.LogInfo($"Loaded bank that's being unloaded: {name}");
 				value.RefCount = 0;
 				value.Bank.unload();
 				RuntimeManager.Instance.loadedBanks.Remove(bankName);

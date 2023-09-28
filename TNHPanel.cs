@@ -71,6 +71,10 @@ namespace TNHBGLoader
 				bos.Name = soundtrack.Name;
 				BGMs.Add(bos);
 			}
+
+			for (int i = 0; i < BGMs.Count(); i++) {
+				PluginMain.DebugLog.LogInfo($"BGM Loaded: {BGMs[i].Name}, index {i}, IsBank {BGMs[i].IsBank}");
+			}
 		}
 		
 		public TNHPanel() {
@@ -445,10 +449,11 @@ namespace TNHBGLoader
 				switch (TNHPstate)
 				{
 					case TNHPstates.BGM:
+						if(BGMs[index].IsBank && BGMs[index].BankGuid == "Select Random")
+							index = UnityEngine.Random.Range(0, BGMs.Count);
+						PluginMain.DebugLog.LogInfo($"Setting song to index {index}, {BGMs[index].Name}");
 						if (BGMs[index].IsBank) {
 							// Handle Random option
-							index = UnityEngine.Random.Range(0, BGMs.Count);
-							
 							BankAPI.SwapBank(index);
 							GameObject go = new GameObject();
 							if(BankAPI.LoadedBankLocations[index] != "Your Mix" && BankAPI.LoadedBankLocations[index] != "Select Random")
