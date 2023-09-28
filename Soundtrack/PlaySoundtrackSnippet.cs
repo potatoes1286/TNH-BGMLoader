@@ -9,7 +9,6 @@ using UnityEngine;
 namespace TNH_BGLoader
 {
 	//Plays a snipped of a song.
-	//Specifically for FMod Banks!
 	public class PlaySoundtrackSnippet : MonoBehaviour {
 
 		public static PlaySoundtrackSnippet? existingSnippet = null;
@@ -17,6 +16,8 @@ namespace TNH_BGLoader
 		public AudioSource source;
 		public float       maxVol       = 0.5f;
 		public float       maxVolLength = 6f;
+
+		public bool IsLoop;
 
 		public bool playing = false;
 		
@@ -43,13 +44,16 @@ namespace TNH_BGLoader
 			source.spatialBlend = 0;
 			source.loop = true; //lets just fucking assume huh
 
-			var clip = SoundtrackAPI.GetSnippet(SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex]);
+			var tuple = SoundtrackAPI.GetSnippet(SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex]);
+			var clip = tuple.Item1;
+			IsLoop = tuple.Item2;
 
 			if (clip == null)
 				CleanUp();
 			else {
 				source.clip = clip;
 				maxVolLength = clip.length - 2 * windUpTime;
+				source.loop = true;
 				source.Play();
 				playing = true;
 			}
@@ -59,6 +63,9 @@ namespace TNH_BGLoader
 			if (!playing)
 				return;
 			curLength += Time.deltaTime; //tick forwards the time
+			if(curLength > windUpTime && IsLoop) //stop if its looping
+				return;
+			
 			curVol = GetVol(); //get the volume
 			source.volume = curVol * 0.25f * PluginMain.BackgroundMusicVolume.Value; //set the volume
 			if (curLength >= maxVolLength + (windUpTime * 2)) //if volume = 0; we finished. clean up!

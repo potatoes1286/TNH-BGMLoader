@@ -244,12 +244,19 @@ namespace TNHBGLoader.Soundtrack {
 			clip.name = Path.GetFileName(path);
 			return clip;
 		}
-		public static AudioClip? GetSnippet(SoundtrackManifest manifest) {
-			string pathOgg = Path.Combine(Path.Combine(Path.GetDirectoryName(manifest.Path), manifest.Location), "snippet.ogg");
+		
+		public static ValueTuple<AudioClip?, bool> GetSnippet(SoundtrackManifest manifest) {
+			bool isLoop = true;
+			string pathOgg = Path.Combine(Path.Combine(Path.GetDirectoryName(manifest.Path)!, manifest.Location), "preview_loop.ogg");
+			if (!File.Exists(pathOgg)) {
+				pathOgg = Path.Combine(Path.Combine(Path.GetDirectoryName(manifest.Path)!, manifest.Location), "preview.ogg");
+				isLoop = false;
+			}
+
 			AudioClip? clip = null;
 			if(File.Exists(pathOgg))
 				clip = LoadOgg(pathOgg);
-			return clip;
+			return (clip, isLoop);
 		}
 	}
 }
