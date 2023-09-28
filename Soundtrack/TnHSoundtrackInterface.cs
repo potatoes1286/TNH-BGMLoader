@@ -231,8 +231,8 @@ namespace TNHBGLoader.Soundtrack {
 		public static void GatherFailureSyncInfo(ref TNH_HoldPoint __instance) {
 			failureSyncInfoReady = true;
 			timeIdentified = Time.time;
-			//TickDownToFailure is fixed at 120. I think.
-			timeFail = Time.time + 120f + __instance.m_tickDownToIdentification;
+			//TickDownToFailure is fixed at 120. I think. 3 secs is for buffer.
+			timeFail = Time.time + 120f + __instance.m_tickDownToIdentification + 3f;
 		}
 		
 		//Implement OrbTouch funzies
