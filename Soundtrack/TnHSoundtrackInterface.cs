@@ -119,11 +119,10 @@ namespace TNHBGLoader.Soundtrack {
 			if (!PluginMain.IsSoundtrack.Value)
 				return true;
 			
-			//If the next song is NOT a phase, just skip this whole bit.
-			//This also handles phase overflow! if it overlfows, the next song would be End and itll just keep playing the highest phase until the actual end
-			if (SongQueue.Count > 0 && !SongQueue[0].Type.Contains("phasetr"))
+			if (SongQueue.Count == 0)
 				return true;
-			Instance.PlayNextSongInQueue();
+			if(SongQueue[0].Type.Contains("phasetr") || SongQueue[0].Type.Contains("phase"))
+				Instance.PlayNextSongInQueue();
 			return true;
 		}
 		
