@@ -107,9 +107,9 @@ namespace TNHBGLoader.Soundtrack {
 				QueueTake(HoldMusic);
 			else //Otherwise, get a take theme.
 				QueueTake(SoundtrackAPI.GetSet("take", Level));
-			
-			Instance.PlayNextTrackInQueueOfType(new [] {"intro", "lo"});
-				
+
+			Instance.PlayNextTrackInQueueOfType(new[] { "intro", "lo", "phase0"});
+
 			return false;
 		}
 		
