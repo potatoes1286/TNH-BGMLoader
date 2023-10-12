@@ -128,23 +128,25 @@ namespace TNHBGLoader.Soundtrack {
 		
 		[HarmonyPatch(typeof(TNH_HoldPoint), "BeginAnalyzing")]
 		[HarmonyPrefix]
-		public static bool PlayMedHiTrack() {
+		public static bool PlayMedHiTrack(TNH_HoldPoint __instance) {
 			if (!PluginMain.IsSoundtrack.Value)
 				return true;
-			
 			// if there's a medhi and no transition, only play the medhi at the begin analyzing stage where the transition
 			// would normally end
 			// otherwise if there is no transition, play medhi only at beginanalyzing
-			if (SongQueue.Any(x => x.Type == "transition"))
+			if (SongQueue.Any(x => x.Type == "transition") || Intensity != 2)
 				return true;
-			if (SongQueue.Any(x => x.Type == "MedHi"))
+			if (SongQueue.Any(x => x.Type == "medhi"))
 				Instance.PlayNextTrackInQueueOfType(new [] {"medhi"});
 			return true;
 		}
-		
+	
+		// hack
+		public static int Intensity = 1;
 		[HarmonyPatch(typeof(TNH_Manager), "SetHoldWaveIntensity")]
 		[HarmonyPrefix]
 		public static bool PlayTransitionTrack(ref int intensity) {
+			Intensity = intensity;
 			if (!PluginMain.IsSoundtrack.Value || intensity != 2)
 				return true;
 			// There shouldnt even be a transition if theres no medhi
