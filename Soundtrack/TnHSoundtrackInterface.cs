@@ -119,7 +119,7 @@ namespace TNHBGLoader.Soundtrack {
 			if (!PluginMain.IsSoundtrack.Value)
 				return true;
 			
-			if (SongQueue.Count == 0)
+			if (SongQueue.Count == 0 || CurrentTrack.Type == "intro") // Don't cut off the fuckin intro
 				return true;
 			if(SongQueue[0].Type.Contains("phasetr") || SongQueue[0].Type.Contains("phase"))
 				Instance.PlayNextSongInQueue();
@@ -134,7 +134,9 @@ namespace TNHBGLoader.Soundtrack {
 			// if there's a medhi and no transition, only play the medhi at the begin analyzing stage where the transition
 			// would normally end
 			// otherwise if there is no transition, play medhi only at beginanalyzing
-			if (SongQueue.Any(x => x.Type == "transition") || Intensity != 2)
+			if (SongQueue.Any(x => x.Type == "transition") // make sure there isn't a transition queued, otherwise don't do this
+			 || CurrentTrack.Type == "transition" // make sure transition isnt playing so we dont prematurely cut transition off
+			 || Intensity != 2) // make sure it's actually time to play transition/medhi
 				return true;
 			if (SongQueue.Any(x => x.Type == "medhi"))
 				Instance.PlayNextTrackInQueueOfType(new [] {"medhi"});

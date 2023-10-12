@@ -23,6 +23,7 @@ namespace TNHBGLoader.Soundtrack {
 		public AudioSource GetCurrentAudioSource => AudioSources[CurrentAudioSource];
 
 		public static List<Track> SongQueue = new List<Track>();
+		public static Track       CurrentTrack;
 
 		public static string GameMode;
 
@@ -107,6 +108,7 @@ namespace TNHBGLoader.Soundtrack {
 		/// <param name="timeOverride">Sets playhead position on start, in seconds. Values under 0 are discarded.
 		/// As an example, inputting 30 will cause the song to start playing 30 seconds into the song.</param>
 		public virtual void SwitchSong(Track newTrack, float timeOverride = -1) {
+			CurrentTrack = newTrack;
 			
 			bool loopNewSong = newTrack.Metadata.Any(x => x == "loop");
 			bool fadeOut = newTrack.Metadata.All(x => x != "dnf");
