@@ -126,18 +126,33 @@ namespace TNHBGLoader.Soundtrack {
 			return true;
 		}
 		
+		[HarmonyPatch(typeof(TNH_HoldPoint), "BeginAnalyzing")]
+		[HarmonyPrefix]
+		public static bool PlayMedHiTrack() {
+			if (!PluginMain.IsSoundtrack.Value)
+				return true;
+			
+			// if there's a medhi and no transition, only play the medhi at the begin analyzing stage where the transition
+			// would normally end
+			// otherwise if there is no transition, play medhi only at beginanalyzing
+			if (SongQueue.Any(x => x.Type == "transition"))
+				return true;
+			if (SongQueue.Any(x => x.Type == "MedHi"))
+				Instance.PlayNextTrackInQueueOfType(new [] {"medhi"});
+			return true;
+		}
+		
 		[HarmonyPatch(typeof(TNH_Manager), "SetHoldWaveIntensity")]
 		[HarmonyPrefix]
-		public static bool TransitionToMedHiTrack(ref int intensity) {
+		public static bool PlayTransitionTrack(ref int intensity) {
 			if (!PluginMain.IsSoundtrack.Value || intensity != 2)
 				return true;
-			//If there's no MedHi queued, just skip it.
+			// There shouldnt even be a transition if theres no medhi
 			if (SongQueue.All(x => x.Type != "medhi"))
 				return true;
-			// Just making sure it *skips* to Transition.
-			// There's like, NO good reason this should be needed.
-			// But i dont want to risk it.
-			Instance.PlayNextTrackInQueueOfType(new [] {"transition", "medhi"});
+			// If there's a transition, skip to it.
+			if (SongQueue.Any(x => x.Type == "transition"))
+				Instance.PlayNextTrackInQueueOfType(new [] {"transition"});
 			return true;
 		}
 		
