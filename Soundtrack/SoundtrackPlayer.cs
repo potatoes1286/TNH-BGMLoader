@@ -207,7 +207,7 @@ namespace TNHBGLoader.Soundtrack {
 			
 			
 			float timeUntilStartNextSong = TrackFadeTime;
-			if (SongQueue[0].Metadata.Contains("dnf"))
+			if (SongQueue.Count > 0 && SongQueue[0].Metadata.Contains("dnf"))
 				timeUntilStartNextSong = 0.05f; //Otherwise the last 1.5s will be cut off.
 			//Note for a potential bug- songStartTime will NOT reset if the song is looping.
 			if (timeDif <= timeUntilStartNextSong && !GetCurrentAudioSource.loop && SongQueue.Count > 0) {
