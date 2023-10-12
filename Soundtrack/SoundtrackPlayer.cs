@@ -65,6 +65,9 @@ namespace TNHBGLoader.Soundtrack {
 		public virtual void Queue(Track track) {
 			PluginMain.DebugLog.LogInfo($"Queueing {track.Type}, {track.Name} of situation {track.Situation}");
 			SongQueue.Add(track);
+			// SongQueue.Count == 1 means this track that was just loaded is the first in the queue.
+			if (SongQueue.Count == 1) //Preload the track before it is needed to prevent tiny gaps in audio.
+				GetNotCurrentAudioSource.clip = track.Clip;
 		}
 
 		/// <summary>
@@ -135,8 +138,11 @@ namespace TNHBGLoader.Soundtrack {
 			}
 			else {
 				GetCurrentAudioSource.Stop();
+				if (SongQueue.Count > 0) //Preload next track, if possible
+					GetCurrentAudioSource.clip = SongQueue[0].Clip;
 				CurrentAudioSource = newSource;
-				GetCurrentAudioSource.clip = newTrack.Clip;
+				if(GetCurrentAudioSource.clip != newTrack.Clip) //Check if it's preloaded
+					GetCurrentAudioSource.clip = newTrack.Clip; //If not, load it
 				GetCurrentAudioSource.volume = Volume;
 				if (loopNewSong)
 					GetCurrentAudioSource.loop = true;
