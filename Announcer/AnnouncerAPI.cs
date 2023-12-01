@@ -127,8 +127,16 @@ namespace TNH_BGLoader
 			return TNH_VoiceLineID.AI_Encryption_Neutralized;
 		}
 		
-		//why does this field even exist lol
-		public static AudioClip GetAudioFromFile(string path) => WavUtility.ToAudioClip(path);
+		
+		public static AudioClip GetAudioFromFile(string path) {
+			try {
+				return WavUtility.ToAudioClip(path);
+			}
+			catch (Exception e){
+				PluginMain.DebugLog.LogError($"Failed loading audio file {Path.GetFileName(path)} with reason {e}");
+				return null;
+			}
+		}
 
 		public static readonly string[] UnusedVoicelines = new[] {
 			"base_",

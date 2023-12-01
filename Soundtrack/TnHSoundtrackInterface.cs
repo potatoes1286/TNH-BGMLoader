@@ -220,6 +220,11 @@ namespace TNHBGLoader.Soundtrack {
 		[HarmonyPatch(typeof(TNH_Manager), "Start")]
 		[HarmonyPostfix]
 		public static void InitializeTnHSoundtrackInterface(ref TNH_Manager __instance) {
+			if (__instance.UsesInstitutionMusic) {
+				PluginMain.DebugLog.LogWarning("Institution selected. Potatoes' Sound Loader has not yet been updated to support Institution!");
+				return;
+			}
+
 			if(PluginMain.IsSoundtrack.Value || SoundtrackAPI.IsMix)
 				__instance.gameObject.AddComponent<TnHSoundtrackInterface>();
 			// Turn off fmod.

@@ -155,7 +155,15 @@ namespace TNHBGLoader.Sosig
 			PluginMain.DebugLog.LogError("voiceline " + name + " has no voiceline match!");
 		}
 		
-		//why does this field even exist lol
-		public static AudioClip GetAudioFromFile(string path) => WavUtility.ToAudioClip(path);
+		
+		public static AudioClip GetAudioFromFile(string path) {
+			try {
+				return WavUtility.ToAudioClip(path);
+			}
+			catch (Exception e){
+				PluginMain.DebugLog.LogError($"Failed loading audio file {Path.GetFileName(path)} with reason {e}");
+				return null;
+			}
+		}
 	}
 }
