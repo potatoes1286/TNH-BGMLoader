@@ -4,20 +4,30 @@ using System.Linq;
 using FistVR;
 using UnityEngine;
 using HarmonyLib;
+using Sodalite.Utilities;
 using Random = UnityEngine.Random;
 
 namespace TNHBGLoader.Soundtrack {
 	public class TnHSoundtrackInterface : SoundtrackPlayer {
+
+		public static TNH_Manager Manager;
 		
 		public static TrackSet HoldMusic;
+		public static TrackSet TakeMusic;
 		
 		//Failure sync stuff.
 		//A flip to let the switchsong know that the failruesync info is ready.
 		public static bool  failureSyncInfoReady;
 		public static float timeIdentified;
 		public static float timeFail;
-		public static bool  isInstitutionMode = false;
+		public static bool  isInstitutionMode      = false;
 		public static int   currentInstitutionArea = 0;
+		
+		// Alert info
+		public static bool  currentlyInAlert = false;
+		public static Track storedTakeTrack;
+		public static float storedTakeTrackPlayhead;
+		public static bool  changedAreaMidFight;
 
 		public static int Level;
 		
@@ -32,7 +42,7 @@ namespace TNHBGLoader.Soundtrack {
 		public override void SwitchSong(Track newTrack, float timeOverride = -1f) {
 			//Implement failure sync specific to TnH before passing off to generic SwitchSong
 			bool failureSync = newTrack.Metadata.Any(x => x == "fs");
-			float playHead = timeOverride;
+			float playHead = timeOverride % newTrack.Clip.length;
 			if (failureSync) {
 				//The info is already there and waiting for us.
 				if (failureSyncInfoReady) {
@@ -61,24 +71,68 @@ namespace TNHBGLoader.Soundtrack {
 		// 3 - Temple - west
 		// 4 - Power - east
 		public static readonly string[] AreaFromInt = { "center", "north", "south", "west", "east" };
-
+		
+		
 		
 		// handles institution changing areas
 		// also runs at start of run
 		[HarmonyPatch(typeof(FVRFMODController), "SetIntParameterByIndex")]
 		[HarmonyPrefix]
 		public static bool InstitutionChangeRegion(ref string s, ref float f) {
-			if (!PluginMain.IsSoundtrack.Value || !isInstitutionMode) 
+			if (!PluginMain.IsSoundtrack.Value) 
 				return true;
-			if(s == "TAH2 Area") {
+			if(isInstitutionMode && s == "TAH2 Area") {
 				int newArea = (int)f;
 				if (currentInstitutionArea != newArea) {
-					ChangeArea(newArea);
+					if(!currentlyInAlert) // Don't do this if we're in the middle of a fight!
+						ChangeArea(newArea);
+					if (currentlyInAlert)
+						changedAreaMidFight = true;
 					PluginMain.DebugLog.LogInfo($"Changing to area {newArea}");
 					currentInstitutionArea = newArea;
 				}
 			}
 			return true;
+		}
+
+		public void FixedUpdate() {
+			// alert system
+			if (PluginMain.IsSoundtrack.Value) {
+				bool newAlert = false;
+				if(isInstitutionMode)
+					newAlert = (int)Manager.m_takeMusicIntensity >= 1;
+				else
+					newAlert = (int)Manager.m_takeMusicIntensity == 2;
+				if (currentlyInAlert != newAlert) {
+					if (newAlert) { //entering alert mode
+						var alerts = HoldMusic.Tracks.Where(x => x.Type == "alert").ToArray();
+						if(!alerts.Any())
+							alerts = TakeMusic.Tracks.Where(x => x.Type == "alert").ToArray();
+						if (alerts.Any()) { // there are alerts in the soundtrack
+							storedTakeTrack = CurrentTrack;
+							storedTakeTrackPlayhead = Instance.GetCurrentAudioSource.time;
+							Instance.SwitchSong(alerts.GetRandom());
+						}
+					}
+					else { //exiting alert mode
+						// Handle if changed area mid fight
+						if (changedAreaMidFight) {
+							changedAreaMidFight = false;
+							ChangeArea(currentInstitutionArea);
+						} // Handle if did not.
+						else {
+							float alertPlayhead = Instance.GetCurrentAudioSource.time;
+							float time = storedTakeTrackPlayhead + alertPlayhead;
+							if (storedTakeTrack.Metadata.Contains("restart"))
+								time = 0;
+							if (storedTakeTrack.Metadata.Contains("return"))
+								time = storedTakeTrackPlayhead;
+							Instance.SwitchSong(storedTakeTrack, time);
+						}
+					}
+					currentlyInAlert = newAlert;
+				}
+			}
 		}
 
 		public static void ChangeArea(int newArea) {
@@ -144,8 +198,10 @@ namespace TNHBGLoader.Soundtrack {
 			// If the hold music has its own take theme, play it
 			if (HoldMusic.Tracks.Any(x => x.Type == "take"))
 				QueueTake(HoldMusic);
-			else //Otherwise, get a take theme.
-				QueueTake(SoundtrackAPI.GetSet("take", Level));
+			else { //Otherwise, get a take theme.
+				TakeMusic = SoundtrackAPI.GetSet("take", Level);
+				QueueTake(TakeMusic);
+			}
 
 			Instance.PlayNextTrackInQueueOfType(new[] { "intro", "lo", "phase0"});
 
@@ -260,6 +316,7 @@ namespace TNHBGLoader.Soundtrack {
 		[HarmonyPatch(typeof(TNH_Manager), "Start")]
 		[HarmonyPostfix]
 		public static void InitializeTnHSoundtrackInterface(ref TNH_Manager __instance) {
+			Manager = __instance;
 			isInstitutionMode = __instance.UsesInstitutionMusic;
 
 			if(PluginMain.IsSoundtrack.Value || SoundtrackAPI.IsMix)
@@ -280,8 +337,10 @@ namespace TNHBGLoader.Soundtrack {
 				// If the hold music has its own take theme, play it
 				if (HoldMusic.Tracks.Any(x => x.Type == "take"))
 					QueueTake(HoldMusic);
-				else //Otherwise, get a take theme.
-					QueueTake(SoundtrackAPI.GetSet("take", Level));
+				else { //Otherwise, get a take theme.
+					TakeMusic = SoundtrackAPI.GetSet("take", Level);
+					QueueTake(TakeMusic);
+				}
 			}
 		}
 		

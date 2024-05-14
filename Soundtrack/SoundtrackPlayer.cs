@@ -27,19 +27,23 @@ namespace TNHBGLoader.Soundtrack {
 
 		public static string GameMode;
 
-		
 		/// <summary>
-		/// Queues a random track from a TrackSet, given a track type.
+		/// Queues a random track from a TrackSet, given a track type. Returns if successfully queued a track.
 		/// </summary>
 		/// <param name="set">TrackSet with tracks that can be chosen from.</param>
 		/// <param name="type">The type the track must be to be added.</param>
 		/// <param name="mandatory">If true, will throw an error if no tracks match the requirements. If false, will not.</param>
-		public virtual void QueueRandomOfType(TrackSet set, string type, bool mandatory = true) {
+		public virtual bool QueueRandomOfType(TrackSet set, string type, bool mandatory = true) {
 			var tracks = set.Tracks.Where(x => x.Type == type).ToArray();
-			if(tracks.Any())
+			if (tracks.Any()) {
 				QueueRandom(tracks);
-			else if(mandatory)
-				PluginMain.DebugLog.LogError($"Track set {set.Name} did not contain mandatory track type {type}!");
+				return true;
+			}
+			else {
+				if (mandatory)
+					PluginMain.DebugLog.LogError($"Track set {set.Name} did not contain mandatory track type {type}!");
+				return false;
+			}
 		}
 
 		/// <summary>

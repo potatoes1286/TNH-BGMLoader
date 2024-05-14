@@ -157,44 +157,6 @@ namespace TNHBGLoader.Soundtrack {
 			PluginMain.DebugLog.LogInfo($"Selecting trackset {sets[setIndex].Name}");
 			return sets[setIndex];
 		}
-
-		/*//I am a big hater of DRY
-		//no particular reason 
-		public static HoldData GetAudioclipsForHold(int situation) {
-			var soundtrack = Soundtracks[SelectedSoundtrackIndex];
-			var holds = soundtrack.Holds.Where(x => x.Timing.TimingsMatch(situation));
-			if (holds.Count() == 0)
-				holds = soundtrack.Holds.Where(x => x.Timing == "fallback");
-
-			if (!holds.Any()) {
-				holds = soundtrack.Holds.Where(x => x.Timing.TimingsMatch(0));
-				if (situation < 4)
-					Debug.LogError($"PTNHBGML: {soundtrack.Guid} does not have a take song for hold {situation}!");
-			}
-
-			var number = UnityEngine.Random.Range(0, holds.Count());
-			var data = holds.ToArray()[number];
-			Debug.Log($"Selected {data.Name}");
-			return data;
-		}
-		
-		public static TakeData GetAudioclipsForTake(int situation) {
-			var soundtrack = Soundtracks[SelectedSoundtrackIndex];
-			var takes = soundtrack.Takes.Where(x => x.Timing.TimingsMatch(situation));
-			if (!takes.Any())
-				takes = soundtrack.Takes.Where(x => x.Timing == "fallback");
-			//Fallback if there are no fallbacks + no available tracks
-			if (!takes.Any()) {
-				takes = soundtrack.Takes.Where(x => x.Timing.TimingsMatch(0));
-				if(situation < 4)
-					Debug.LogError($"PTNHBGML: {soundtrack.Guid} does not have a take song for take {situation}!");
-			}
-			var number = UnityEngine.Random.Range(0, takes.Count());
-			var data = takes.ToArray()[number];
-			
-			Debug.Log($"Selected {data.Name}");
-			return data;
-		}*/
 		
 		//Does not account for fallback.
 		//Compares sequencetiming format (See _FORMAT.txt) and the current situation provided by TnH
