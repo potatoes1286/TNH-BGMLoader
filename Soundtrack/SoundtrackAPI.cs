@@ -108,7 +108,7 @@ namespace TNHBGLoader.Soundtrack {
 			//PluginMain.LastLoadedSoundtrack.Value = Soundtracks[SelectedSoundtrackIndex].Guid;
 		}
 
-		public static TrackSet GetSet(string type, int situation) {
+		public static TrackSet[] GetAllSets(string type, int situation) {
 			PluginMain.DebugLog.LogInfo($"Getting set of type {type}, {situation}. Cur soundtrack: {Soundtracks[SelectedSoundtrackIndex].Guid}");
 			var soundtrack = Soundtracks[SelectedSoundtrackIndex];
 			var sets = soundtrack.Sets
@@ -121,8 +121,40 @@ namespace TNHBGLoader.Soundtrack {
 				   .Where(x => x.Situation == "fallback")
 				   .ToArray();
 			if(!sets.Any())
-				PluginMain.DebugLog.LogError("No set!");
+				PluginMain.DebugLog.LogError($"No set! Are you sure you have a set for the situation {situation}, or a fallback?");
+			return sets;
+		}
+
+		public static TrackSet[] GetAllSetsWithMetadata(string type, int situation, string[] metadatas) {
+			var sets = GetAllSets(type, situation);
+			//PluginMain.DebugLog.LogError("Available sets:");
+			//foreach (var set in sets) {
+			//	PluginMain.DebugLog.LogError($"{set.Name}, {set.Type}, {set.Situation}, [{string.Join(", ", set.Metadata)}]");
+			//}
+			var originalSets = sets;
+			// probably inefficient
+			foreach (var metadata in metadatas)
+				sets = sets.Where(x => x.Metadata.Contains(metadata)).ToArray();
+			if (!sets.Any()) { // Fallback if none exists 
+				PluginMain.DebugLog.LogError("No set! Getting fallback,");
+				return originalSets;
+			}
+
+			return sets;
+		}
+
+		public static TrackSet GetSetWithMetadata(string type, int situation, string[] metadatas) {
+			var sets = GetAllSetsWithMetadata(type, situation, metadatas);
 			var setIndex = UnityEngine.Random.Range(0, sets.Length);
+			PluginMain.DebugLog.LogInfo($"Selecting trackset {sets[setIndex].Name}");
+			return sets[setIndex];
+		}
+
+
+		public static TrackSet GetSet(string type, int situation) {
+			var sets = GetAllSets(type, situation);
+			var setIndex = UnityEngine.Random.Range(0, sets.Length);
+			PluginMain.DebugLog.LogInfo($"Selecting trackset {sets[setIndex].Name}");
 			return sets[setIndex];
 		}
 

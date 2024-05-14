@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using FistVR;
 using UnityEngine;
 using HarmonyLib;
+using Random = UnityEngine.Random;
 
 namespace TNHBGLoader.Soundtrack {
 	public class TnHSoundtrackInterface : SoundtrackPlayer {
@@ -14,6 +16,8 @@ namespace TNHBGLoader.Soundtrack {
 		public static bool  failureSyncInfoReady;
 		public static float timeIdentified;
 		public static float timeFail;
+		public static bool  isInstitutionMode = false;
+		public static int   currentInstitutionArea = 0;
 
 		public static int Level;
 		
@@ -23,17 +27,6 @@ namespace TNHBGLoader.Soundtrack {
 			
 			ClearQueue();
 			Level = 0;
-			
-			// Initialize holdmusic
-			HoldMusic = SoundtrackAPI.GetSet("hold",Level);
-			
-			PluginMain.DebugLog.LogInfo($"Level: {Level}");
-
-			// If the hold music has its own take theme, play it
-			if (HoldMusic.Tracks.Any(x => x.Type == "take"))
-				QueueTake(HoldMusic);
-			else //Otherwise, get a take theme.
-				QueueTake(SoundtrackAPI.GetSet("take", Level));
 		}
 
 		public override void SwitchSong(Track newTrack, float timeOverride = -1f) {
@@ -61,6 +54,49 @@ namespace TNHBGLoader.Soundtrack {
 			base.SwitchSong(newTrack, playHead);
 		}
 
+		// Areas:
+		// 0 - Central - center
+		// 1 - Govt - north
+		// 2 - Indus - south
+		// 3 - Temple - west
+		// 4 - Power - east
+		public static readonly string[] AreaFromInt = { "center", "north", "south", "west", "east" };
+
+		
+		// handles institution changing areas
+		// also runs at start of run
+		[HarmonyPatch(typeof(FVRFMODController), "SetIntParameterByIndex")]
+		[HarmonyPrefix]
+		public static bool InstitutionChangeRegion(ref string s, ref float f) {
+			if (!PluginMain.IsSoundtrack.Value || !isInstitutionMode) 
+				return true;
+			if(s == "TAH2 Area") {
+				int newArea = (int)f;
+				if (currentInstitutionArea != newArea) {
+					ChangeArea(newArea);
+					PluginMain.DebugLog.LogInfo($"Changing to area {newArea}");
+					currentInstitutionArea = newArea;
+				}
+			}
+			return true;
+		}
+
+		public static void ChangeArea(int newArea) {
+			Instance.ClearQueue();
+			
+			HoldMusic = SoundtrackAPI.GetSetWithMetadata("hold", Level, new []{ AreaFromInt[newArea] });
+			
+			// If the hold music has its own take theme, play it
+			if (HoldMusic.Tracks.Any(x => x.Type == "take"))
+				QueueTake(HoldMusic);
+			else //Otherwise, get a take theme.
+				QueueTake(SoundtrackAPI.GetSetWithMetadata("take", Level, new []{ AreaFromInt[newArea] }));
+			
+			Instance.PlayNextSongInQueue();
+		}
+		
+		// Occurs at the start of a hold
+		// Queues in all of the hold songs, and the next-take songs, then starts playing the hold songs
 		[HarmonyPatch(typeof(FVRFMODController), "SwitchTo")]
 		[HarmonyPrefix]
 		public static bool QueueHoldAndTakeTracks(ref int  musicIndex, ref float timeDelayStart, ref bool shouldStop, ref bool shouldDeadStop) {
@@ -100,7 +136,10 @@ namespace TNHBGLoader.Soundtrack {
 			PluginMain.DebugLog.LogInfo($"Level: {Level}");
 			
 			// Initialize holdmusic for next hold/take
-			HoldMusic = SoundtrackAPI.GetSet("hold",Level);
+			if(!isInstitutionMode)
+				HoldMusic = SoundtrackAPI.GetSet("hold",Level);
+			else
+				HoldMusic = SoundtrackAPI.GetSetWithMetadata("hold",Level, new[] { AreaFromInt[currentInstitutionArea] });
 			
 			// If the hold music has its own take theme, play it
 			if (HoldMusic.Tracks.Any(x => x.Type == "take"))
@@ -217,13 +256,11 @@ namespace TNHBGLoader.Soundtrack {
 			return true;
 		}
 		
+		// Initialize everything
 		[HarmonyPatch(typeof(TNH_Manager), "Start")]
 		[HarmonyPostfix]
 		public static void InitializeTnHSoundtrackInterface(ref TNH_Manager __instance) {
-			if (__instance.UsesInstitutionMusic) {
-				PluginMain.DebugLog.LogWarning("Institution selected. Potatoes' Sound Loader has not yet been updated to support Institution!");
-				return;
-			}
+			isInstitutionMode = __instance.UsesInstitutionMusic;
 
 			if(PluginMain.IsSoundtrack.Value || SoundtrackAPI.IsMix)
 				__instance.gameObject.AddComponent<TnHSoundtrackInterface>();
@@ -231,8 +268,21 @@ namespace TNHBGLoader.Soundtrack {
 			GM.TNH_Manager.FMODController.MasterBus.setMute(true);
 			//Set hold music.
 			
-			//HoldMusic = SoundtrackAPI.GetSet("hold", GM.TNH_Manager.m_level);
 			PluginMain.DebugLog.LogInfo($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Guid}, IsSOundtrack: {PluginMain.IsSoundtrack.Value}");
+			
+			// Initialize holdmusic
+			PluginMain.DebugLog.LogInfo($"Level: {Level}");
+
+			// if it is institution mode, this will be initiated on InstitutionChangeRegion
+			if (!isInstitutionMode) {
+				HoldMusic = SoundtrackAPI.GetSet("hold", Level);
+
+				// If the hold music has its own take theme, play it
+				if (HoldMusic.Tracks.Any(x => x.Type == "take"))
+					QueueTake(HoldMusic);
+				else //Otherwise, get a take theme.
+					QueueTake(SoundtrackAPI.GetSet("take", Level));
+			}
 		}
 		
 		
