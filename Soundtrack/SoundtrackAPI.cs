@@ -131,16 +131,15 @@ namespace TNHBGLoader.Soundtrack {
 			//foreach (var set in sets) {
 			//	PluginMain.DebugLog.LogError($"{set.Name}, {set.Type}, {set.Situation}, [{string.Join(", ", set.Metadata)}]");
 			//}
-			var originalSets = sets;
-			// probably inefficient
+			List<TrackSet> filteredSet = new List<TrackSet>();
 			foreach (var metadata in metadatas)
-				sets = sets.Where(x => x.Metadata.Contains(metadata)).ToArray();
+				filteredSet.AddRange(sets.Where(x => x.Metadata.Contains(metadata)));
 			if (!sets.Any()) { // Fallback if none exists 
 				PluginMain.DebugLog.LogError("No set! Getting fallback,");
-				return originalSets;
+				return sets;
 			}
 
-			return sets;
+			return filteredSet.ToArray();
 		}
 
 		public static TrackSet GetSetWithMetadata(string type, int situation, string[] metadatas) {
