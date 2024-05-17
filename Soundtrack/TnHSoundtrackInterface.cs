@@ -122,7 +122,8 @@ namespace TNHBGLoader.Soundtrack {
 				if (currentlyInAlert != newAlert) {
 					if (newAlert) { //entering alert mode
 						Track[] alerts = new Track[0];
-						alerts = HoldMusic.Tracks.Where(x => x.Type == "alert").ToArray();
+						if(HoldMusic.Tracks != null)
+							alerts = HoldMusic.Tracks.Where(x => x.Type == "alert").ToArray();
 						if(!alerts.Any() && TakeMusic.HasValue)
 							alerts = TakeMusic.Value.Tracks.Where(x => x.Type == "alert").ToArray();
 						if (alerts.Any()) { // there are alerts in the soundtrack

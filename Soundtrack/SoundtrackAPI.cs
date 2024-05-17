@@ -135,7 +135,7 @@ namespace TNHBGLoader.Soundtrack {
 			List<TrackSet> filteredSet = new List<TrackSet>();
 			foreach (var metadata in metadatas)
 				filteredSet.AddRange(sets.Where(x => x.Metadata.Contains(metadata)));
-			if (!sets.Any()) { // Fallback if none exists 
+			if (!filteredSet.Any()) { // Fallback if none exists 
 				PluginMain.DebugLog.LogError("No set! Getting fallback,");
 				return sets;
 			}
