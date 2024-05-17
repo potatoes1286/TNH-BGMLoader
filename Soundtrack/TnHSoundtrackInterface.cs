@@ -13,7 +13,7 @@ namespace TNHBGLoader.Soundtrack {
 		public static TNH_Manager Manager;
 		
 		public static TrackSet HoldMusic;
-		public static TrackSet TakeMusic;
+		public static TrackSet? TakeMusic;
 		
 		//Failure sync stuff.
 		//A flip to let the switchsong know that the failruesync info is ready.
@@ -90,7 +90,7 @@ namespace TNHBGLoader.Soundtrack {
 				     !CurrentTrack.Metadata.Contains(AreaFromInt[2]) &&
 				     !CurrentTrack.Metadata.Contains(AreaFromInt[3]) &&
 				     !CurrentTrack.Metadata.Contains(AreaFromInt[4]) &&
-				     !CurrentTrack.Metadata.Contains("anyreg"))
+				     !CurrentTrack.Metadata.Contains("anyreg") )
 				    
 				    ) // No Swap Between Regions
 					return true;
@@ -117,9 +117,10 @@ namespace TNHBGLoader.Soundtrack {
 					newAlert = (int)Manager.m_takeMusicIntensity == 2;
 				if (currentlyInAlert != newAlert) {
 					if (newAlert) { //entering alert mode
-						var alerts = HoldMusic.Tracks.Where(x => x.Type == "alert").ToArray();
-						if(!alerts.Any())
-							alerts = TakeMusic.Tracks.Where(x => x.Type == "alert").ToArray();
+						Track[] alerts = new Track[0];
+						alerts = HoldMusic.Tracks.Where(x => x.Type == "alert").ToArray();
+						if(!alerts.Any() && TakeMusic.HasValue)
+							alerts = TakeMusic.Value.Tracks.Where(x => x.Type == "alert").ToArray();
 						if (alerts.Any()) { // there are alerts in the soundtrack
 							storedTakeTrack = CurrentTrack;
 							storedTakeTrackPlayhead = Instance.GetCurrentAudioSource.time;
@@ -212,7 +213,7 @@ namespace TNHBGLoader.Soundtrack {
 				QueueTake(HoldMusic);
 			else { //Otherwise, get a take theme.
 				TakeMusic = SoundtrackAPI.GetSet("take", Level);
-				QueueTake(TakeMusic);
+				QueueTake(TakeMusic.Value);
 			}
 
 			Instance.PlayNextTrackInQueueOfType(new[] { "intro", "lo", "phase0"});
@@ -351,7 +352,7 @@ namespace TNHBGLoader.Soundtrack {
 					QueueTake(HoldMusic);
 				else { //Otherwise, get a take theme.
 					TakeMusic = SoundtrackAPI.GetSet("take", Level);
-					QueueTake(TakeMusic);
+					QueueTake(TakeMusic.Value);
 				}
 			}
 		}
