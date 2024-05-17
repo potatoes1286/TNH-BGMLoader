@@ -407,7 +407,8 @@ namespace TNHBGLoader.Soundtrack {
 				foreach (var track in tracks)
 					clips.Add(track.Clip);
 				foreach (var point in Manager.HoldPoints) {
-					point.m_systemNode.AUDEvent_HoldActivate.Clips = clips;
+					if(point != null && point.m_systemNode != null)
+						point.m_systemNode.AUDEvent_HoldActivate.Clips = clips;
 				}
 			}
 			
@@ -417,7 +418,8 @@ namespace TNHBGLoader.Soundtrack {
 				foreach (var track in tracks)
 					clips.Add(track.Clip);
 				foreach (var point in Manager.HoldPoints) {
-					point.m_systemNode.HoldPoint.AUDEvent_HoldWave.Clips = clips;
+					if(point != null && point.m_systemNode != null && point.m_systemNode.HoldPoint != null)
+						point.m_systemNode.HoldPoint.AUDEvent_HoldWave.Clips = clips;
 				}
 			}
 
@@ -427,7 +429,8 @@ namespace TNHBGLoader.Soundtrack {
 				foreach (var track in tracks)
 					clips.Add(track.Clip);
 				foreach (var point in Manager.HoldPoints) {
-					point.m_systemNode.HoldPoint.AUDEvent_Success.Clips = clips;
+					if(point != null && point.m_systemNode != null && point.m_systemNode.HoldPoint != null)
+						point.m_systemNode.HoldPoint.AUDEvent_Success.Clips = clips;
 				}
 			}
 			
@@ -437,7 +440,8 @@ namespace TNHBGLoader.Soundtrack {
 				foreach (var track in tracks)
 					clips.Add(track.Clip);
 				foreach (var point in Manager.HoldPoints) {
-					point.m_systemNode.HoldPoint.AUDEvent_Failure.Clips = clips;
+					if(point != null && point.m_systemNode != null && point.m_systemNode.HoldPoint != null)
+						point.m_systemNode.HoldPoint.AUDEvent_Failure.Clips = clips;
 				}
 			}
 		}
