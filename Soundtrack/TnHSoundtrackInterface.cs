@@ -70,10 +70,9 @@ namespace TNHBGLoader.Soundtrack {
 		// 2 - Indus - south
 		// 3 - Temple - west
 		// 4 - Power - east
+		// + anyreg --> Institution - Any Region
 		public static readonly string[] AreaFromInt = { "center", "north", "south", "west", "east" };
-		
-		
-		
+
 		// handles institution changing areas
 		// also runs at start of run
 		[HarmonyPatch(typeof(FVRFMODController), "SetIntParameterByIndex")]
@@ -82,6 +81,19 @@ namespace TNHBGLoader.Soundtrack {
 			if (!PluginMain.IsSoundtrack.Value) 
 				return true;
 			if(isInstitutionMode && s == "TAH2 Area") {
+				if (CurrentTrack.Metadata.Contains("nsbr") ||
+				    // If it contains no region metadata, we can assume this is a fallback
+				    // track. So, do not swap between regions because that doesn't make sense.
+				    // lazyyyyyyyyyyyyyyyyyy
+				    (!CurrentTrack.Metadata.Contains(AreaFromInt[0]) &&
+				     !CurrentTrack.Metadata.Contains(AreaFromInt[1]) &&
+				     !CurrentTrack.Metadata.Contains(AreaFromInt[2]) &&
+				     !CurrentTrack.Metadata.Contains(AreaFromInt[3]) &&
+				     !CurrentTrack.Metadata.Contains(AreaFromInt[4]) &&
+				     !CurrentTrack.Metadata.Contains("anyreg"))
+				    
+				    ) // No Swap Between Regions
+					return true;
 				int newArea = (int)f;
 				if (currentInstitutionArea != newArea) {
 					if(!currentlyInAlert) // Don't do this if we're in the middle of a fight!
@@ -138,13 +150,13 @@ namespace TNHBGLoader.Soundtrack {
 		public static void ChangeArea(int newArea) {
 			Instance.ClearQueue();
 			
-			HoldMusic = SoundtrackAPI.GetSetWithMetadata("hold", Level, new []{ AreaFromInt[newArea] });
+			HoldMusic = SoundtrackAPI.GetSetWithMetadata("hold", Level, new []{ AreaFromInt[newArea], "anyreg" });
 			
 			// If the hold music has its own take theme, play it
 			if (HoldMusic.Tracks.Any(x => x.Type == "take"))
 				QueueTake(HoldMusic);
 			else //Otherwise, get a take theme.
-				QueueTake(SoundtrackAPI.GetSetWithMetadata("take", Level, new []{ AreaFromInt[newArea] }));
+				QueueTake(SoundtrackAPI.GetSetWithMetadata("take", Level, new []{ AreaFromInt[newArea], "anyreg" }));
 			
 			Instance.PlayNextSongInQueue();
 		}
@@ -193,7 +205,7 @@ namespace TNHBGLoader.Soundtrack {
 			if(!isInstitutionMode)
 				HoldMusic = SoundtrackAPI.GetSet("hold",Level);
 			else
-				HoldMusic = SoundtrackAPI.GetSetWithMetadata("hold",Level, new[] { AreaFromInt[currentInstitutionArea] });
+				HoldMusic = SoundtrackAPI.GetSetWithMetadata("hold",Level, new[] { AreaFromInt[currentInstitutionArea], "anyreg" });
 			
 			// If the hold music has its own take theme, play it
 			if (HoldMusic.Tracks.Any(x => x.Type == "take"))
