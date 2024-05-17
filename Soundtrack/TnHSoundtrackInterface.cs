@@ -250,7 +250,8 @@ namespace TNHBGLoader.Soundtrack {
 			// would normally end
 			// otherwise if there is no transition, play medhi only at beginanalyzing
 			if (SongQueue.Any(x => x.Type == "transition") // make sure there isn't a transition queued, otherwise don't do this
-			 || CurrentTrack.Type == "transition" // make sure transition isnt playing so we dont prematurely cut transition off
+			    // not a clue why but the below line breaks all of bank files; do not uncomment
+			    //|| CurrentTrack.Type == "transition" // make sure transition isnt playing so we dont prematurely cut transition off
 			 || Intensity != 2) // make sure it's actually time to play transition/medhi
 				return true;
 			if (SongQueue.Any(x => x.Type == "medhi"))
