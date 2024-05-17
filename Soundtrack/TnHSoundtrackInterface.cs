@@ -80,20 +80,24 @@ namespace TNHBGLoader.Soundtrack {
 		public static bool InstitutionChangeRegion(ref string s, ref float f) {
 			if (!PluginMain.IsSoundtrack.Value) 
 				return true;
+			
 			if(isInstitutionMode && s == "TAH2 Area") {
-				if (CurrentTrack.Metadata.Contains("nsbr") ||
-				    // If it contains no region metadata, we can assume this is a fallback
-				    // track. So, do not swap between regions because that doesn't make sense.
-				    // lazyyyyyyyyyyyyyyyyyy
-				    (!CurrentTrack.Metadata.Contains(AreaFromInt[0]) &&
-				     !CurrentTrack.Metadata.Contains(AreaFromInt[1]) &&
-				     !CurrentTrack.Metadata.Contains(AreaFromInt[2]) &&
-				     !CurrentTrack.Metadata.Contains(AreaFromInt[3]) &&
-				     !CurrentTrack.Metadata.Contains(AreaFromInt[4]) &&
-				     !CurrentTrack.Metadata.Contains("anyreg") )
-				    
-				    ) // No Swap Between Regions
-					return true;
+				if (CurrentTrack.Metadata != null) {
+					if (CurrentTrack.Metadata.Contains("nsbr") ||
+					    // If it contains no region metadata, we can assume this is a fallback
+					    // track. So, do not swap between regions because that doesn't make sense.
+					    // lazyyyyyyyyyyyyyyyyyy
+					    (!CurrentTrack.Metadata.Contains(AreaFromInt[0]) &&
+					     !CurrentTrack.Metadata.Contains(AreaFromInt[1]) &&
+					     !CurrentTrack.Metadata.Contains(AreaFromInt[2]) &&
+					     !CurrentTrack.Metadata.Contains(AreaFromInt[3]) &&
+					     !CurrentTrack.Metadata.Contains(AreaFromInt[4]) &&
+					     !CurrentTrack.Metadata.Contains("anyreg"))
+
+					   ) // No Swap Between Regions
+						return true;
+				}
+
 				int newArea = (int)f;
 				if (currentInstitutionArea != newArea) {
 					if(!currentlyInAlert) // Don't do this if we're in the middle of a fight!
@@ -152,6 +156,8 @@ namespace TNHBGLoader.Soundtrack {
 			Instance.ClearQueue();
 			
 			HoldMusic = SoundtrackAPI.GetSetWithMetadata("hold", Level, new []{ AreaFromInt[newArea], "anyreg" });
+			
+			SetOrbTouchTracks();
 			
 			// If the hold music has its own take theme, play it
 			if (HoldMusic.Tracks.Any(x => x.Type == "take"))
@@ -380,20 +386,28 @@ namespace TNHBGLoader.Soundtrack {
 			timeFail = Time.time + 120f + __instance.m_tickDownToIdentification + 3f;
 		}
 		
+		
+		
 		//Implement OrbTouch funzies
 		[HarmonyPatch(typeof(TNH_HoldPointSystemNode), "Start")]
 		[HarmonyPrefix]
-		public static bool SetOrbTouchTracks(ref TNH_HoldPointSystemNode __instance) {
-			if (!PluginMain.IsSoundtrack.Value)
+		public static bool SetOrbTouchTracksNonInstitution(ref TNH_HoldPointSystemNode __instance) {
+			if (!PluginMain.IsSoundtrack.Value || isInstitutionMode)
 				return true;
-			
+			SetOrbTouchTracks();
+			return true;
+		}
+		
+		public static void SetOrbTouchTracks() {
 			//Convert tracks to a list of audioclips
 			var clips = new List<AudioClip>();
 			var tracks = HoldMusic.Tracks.Where(x => x.Type == "orbactivate").ToArray();
 			if (tracks.Length != 0) {
 				foreach (var track in tracks)
 					clips.Add(track.Clip);
-				__instance.AUDEvent_HoldActivate.Clips = clips;
+				foreach (var point in Manager.HoldPoints) {
+					point.m_systemNode.AUDEvent_HoldActivate.Clips = clips;
+				}
 			}
 			
 			clips = new List<AudioClip>();
@@ -401,7 +415,9 @@ namespace TNHBGLoader.Soundtrack {
 			if (tracks.Length != 0) {
 				foreach (var track in tracks)
 					clips.Add(track.Clip);
-				__instance.HoldPoint.AUDEvent_HoldWave.Clips = clips;
+				foreach (var point in Manager.HoldPoints) {
+					point.m_systemNode.HoldPoint.AUDEvent_HoldWave.Clips = clips;
+				}
 			}
 
 			clips = new List<AudioClip>();
@@ -409,7 +425,9 @@ namespace TNHBGLoader.Soundtrack {
 			if (tracks.Length != 0) {
 				foreach (var track in tracks)
 					clips.Add(track.Clip);
-				__instance.HoldPoint.AUDEvent_Success.Clips = clips;
+				foreach (var point in Manager.HoldPoints) {
+					point.m_systemNode.HoldPoint.AUDEvent_Success.Clips = clips;
+				}
 			}
 			
 			clips = new List<AudioClip>();
@@ -417,10 +435,10 @@ namespace TNHBGLoader.Soundtrack {
 			if (tracks.Length != 0) {
 				foreach (var track in tracks)
 					clips.Add(track.Clip);
-				__instance.HoldPoint.AUDEvent_Failure.Clips = clips;
+				foreach (var point in Manager.HoldPoints) {
+					point.m_systemNode.HoldPoint.AUDEvent_Failure.Clips = clips;
+				}
 			}
-			
-			return true;
 		}
 	}
 }

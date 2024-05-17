@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using FistVR;
+using Sodalite.Utilities;
 using UnityEngine;
 
 namespace TNHBGLoader.Soundtrack {
@@ -127,10 +128,10 @@ namespace TNHBGLoader.Soundtrack {
 
 		public static TrackSet[] GetAllSetsWithMetadata(string type, int situation, string[] metadatas) {
 			var sets = GetAllSets(type, situation);
-			//PluginMain.DebugLog.LogError("Available sets:");
-			//foreach (var set in sets) {
-			//	PluginMain.DebugLog.LogError($"{set.Name}, {set.Type}, {set.Situation}, [{string.Join(", ", set.Metadata)}]");
-			//}
+			PluginMain.DebugLog.LogError("Available sets:");
+			foreach (var set in sets) {
+				PluginMain.DebugLog.LogError($"{set.Name}, {set.Type}, {set.Situation}, [{string.Join(", ", set.Metadata)}]");
+			}
 			List<TrackSet> filteredSet = new List<TrackSet>();
 			foreach (var metadata in metadatas)
 				filteredSet.AddRange(sets.Where(x => x.Metadata.Contains(metadata)));
@@ -144,17 +145,17 @@ namespace TNHBGLoader.Soundtrack {
 
 		public static TrackSet GetSetWithMetadata(string type, int situation, string[] metadatas) {
 			var sets = GetAllSetsWithMetadata(type, situation, metadatas);
-			var setIndex = UnityEngine.Random.Range(0, sets.Length);
-			PluginMain.DebugLog.LogInfo($"Selecting trackset {sets[setIndex].Name}");
-			return sets[setIndex];
+			var item = sets.GetRandom();
+			PluginMain.DebugLog.LogInfo($"Selecting trackset {item.Name}");
+			return item;
 		}
 
 
 		public static TrackSet GetSet(string type, int situation) {
 			var sets = GetAllSets(type, situation);
-			var setIndex = UnityEngine.Random.Range(0, sets.Length);
-			PluginMain.DebugLog.LogInfo($"Selecting trackset {sets[setIndex].Name}");
-			return sets[setIndex];
+			var item = sets.GetRandom();
+			PluginMain.DebugLog.LogInfo($"Selecting trackset {item.Name}");
+			return item;
 		}
 		
 		//Does not account for fallback.
