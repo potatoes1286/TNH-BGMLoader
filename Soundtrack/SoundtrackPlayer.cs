@@ -111,7 +111,7 @@ namespace TNHBGLoader.Soundtrack {
 		/// <param name="newTrack">New track to play.</param>
 		/// <param name="timeOverride">Sets playhead position on start, in seconds. Values under 0 are discarded.
 		/// As an example, inputting 30 will cause the song to start playing 30 seconds into the song.</param>
-		public virtual void SwitchSong(Track newTrack, float timeOverride = -1) {
+		public virtual void SwitchSong(Track newTrack, float timeOverride = 0) {
 			CurrentTrack = newTrack;
 			
 			bool loopNewSong = newTrack.Metadata.Any(x => x == "loop");
@@ -126,7 +126,7 @@ namespace TNHBGLoader.Soundtrack {
 
 			SongLength = newTrack.Clip.length;
 			
-			PluginMain.DebugLog.LogInfo($"{Time.time}: Playing track {newTrack.Name} of calculated length {SongLength} (naive time {newTrack.Clip.length}) with override time {timeOverride}.");
+			PluginMain.DebugLog.LogInfo($"{Time.time}: Playing track {newTrack.Name} ({newTrack.Type}) of calculated length {SongLength} with override time {timeOverride}.");
 
 			//If current source is 0, new source is 1, and vice versa.
 			int newSource = CurrentAudioSource == 0 ? 1 : 0;
@@ -210,7 +210,6 @@ namespace TNHBGLoader.Soundtrack {
 				if (progress >= 1) {
 					isSwitching = false;
 					GetNotCurrentAudioSource.Stop();
-					Debug.Log($"{Time.time}: Phaseout complete at {Time.time}. Current track time: {GetCurrentAudioSource.time}");
 				}
 			}
 			

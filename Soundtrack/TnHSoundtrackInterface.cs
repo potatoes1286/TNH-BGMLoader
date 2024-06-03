@@ -22,12 +22,13 @@ namespace TNHBGLoader.Soundtrack {
 		public static float timeFail;
 		public static bool  isInstitutionMode      = false;
 		public static int   currentInstitutionArea = 0;
-		
+
 		// Alert info
-		public static bool  currentlyInAlert = false;
-		public static Track storedTakeTrack;
-		public static float storedTakeTrackPlayhead;
-		public static bool  changedAreaMidFight;
+		public static bool   currentlyInAlert = false;
+		public static int    alertCooldown    = 0;
+		public static Track? storedTakeTrack;
+		public static float  storedTakeTrackPlayhead;
+		public static bool   changedAreaMidFight;
 
 		public static int Level;
 		
@@ -82,17 +83,17 @@ namespace TNHBGLoader.Soundtrack {
 				return true;
 			
 			if(isInstitutionMode && s == "TAH2 Area") {
-				if (CurrentTrack.Metadata != null) {
-					if (CurrentTrack.Metadata.Contains("nsbr") ||
+				if (TakeMusic.HasValue) {
+					if (TakeMusic.Value.Metadata.Contains("nsbr") ||
 					    // If it contains no region metadata, we can assume this is a fallback
 					    // track. So, do not swap between regions because that doesn't make sense.
 					    // lazyyyyyyyyyyyyyyyyyy
-					    (!CurrentTrack.Metadata.Contains(AreaFromInt[0]) &&
-					     !CurrentTrack.Metadata.Contains(AreaFromInt[1]) &&
-					     !CurrentTrack.Metadata.Contains(AreaFromInt[2]) &&
-					     !CurrentTrack.Metadata.Contains(AreaFromInt[3]) &&
-					     !CurrentTrack.Metadata.Contains(AreaFromInt[4]) &&
-					     !CurrentTrack.Metadata.Contains("anyreg"))
+					    (!TakeMusic.Value.Metadata.Contains(AreaFromInt[0]) &&
+					     !TakeMusic.Value.Metadata.Contains(AreaFromInt[1]) &&
+					     !TakeMusic.Value.Metadata.Contains(AreaFromInt[2]) &&
+					     !TakeMusic.Value.Metadata.Contains(AreaFromInt[3]) &&
+					     !TakeMusic.Value.Metadata.Contains(AreaFromInt[4]) &&
+					     !TakeMusic.Value.Metadata.Contains("anyreg"))
 
 					   ) // No Swap Between Regions
 						return true;
@@ -113,12 +114,18 @@ namespace TNHBGLoader.Soundtrack {
 
 		public void FixedUpdate() {
 			// alert system
+			if (alertCooldown > 0)
+				alertCooldown--;
 			if (PluginMain.IsSoundtrack.Value) {
-				bool newAlert = false;
+				bool newAlert;
 				if(isInstitutionMode)
 					newAlert = (int)Manager.m_takeMusicIntensity >= 1;
 				else
 					newAlert = (int)Manager.m_takeMusicIntensity == 2;
+
+				if (alertCooldown != 0)
+					newAlert = false;
+				
 				if (currentlyInAlert != newAlert) {
 					if (newAlert) { //entering alert mode
 						Track[] alerts = new Track[0];
@@ -129,6 +136,8 @@ namespace TNHBGLoader.Soundtrack {
 						if (alerts.Any()) { // there are alerts in the soundtrack
 							storedTakeTrack = CurrentTrack;
 							storedTakeTrackPlayhead = Instance.GetCurrentAudioSource.time;
+							if (CurrentTrack.Type != "take")
+								return;
 							Instance.SwitchSong(alerts.GetRandom());
 						}
 					}
@@ -139,13 +148,16 @@ namespace TNHBGLoader.Soundtrack {
 							ChangeArea(currentInstitutionArea);
 						} // Handle if did not.
 						else {
-							float alertPlayhead = Instance.GetCurrentAudioSource.time;
-							float time = storedTakeTrackPlayhead + alertPlayhead;
-							if (storedTakeTrack.Metadata.Contains("restart"))
-								time = 0;
-							if (storedTakeTrack.Metadata.Contains("return"))
-								time = storedTakeTrackPlayhead;
-							Instance.SwitchSong(storedTakeTrack, time);
+							float time = 0;
+							if (storedTakeTrack.HasValue) {
+								float alertPlayhead = Instance.GetCurrentAudioSource.time;
+								time = storedTakeTrackPlayhead + alertPlayhead;
+								if (storedTakeTrack.Value.Metadata.Contains("restart"))
+									time = 0;
+								if (storedTakeTrack.Value.Metadata.Contains("return"))
+									time = storedTakeTrackPlayhead;
+								Instance.SwitchSong(storedTakeTrack.Value, time);
+							}
 						}
 					}
 					currentlyInAlert = newAlert;
@@ -223,6 +235,9 @@ namespace TNHBGLoader.Soundtrack {
 				QueueTake(TakeMusic.Value);
 			}
 
+			currentlyInAlert = false;
+			storedTakeTrack = null;
+
 			Instance.PlayNextTrackInQueueOfType(new[] { "intro", "lo", "phase0"});
 
 			return false;
@@ -298,6 +313,7 @@ namespace TNHBGLoader.Soundtrack {
 				return true;
 			// Just making sure it *skips* to End.
 			Instance.PlayNextTrackInQueueOfType(new [] {"end", "take", "takeintro", "endfail"});
+			alertCooldown = 300;
 			return true;
 		}
 
@@ -350,8 +366,7 @@ namespace TNHBGLoader.Soundtrack {
 			
 			// Initialize holdmusic
 			PluginMain.DebugLog.LogInfo($"Level: {Level}");
-
-			// if it is institution mode, this will be initiated on InstitutionChangeRegion
+			
 			if (!isInstitutionMode) {
 				HoldMusic = SoundtrackAPI.GetSet("hold", Level);
 
@@ -363,20 +378,10 @@ namespace TNHBGLoader.Soundtrack {
 					QueueTake(TakeMusic.Value);
 				}
 			}
+			else {
+				ChangeArea(currentInstitutionArea);
+			}
 		}
-		
-		
-		
-		
-		/*[HarmonyPatch(typeof(TNH_Manager), "Start")]
-		[HarmonyPostfix]
-		public static void Patch_Start_PrintPhaseDeets(ref TNH_Manager __instance) {
-			//Print out the length to failure for Failure Sync.
-			foreach (var level in __instance.m_curProgression.Levels)
-				for(int i = 0; i < level.HoldChallenge.Phases.Count; i++)
-					PluginMain.DebugLog.LogInfo($"Level: {level}, phase: {i}, length: {level.HoldChallenge.Phases[i].ScanTime * 0.8 + 120} - {level.HoldChallenge.Phases[i].ScanTime * 1.2 + 120}");
-		}*/
-
 		
 		//Handle Failure Sync
 		[HarmonyPatch(typeof(TNH_HoldPoint), "BeginAnalyzing")]
