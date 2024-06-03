@@ -128,10 +128,10 @@ namespace TNHBGLoader.Soundtrack {
 
 		public static TrackSet[] GetAllSetsWithMetadata(string type, int situation, string[] metadatas) {
 			var sets = GetAllSets(type, situation);
-			PluginMain.DebugLog.LogError("Available sets:");
+			/*PluginMain.DebugLog.LogInfo("Available sets:");
 			foreach (var set in sets) {
-				PluginMain.DebugLog.LogError($"{set.Name}, {set.Type}, {set.Situation}, [{string.Join(", ", set.Metadata)}]");
-			}
+				PluginMain.DebugLog.LogInfo($"{set.Name}, {set.Type}, {set.Situation}, [{string.Join(", ", set.Metadata)}]");
+			}*/
 			List<TrackSet> filteredSet = new List<TrackSet>();
 			foreach (var metadata in metadatas)
 				filteredSet.AddRange(sets.Where(x => x.Metadata.Contains(metadata)));
