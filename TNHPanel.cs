@@ -300,6 +300,21 @@ namespace TNHBGLoader
 		//Updates and changes the BGMs shown
 		private void UpdateMusicList(object sender, ButtonClickEventArgs args)
 		{
+			switch (TNHPstate) {
+				case TNHPstates.BGM:
+					if (BGMs.Count <= 4)
+						return;
+					break;
+				case TNHPstates.Announcer:
+					if (AnnouncerAPI.LoadedAnnouncers.Count <= 4)
+						return;
+					break;
+				case TNHPstates.Sosig_Voicelines:
+					if (SosigVLSAPI.LoadedSosigVLSs.Count <= 4)
+						return;
+					break;
+			}
+
 			int cycleInc = 0;
 			if (sender != null)
 			{
