@@ -88,8 +88,15 @@ namespace TNHBGLoader
 						bankName = BankAPI.CurrentBankLocation;
 					}
 					else {
-						PluginMain
-.DebugLog.LogInfo($"Loading soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Guid} into TNH!");
+						if (SoundtrackAPI.SelectedSoundtrackIndex >= SoundtrackAPI.Soundtracks.Count ||
+						    SoundtrackAPI.SelectedSoundtrackIndex < 0) {
+							// Out of range. Idk how this happened but reset it to prevent console spam
+							PluginMain.DebugLog.LogInfo("Enabled soundtrack not in soundtrack database! Resetting to default.");
+							PluginMain.IsSoundtrack.Value = false;
+							bankName = BankAPI.LoadedBankLocations[0]; // Index 0 SHOULD be default.
+						}
+						
+						PluginMain.DebugLog.LogInfo($"Loading soundtrack {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Guid} into TNH!");
 					}
 
 				}
