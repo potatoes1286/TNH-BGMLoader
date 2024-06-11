@@ -356,6 +356,13 @@ namespace TNHBGLoader.Soundtrack {
 			Manager = __instance;
 			isInstitutionMode = __instance.UsesInstitutionMusic;
 
+			//oob check
+			if (SoundtrackAPI.SelectedSoundtrackIndex >= SoundtrackAPI.Soundtracks.Count) {
+				PluginMain.DebugLog.LogInfo("Selected soundtrack out of bounds!");
+				PluginMain.IsSoundtrack.Value = false;
+				return;
+			}
+
 			if(PluginMain.IsSoundtrack.Value || SoundtrackAPI.IsMix)
 				__instance.gameObject.AddComponent<TnHSoundtrackInterface>();
 			// Turn off fmod.
