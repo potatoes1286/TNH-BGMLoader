@@ -121,7 +121,8 @@ namespace TNHBGLoader.Soundtrack {
 
 			if(!seamlessTransition)
 				SongStartTime = Time.time;
-			timeOverride = GetCurrentAudioSource.time;
+			else
+				timeOverride = GetCurrentAudioSource.time;
 
 			SongLength = newTrack.Clip.length;
 			
