@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using BepInEx;
 using HarmonyLib;
 using BepInEx.Configuration;
@@ -26,6 +27,19 @@ using Logger = BepInEx.Logging.Logger;
 
 namespace TNHBGLoader
 {
+	public static class Extensions {
+		public static string ToOneLine<T>(this T[] list) {
+			StringBuilder builder = new StringBuilder();
+			for (int i = 0; i < list.Length; i++) {
+				builder.Append(list[i].ToString());
+				if (i != list.Length - 1)
+					builder.Append(", ");
+			}
+			return builder.ToString();
+		}
+	}
+	
+	
 	[BepInPlugin(PluginDetails.GUID, PluginDetails.NAME, PluginDetails.VERS)]
 	[BepInDependency("nrgill28.Sodalite", BepInDependency.DependencyFlags.HardDependency)]
 	[BepInDependency(StratumRoot.GUID, StratumRoot.Version)]
@@ -48,7 +62,7 @@ namespace TNHBGLoader
 				return Path.GetDirectoryName(path);
 			}
 		}
-		
+
 		internal new static ManualLogSource DebugLog;
 		public static void LogSpam(object data) { if(EnableDebugLogging.Value) DebugLog.LogInfo(data); }
 		public void Awake()

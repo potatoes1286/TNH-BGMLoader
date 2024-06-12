@@ -110,7 +110,8 @@ namespace TNHBGLoader.Soundtrack {
 		/// </summary>
 		/// <param name="newTrack">New track to play.</param>
 		/// <param name="timeOverride">Sets playhead position on start, in seconds. Values under 0 are discarded.
-		/// As an example, inputting 30 will cause the song to start playing 30 seconds into the song.</param>
+		/// As an example, inputting 30 will cause the song to start playing 30 seconds into the song.
+		/// Seamless Transition ignores timeOverride.</param>
 		public virtual void SwitchSong(Track newTrack, float timeOverride = 0) {
 			CurrentTrack = newTrack;
 			
@@ -120,13 +121,11 @@ namespace TNHBGLoader.Soundtrack {
 
 			if(!seamlessTransition)
 				SongStartTime = Time.time;
-			var curTime = GetCurrentAudioSource.time;
-			
-
+			timeOverride = GetCurrentAudioSource.time;
 
 			SongLength = newTrack.Clip.length;
 			
-			PluginMain.DebugLog.LogInfo($"{Time.time}: Playing track {newTrack.Name} ({newTrack.Type}) of calculated length {SongLength} with override time {timeOverride}.");
+			PluginMain.DebugLog.LogInfo($"{Time.time}: Playing track {newTrack.Name} ({newTrack.Type}, metadata {newTrack.Metadata.ToOneLine()}) of calculated length {SongLength} with override time {timeOverride}.");
 
 			//If current source is 0, new source is 1, and vice versa.
 			int newSource = CurrentAudioSource == 0 ? 1 : 0;
@@ -156,12 +155,8 @@ namespace TNHBGLoader.Soundtrack {
 					GetCurrentAudioSource.loop = false;
 				GetCurrentAudioSource.Play();
 			}
-			
-			GetCurrentAudioSource.time = 0;
-			if(seamlessTransition)
-				GetCurrentAudioSource.time = curTime;
-			if(timeOverride >= 0)
-				GetCurrentAudioSource.time = timeOverride;
+
+			GetCurrentAudioSource.time = timeOverride;
 		}
 
 		/// <summary>
