@@ -150,14 +150,28 @@ namespace TNHBGLoader.Soundtrack {
 						} // Handle if did not.
 						else {
 							float time = 0;
-							if (storedTakeTrack.HasValue) {
+							// If its restart, force it to go and play takeintro/take
+							if (storedTakeTrack.HasValue && !CurrentTrack.Metadata.Contains("restart")) {
 								float alertPlayhead = Instance.GetCurrentAudioSource.time;
 								time = storedTakeTrackPlayhead + alertPlayhead;
-								if (storedTakeTrack.Value.Metadata.Contains("restart"))
-									time = 0;
-								if (storedTakeTrack.Value.Metadata.Contains("return"))
+								// If return, return to where it was
+								if (CurrentTrack.Metadata.Contains("return"))
 									time = storedTakeTrackPlayhead;
 								Instance.SwitchSong(storedTakeTrack.Value, time);
+							}
+							else {
+								// Get takes
+								TrackSet set;
+								if (TakeMusic.HasValue)
+									set = TakeMusic.Value;
+								else
+									set = HoldMusic;
+								
+								var takeIntros = set.Tracks.Where(x => x.Type == "takeintro");
+								if (takeIntros.Count() != 0)
+									Instance.SwitchSong(takeIntros.ToArray().GetRandom());
+								else
+									Instance.SwitchSong(set.Tracks.Where(x => x.Type == "take").ToArray().GetRandom());
 							}
 						}
 					}
