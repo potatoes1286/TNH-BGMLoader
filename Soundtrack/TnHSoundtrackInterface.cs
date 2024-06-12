@@ -83,21 +83,22 @@ namespace TNHBGLoader.Soundtrack {
 				return true;
 			
 			if(isInstitutionMode && s == "TAH2 Area") {
-				if (TakeMusic.HasValue) {
-					if (TakeMusic.Value.Metadata.Contains("nsbr") ||
-					    // If it contains no region metadata, we can assume this is a fallback
-					    // track. So, do not swap between regions because that doesn't make sense.
-					    // lazyyyyyyyyyyyyyyyyyy
-					    (!TakeMusic.Value.Metadata.Contains(AreaFromInt[0]) &&
-					     !TakeMusic.Value.Metadata.Contains(AreaFromInt[1]) &&
-					     !TakeMusic.Value.Metadata.Contains(AreaFromInt[2]) &&
-					     !TakeMusic.Value.Metadata.Contains(AreaFromInt[3]) &&
-					     !TakeMusic.Value.Metadata.Contains(AreaFromInt[4]) &&
-					     !TakeMusic.Value.Metadata.Contains("anyreg"))
 
-					   ) // No Swap Between Regions
-						return true;
-				}
+				TrackSet set = TakeMusic.HasValue ? TakeMusic.Value : HoldMusic;
+
+				if (set.Metadata.Contains("nsbr") ||
+				    // If it contains no region metadata, we can assume this is a fallback
+				    // track. So, do not swap between regions because that doesn't make sense.
+				    // lazyyyyyyyyyyyyyyyyyy
+				    (!set.Metadata.Contains(AreaFromInt[0]) &&
+				     !set.Metadata.Contains(AreaFromInt[1]) &&
+				     !set.Metadata.Contains(AreaFromInt[2]) &&
+				     !set.Metadata.Contains(AreaFromInt[3]) &&
+				     !set.Metadata.Contains(AreaFromInt[4]) &&
+				     !set.Metadata.Contains("anyreg"))
+				   ) // No Swap Between Regions
+					return true;
+				
 
 				int newArea = (int)f;
 				if (currentInstitutionArea != newArea) {
