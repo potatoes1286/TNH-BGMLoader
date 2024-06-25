@@ -126,7 +126,7 @@ namespace TNHBGLoader.Soundtrack {
 
 			SongLength = newTrack.Clip.length;
 			
-			PluginMain.DebugLog.LogInfo($"{Time.time}: Playing track {newTrack.Name} ({newTrack.Type}, metadata {newTrack.Metadata.ToOneLine()}) of calculated length {SongLength} with override time {timeOverride}.");
+			PluginMain.DebugLog.LogInfo($"{Time.time:F}: Playing track {newTrack.Name} ({newTrack.Type}, metadata {newTrack.Metadata.ToOneLine()}) of calculated length {SongLength:F} with override time {timeOverride}.");
 
 			//If current source is 0, new source is 1, and vice versa.
 			int newSource = CurrentAudioSource == 0 ? 1 : 0;
