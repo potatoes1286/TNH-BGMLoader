@@ -500,7 +500,11 @@ namespace TNHBGLoader
 						break;
 				}
 				SetIcon();
-				_bankText.Text.text = "Selected:\n" + GetCurrentSelectedItemName(); //set new bank
+				
+				if(!PluginMain.IsSoundtrack.Value)
+					_bankText.Text.text = "Selected:\n" + GetCurrentSelectedItemName() + "\n(BANK MOD: NO INSTITUTION SUPPORT)"; //set new bank
+				else
+					_bankText.Text.text = "Selected:\n" + GetCurrentSelectedItemName(); //set new bank
 			}
 		}
 		public void PlaySnippet(AudioClip snip)
