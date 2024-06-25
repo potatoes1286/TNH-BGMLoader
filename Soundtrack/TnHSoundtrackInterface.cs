@@ -143,6 +143,9 @@ namespace TNHBGLoader.Soundtrack {
 						}
 					}
 					else { //exiting alert mode
+						// Prevent if no alert was played, from take being played *again*
+						if (CurrentTrack.Type == "take")
+							return;
 						// Handle if changed area mid fight
 						if (changedAreaMidFight) {
 							changedAreaMidFight = false;
@@ -368,6 +371,10 @@ namespace TNHBGLoader.Soundtrack {
 		[HarmonyPatch(typeof(TNH_Manager), "Start")]
 		[HarmonyPostfix]
 		public static void InitializeTnHSoundtrackInterface(ref TNH_Manager __instance) {
+			if (!PluginMain.IsSoundtrack.Value)
+				return;
+			
+			
 			Manager = __instance;
 			isInstitutionMode = __instance.UsesInstitutionMusic;
 
@@ -378,8 +385,8 @@ namespace TNHBGLoader.Soundtrack {
 				return;
 			}
 
-			if(PluginMain.IsSoundtrack.Value || SoundtrackAPI.IsMix)
-				__instance.gameObject.AddComponent<TnHSoundtrackInterface>();
+			
+			__instance.gameObject.AddComponent<TnHSoundtrackInterface>();
 			// Turn off fmod.
 			GM.TNH_Manager.FMODController.MasterBus.setMute(true);
 			//Set hold music.
