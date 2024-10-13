@@ -84,7 +84,7 @@ namespace TNHBGLoader.Soundtrack {
 			
 			if(isInstitutionMode && s == "TAH2 Area") {
 
-				TrackSet set = TakeMusic.HasValue ? TakeMusic.Value : HoldMusic;
+				TrackSet set = TakeMusic ?? HoldMusic;
 
 				if (set.Metadata.Contains("nsbr") ||
 				    // If it contains no region metadata, we can assume this is a fallback
@@ -132,8 +132,8 @@ namespace TNHBGLoader.Soundtrack {
 						Track[] alerts = new Track[0];
 						if(HoldMusic.Tracks != null)
 							alerts = HoldMusic.Tracks.Where(x => x.Type == "alert").ToArray();
-						if(!alerts.Any() && TakeMusic.HasValue)
-							alerts = TakeMusic.Value.Tracks.Where(x => x.Type == "alert").ToArray();
+						if(!alerts.Any() && TakeMusic != null)
+							alerts = TakeMusic.Tracks.Where(x => x.Type == "alert").ToArray();
 						if (alerts.Any()) { // there are alerts in the soundtrack
 							storedTakeTrack = CurrentTrack;
 							storedTakeTrackPlayhead = Instance.GetCurrentAudioSource.time;
@@ -154,19 +154,19 @@ namespace TNHBGLoader.Soundtrack {
 						else {
 							float time = 0;
 							// If its restart, force it to go and play takeintro/take
-							if (storedTakeTrack.HasValue && !CurrentTrack.Metadata.Contains("restart")) {
+							if (storedTakeTrack != null && !CurrentTrack.Metadata.Contains("restart")) {
 								float alertPlayhead = Instance.GetCurrentAudioSource.time;
 								time = storedTakeTrackPlayhead + alertPlayhead;
 								// If return, return to where it was
 								if (CurrentTrack.Metadata.Contains("return"))
 									time = storedTakeTrackPlayhead;
-								Instance.SwitchSong(storedTakeTrack.Value, time);
+								Instance.SwitchSong(storedTakeTrack, time);
 							}
 							else {
 								// Get takes
 								TrackSet set;
-								if (TakeMusic.HasValue)
-									set = TakeMusic.Value;
+								if (TakeMusic != null)
+									set = TakeMusic;
 								else
 									set = HoldMusic;
 								
@@ -250,7 +250,7 @@ namespace TNHBGLoader.Soundtrack {
 				QueueTake(HoldMusic);
 			else { //Otherwise, get a take theme.
 				TakeMusic = SoundtrackAPI.GetSet("take", Level);
-				QueueTake(TakeMusic.Value);
+				QueueTake(TakeMusic);
 			}
 
 			currentlyInAlert = false;
@@ -391,7 +391,7 @@ namespace TNHBGLoader.Soundtrack {
 			GM.TNH_Manager.FMODController.MasterBus.setMute(true);
 			//Set hold music.
 			
-			PluginMain.DebugLog.LogInfo($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Guid}, IsSOundtrack: {PluginMain.IsSoundtrack.Value}");
+			PluginMain.DebugLog.LogInfo($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Guid}, IsSoundtrack: {PluginMain.IsSoundtrack.Value}");
 			
 			// Initialize holdmusic
 			PluginMain.DebugLog.LogInfo($"Level: {Level}");
@@ -404,7 +404,7 @@ namespace TNHBGLoader.Soundtrack {
 					QueueTake(HoldMusic);
 				else { //Otherwise, get a take theme.
 					TakeMusic = SoundtrackAPI.GetSet("take", Level);
-					QueueTake(TakeMusic.Value);
+					QueueTake(TakeMusic);
 				}
 			}
 			else {
