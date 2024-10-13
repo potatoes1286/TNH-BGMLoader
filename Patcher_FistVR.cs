@@ -120,14 +120,12 @@ namespace TNHBGLoader
 					if (Path.GetFileNameWithoutExtension(BankAPI.LoadedBankLocations[i]) == PluginMain.LastLoadedBank.Value) {
 						BankAPI.SwapBank(i);
 						bgmpanel.SetIcon();
-						bgmpanel.SetText();
 						break;
 					}
 			
 			if (PluginMain.IsSoundtrack.Value) {
 				SoundtrackAPI.EnableSoundtrackFromGUID(PluginMain.LastLoadedSoundtrack.Value);
 				bgmpanel.SetIcon();
-				bgmpanel.SetText();
 			}
 			//set last loaded announcer
 			AnnouncerAPI.CurrentAnnouncerIndex = AnnouncerAPI.GetAnnouncerIndexFromGUID(PluginMain.LastLoadedAnnouncer.Value);

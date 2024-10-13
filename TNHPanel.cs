@@ -295,7 +295,6 @@ namespace TNHBGLoader
 			UpdateMusicList(null, null); //always use null as an arg, kids
 			UpdateVolume(null, null);
 			SetIcon();
-			SetText();
 		}
 		
 		//Updates and changes the BGMs shown
@@ -503,7 +502,6 @@ namespace TNHBGLoader
 						break;
 				}
 				SetIcon();
-				SetText();
 			}
 		}
 		public void PlaySnippet(AudioClip snip)
@@ -530,6 +528,11 @@ namespace TNHBGLoader
 		
 		public void SetIcon()
 		{
+			if (!PluginMain.IsSoundtrack.Value)
+				_bankText.Text.text = "Selected:\n" + GetCurrentSelectedItemName() + "\n(BANK MOD: NO INSTITUTION SUPPORT)"; //set new bank
+			else
+				_bankText.Text.text = "Selected:\n" + GetCurrentSelectedItemName(); //set new bank
+			
 			if (icondisplay == null) return;
 			Debug.Log($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurBank: {GetCurrentSelectedItemName()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Guid}");
 			switch (TNHPstate)
@@ -549,14 +552,6 @@ namespace TNHBGLoader
 					icondisplay.texture = SosigVLSAPI.GetSosigVLSIcon(SosigVLSAPI.CurrentSosigVlsOfVlsSet(_selectedVLSSet));
 					break;
 			}
-		}
-		
-		public void SetText()
-		{
-			if (!PluginMain.IsSoundtrack.Value)
-				_bankText.Text.text = "Selected:\n" + GetCurrentSelectedItemName() + "\n(BANK MOD: NO INSTITUTION SUPPORT)"; //set new bank
-			else
-				_bankText.Text.text = "Selected:\n" + GetCurrentSelectedItemName(); //set new bank
 		}
 	}
 }

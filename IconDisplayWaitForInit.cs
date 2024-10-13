@@ -29,7 +29,6 @@ namespace TNH_BGLoader
 				bgmpanel.icondisplay = rawimagecomp;
 				rawimagecomp.texture = BankAPI.GetBankIcon(BankAPI.CurrentBankLocation);
 				bgmpanel.SetIcon();
-				bgmpanel.SetText();
 				Destroy(this);
 			}
 			catch
