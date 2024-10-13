@@ -295,6 +295,7 @@ namespace TNHBGLoader
 			UpdateMusicList(null, null); //always use null as an arg, kids
 			UpdateVolume(null, null);
 			SetIcon();
+			SetText();
 		}
 		
 		//Updates and changes the BGMs shown
@@ -467,6 +468,7 @@ namespace TNHBGLoader
 						if(BGMs[index].IsBank && BGMs[index].BankGuid == "Select Random")
 							index = UnityEngine.Random.Range(0, BGMs.Count);
 						PluginMain.DebugLog.LogInfo($"Setting song to index {index}, {BGMs[index].Name}");
+						BankAPI.NukeSongSnippets(); // Stop any FMOD snippets
 						if (BGMs[index].IsBank) {
 							// Handle Random option
 							BankAPI.SwapBank(index);
@@ -481,6 +483,7 @@ namespace TNHBGLoader
 						}
 						else {
 							PluginMain.IsSoundtrack.Value = true;
+							PluginMain.LastLoadedSoundtrack.Value = BGMs[index].SoundtrackGuid;
 							SoundtrackAPI.EnableSoundtrackFromGUID(BGMs[index].SoundtrackGuid);
 							GameObject go = new GameObject();
 							go.AddComponent(typeof(PlaySoundtrackSnippet));
@@ -500,11 +503,7 @@ namespace TNHBGLoader
 						break;
 				}
 				SetIcon();
-				
-				if(!PluginMain.IsSoundtrack.Value)
-					_bankText.Text.text = "Selected:\n" + GetCurrentSelectedItemName() + "\n(BANK MOD: NO INSTITUTION SUPPORT)"; //set new bank
-				else
-					_bankText.Text.text = "Selected:\n" + GetCurrentSelectedItemName(); //set new bank
+				SetText();
 			}
 		}
 		public void PlaySnippet(AudioClip snip)
@@ -529,7 +528,7 @@ namespace TNHBGLoader
 			SM.PlayGenericSound(audioEvent, GM.CurrentPlayerBody.transform.position);
 		}
 		
-		private void SetIcon()
+		public void SetIcon()
 		{
 			if (icondisplay == null) return;
 			Debug.Log($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurBank: {GetCurrentSelectedItemName()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Guid}");
@@ -550,6 +549,14 @@ namespace TNHBGLoader
 					icondisplay.texture = SosigVLSAPI.GetSosigVLSIcon(SosigVLSAPI.CurrentSosigVlsOfVlsSet(_selectedVLSSet));
 					break;
 			}
+		}
+		
+		public void SetText()
+		{
+			if (!PluginMain.IsSoundtrack.Value)
+				_bankText.Text.text = "Selected:\n" + GetCurrentSelectedItemName() + "\n(BANK MOD: NO INSTITUTION SUPPORT)"; //set new bank
+			else
+				_bankText.Text.text = "Selected:\n" + GetCurrentSelectedItemName(); //set new bank
 		}
 	}
 }

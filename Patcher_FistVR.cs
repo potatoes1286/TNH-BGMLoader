@@ -117,10 +117,18 @@ namespace TNHBGLoader
 			//get the bank last loaded and set banknum to it; if it doesnt exist it just defaults to 0
 			if(!PluginMain.IsSoundtrack.Value)
 				for (int i = 0; i < BankAPI.LoadedBankLocations.Count; i++)
-					if (Path.GetFileNameWithoutExtension(BankAPI.LoadedBankLocations[i]) == PluginMain.LastLoadedBank.Value) { BankAPI.SwapBank(i); break; }
+					if (Path.GetFileNameWithoutExtension(BankAPI.LoadedBankLocations[i]) == PluginMain.LastLoadedBank.Value) {
+						BankAPI.SwapBank(i);
+						bgmpanel.SetIcon();
+						bgmpanel.SetText();
+						break;
+					}
 			
-			//if (PluginMain.IsSoundtrack.Value)
-			//	SoundtrackAPI.EnableSoundtrackFromGUID(PluginMain.LastLoadedSoundtrack.Value);
+			if (PluginMain.IsSoundtrack.Value) {
+				SoundtrackAPI.EnableSoundtrackFromGUID(PluginMain.LastLoadedSoundtrack.Value);
+				bgmpanel.SetIcon();
+				bgmpanel.SetText();
+			}
 			//set last loaded announcer
 			AnnouncerAPI.CurrentAnnouncerIndex = AnnouncerAPI.GetAnnouncerIndexFromGUID(PluginMain.LastLoadedAnnouncer.Value);
 			//set last loaded SosigVLS
