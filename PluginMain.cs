@@ -51,7 +51,7 @@ namespace TNHBGLoader
 		public static ConfigEntry<string> LastLoadedAnnouncer;
 		public static ConfigEntry<string> LastLoadedSosigVLS;
 		public static ConfigEntry<bool>   EnableDebugLogging;
-		//public static ConfigEntry<string> LastLoadedSoundtrack;
+		public static ConfigEntry<string> LastLoadedSoundtrack;
 		public static ConfigEntry<bool>   IsSoundtrack;
 
 		public static ConfigEntry<bool> LoadSoundtracksOnStartup;
@@ -113,7 +113,7 @@ namespace TNHBGLoader
 			LastLoadedBank = Config.Bind("no touchy", "Saved Bank", "MX_TAH", "Not meant to be changed manually. This autosaves your last bank used, so you don't have to reset it every time you launch H3.");
 			LastLoadedAnnouncer = Config.Bind("no touchy", "Saved Announcer", "h3vr.default", "Not meant to be changed manually. This autosaves your last announcer used, so you don't have to reset it every time you launch H3.");
 			LastLoadedSosigVLS = Config.Bind("no touchy", "Saved Sosig VLS", "h3vr.default", "Not meant to be changed manually. This autosaves your last sosig set used, so you don't have to reset it every time you launch H3.");
-			//LastLoadedSoundtrack = Config.Bind("no touchy", "Saved Soundtrack", "", "Not meant to be changed manually. This autosaves your last sosig set used, so you don't have to reset it every time you launch H3.");
+			LastLoadedSoundtrack = Config.Bind("no touchy", "Saved Soundtrack", "", "Not meant to be changed manually. This autosaves your last sosig set used, so you don't have to reset it every time you launch H3.");
 			IsSoundtrack = Config.Bind("no touchy", "Saved Is Soundtrack", false, "Not meant to be changed manually. This autosaves your last sosig set used, so you don't have to reset it every time you launch H3.");
 			LoadSoundtracksOnStartup = Config.Bind("no touchy", "Load Soundtracks On Startup", false, "Debug. Loads ALL soundtracks on H3 start, not the current soundtrack when loading TnH. Enable only to catch soundtrack loading bugs on start.");
 		}

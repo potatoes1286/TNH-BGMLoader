@@ -20,6 +20,7 @@ namespace TNHBGLoader.Soundtrack {
 
 		public static SoundtrackManifest GetCurrentSoundtrack => Soundtracks[SelectedSoundtrackIndex];
 
+		public static readonly int MaxRandomWeight = 16;
 
 
 		//Assemble a complete soundtrack manifest using the path of the file.
@@ -39,6 +40,7 @@ namespace TNHBGLoader.Soundtrack {
 				if (File.Exists(rawSet) && !rawSet.Contains(".ogg")) //it was ingesting the fucking yaml :/
 					continue;
 				var set = new TrackSet();
+				set.RandomWeight = MaxRandomWeight;
 				set.Tracks = new List<Track>();
 				set.Type = splitName[0];
 				set.Situation = splitName[1];
@@ -106,7 +108,6 @@ namespace TNHBGLoader.Soundtrack {
 			//Flag the game that we're doing soundtrack. Unflagging is done in BankAPI.SwapBanks.
 			PluginMain.IsSoundtrack.Value = true;
 			SelectedSoundtrackIndex = index;
-			//PluginMain.LastLoadedSoundtrack.Value = Soundtracks[SelectedSoundtrackIndex].Guid;
 		}
 
 		public static TrackSet[] GetAllSets(string type, int situation) {
@@ -143,9 +144,35 @@ namespace TNHBGLoader.Soundtrack {
 			return filteredSet.ToArray();
 		}
 
+		public static TrackSet GetWeightedRandomSet(TrackSet[] sets)
+		{
+			int weightSum = sets.Sum(x => x.RandomWeight);
+			int randomValue = UnityEngine.Random.Range(0, weightSum);
+			int progressiveSum = 0;
+			TrackSet? chosenSet = null;
+			
+			foreach (TrackSet set in sets) {
+				progressiveSum += set.RandomWeight;
+				if (randomValue < progressiveSum) {
+					chosenSet = set;
+					break;
+				}
+			}
+			
+			foreach (TrackSet set in sets) {
+				// Adjust weights
+				if (set == chosenSet)
+					set.RandomWeight = 1;
+				else if (set.RandomWeight < MaxRandomWeight)
+					set.RandomWeight *= 2;
+			}
+			
+			return chosenSet;
+		}
+		
 		public static TrackSet GetSetWithMetadata(string type, int situation, string[] metadatas) {
 			var sets = GetAllSetsWithMetadata(type, situation, metadatas);
-			var item = sets.GetRandom();
+			var item = GetWeightedRandomSet(sets);
 			PluginMain.DebugLog.LogInfo($"Selecting trackset {item.Name}");
 			return item;
 		}
@@ -153,7 +180,7 @@ namespace TNHBGLoader.Soundtrack {
 
 		public static TrackSet GetSet(string type, int situation) {
 			var sets = GetAllSets(type, situation);
-			var item = sets.GetRandom();
+			var item = GetWeightedRandomSet(sets);
 			PluginMain.DebugLog.LogInfo($"Selecting trackset {item.Name}");
 			return item;
 		}
@@ -166,54 +193,45 @@ namespace TNHBGLoader.Soundtrack {
 			//There's probably a better way to do this
 			if (seqTiming == "all")
 				return true;
+			
 			if (seqTiming == "fallback")
 				return false;
-			if (seqTiming == "death") {
-				if (situation == -1)
+			
+			string[] sequences = seqTiming.Split(',');
+			foreach (string sequence in sequences)
+			{
+				if (sequence == "death") {
+					if (situation == -1)
+						return true;
+				}
+				else if (sequence == "win") {
+					if (situation == -2)
+						return true;
+				}
+				else if (sequence.StartsWith("ge")) {
+					//This is above a number (inclusive). EG ge3
+					if (situation >= int.Parse(sequence.Substring(2)))
+						return true;
+				}
+				else if (sequence.StartsWith("le")) {
+					//This is below a number (inclusive). EG le3
+					if (situation <= int.Parse(sequence.Substring(2)))
+						return true;
+				}
+				else if (sequence.Contains('-')) {
+					//This is a range. EG 1-3
+					string[] s = sequence.Split('-');
+					
+					if (int.TryParse(s[0], out int min) && int.TryParse(s[1], out int max)) {
+						if (situation >= min && situation <= max)
+							return true;
+					}
+				}
+				
+				if (sequence == situation.ToString())
 					return true;
-				return false;
-			}
-			if (seqTiming == "win") {
-				if (situation == -2)
-					return true;
-				return false;
-			}
-
-
-			if (seqTiming.Contains(',')) {
-				//This is a split seqTiming. EG 1,3,5
-				var situations = seqTiming.Split(',');
-				if (situations.Contains(situation.ToString()))
-					return true;
-				return false;
-			}
-
-			if (seqTiming.Contains('-')) {
-				//This is a range. EG 1-3
-				var situations = seqTiming.Split('-');
-				if (situation >= int.Parse(situations[0]) && situation <= int.Parse(situations[1]))
-					return true;
-				return false;
-			}
-
-			if (seqTiming.Contains("ge")) {
-				//This is above a number (inclusive). EG ge3
-				var val = int.Parse(seqTiming.Replace("ge", string.Empty));
-				if (situation >= val)
-					return true;
-				return false;
 			}
 			
-			if (seqTiming.Contains("le")) {
-				//This is above a number (inclusive). EG le3
-				var val = int.Parse(seqTiming.Replace("le", string.Empty));
-				if (situation <= val)
-					return true;
-				return false;
-			}
-
-			if (situation == int.Parse(seqTiming))
-				return true;
 			return false;
 		}
 

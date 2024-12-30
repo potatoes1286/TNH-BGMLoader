@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace TNHBGLoader.Soundtrack {
 	
-	public struct Track {
+	public class Track {
 		public AudioClip Clip;
 		public string    Situation;
 		public string[]  Metadata; //sip (Skip In Place), dnf (Do Not Fade), loop, etc
@@ -11,12 +11,13 @@ namespace TNHBGLoader.Soundtrack {
 		public string    Type;
 	}
 
-	public struct TrackSet {
+	public class TrackSet {
 		public List<Track>  Tracks;
 		public string   Situation;
 		public string[] Metadata;
 		public string   Name;
 		public string   Type;
+		public int      RandomWeight;
 	}
 	
 	public class SoundtrackManifest

@@ -467,6 +467,7 @@ namespace TNHBGLoader
 						if(BGMs[index].IsBank && BGMs[index].BankGuid == "Select Random")
 							index = UnityEngine.Random.Range(0, BGMs.Count);
 						PluginMain.DebugLog.LogInfo($"Setting song to index {index}, {BGMs[index].Name}");
+						BankAPI.NukeSongSnippets(); // Stop any FMOD snippets
 						if (BGMs[index].IsBank) {
 							// Handle Random option
 							BankAPI.SwapBank(index);
@@ -481,6 +482,7 @@ namespace TNHBGLoader
 						}
 						else {
 							PluginMain.IsSoundtrack.Value = true;
+							PluginMain.LastLoadedSoundtrack.Value = BGMs[index].SoundtrackGuid;
 							SoundtrackAPI.EnableSoundtrackFromGUID(BGMs[index].SoundtrackGuid);
 							GameObject go = new GameObject();
 							go.AddComponent(typeof(PlaySoundtrackSnippet));
@@ -500,11 +502,6 @@ namespace TNHBGLoader
 						break;
 				}
 				SetIcon();
-				
-				if(!PluginMain.IsSoundtrack.Value)
-					_bankText.Text.text = "Selected:\n" + GetCurrentSelectedItemName() + "\n(BANK MOD: NO INSTITUTION SUPPORT)"; //set new bank
-				else
-					_bankText.Text.text = "Selected:\n" + GetCurrentSelectedItemName(); //set new bank
 			}
 		}
 		public void PlaySnippet(AudioClip snip)
@@ -529,8 +526,13 @@ namespace TNHBGLoader
 			SM.PlayGenericSound(audioEvent, GM.CurrentPlayerBody.transform.position);
 		}
 		
-		private void SetIcon()
+		public void SetIcon()
 		{
+			if (!PluginMain.IsSoundtrack.Value)
+				_bankText.Text.text = "Selected:\n" + GetCurrentSelectedItemName() + "\n(BANK MOD: NO INSTITUTION SUPPORT)"; //set new bank
+			else
+				_bankText.Text.text = "Selected:\n" + GetCurrentSelectedItemName(); //set new bank
+			
 			if (icondisplay == null) return;
 			Debug.Log($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurBank: {GetCurrentSelectedItemName()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Guid}");
 			switch (TNHPstate)
