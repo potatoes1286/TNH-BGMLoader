@@ -73,13 +73,13 @@ namespace TNHBGLoader.Sosig
 			var files = Directory.GetFiles(yamlfest.VoiceLines, "*.wav", SearchOption.AllDirectories).ToList();
 			InitializeLists(ref manifest.SpeechSet);
 			foreach (var vl in files) //iterate through and handle all lines found
-				AddNameToSpeechSet(ref manifest, GetAudioFromFile(vl), Path.GetFileName(vl) + ", " + new FileInfo(vl).Directory.Name);
+				AddNameToSpeechSet(ref manifest, Common.LoadClip(vl), Path.GetFileName(vl) + ", " + new FileInfo(vl).Directory.Name);
 			return manifest;
 		}
 		
 		public static AudioClip GetRandomPreview(string guid)
 		{
-			if (guid == "h3vr.default") return GetAudioFromFile(Path.Combine(PluginMain.AssemblyDirectory, "default/sosigvls_default.wav"));
+			if (guid == "h3vr.default") return Common.LoadClip(Path.Combine(PluginMain.AssemblyDirectory, "default/sosigvls_default.wav"));
 			var manifest = GetManifestFromGUID(guid);
 			if (manifest.previews.Count == 0) return null;
 			int rand = UnityEngine.Random.Range(0, manifest.previews.Count);
@@ -153,17 +153,6 @@ namespace TNHBGLoader.Sosig
 			if (name.Contains("unused")) return;
 			#endregion
 			PluginMain.DebugLog.LogError("voiceline " + name + " has no voiceline match!");
-		}
-		
-		
-		public static AudioClip GetAudioFromFile(string path) {
-			try {
-				return WavUtility.ToAudioClip(path);
-			}
-			catch (Exception e){
-				PluginMain.DebugLog.LogError($"Failed loading audio file {Path.GetFileName(path)} with reason {e}");
-				return null;
-			}
 		}
 	}
 }

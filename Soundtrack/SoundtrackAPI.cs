@@ -63,7 +63,7 @@ namespace TNHBGLoader.Soundtrack {
 					if (Path.GetExtension(fileName) != ".ogg")
 						PluginMain.DebugLog.LogError($"{fileName} has an invalid extension! (Valid extensions: .ogg, file extension: {Path.GetExtension(fileName)})");
 					else
-						track.Clip = LoadOgg(rawTrackLocation);
+						track.Clip = Common.LoadClip(rawTrackLocation);
 					
 					string[] splitTrackName = Path.GetFileNameWithoutExtension(rawTrackLocation).Split('_');
 					track.Type = splitTrackName[0];
@@ -245,17 +245,7 @@ namespace TNHBGLoader.Soundtrack {
 			return GeneralAPI.GetIcon(Soundtracks[soundtrack].Guid, new[] { Path.Combine(Path.GetDirectoryName(Soundtracks[soundtrack].Path), "icon.png") });
 		}
 
-		public static AudioClip LoadOgg(string path) {
-			WWW www = new WWW($"file://{path}");
-			for (int t = 0; t < 500; t++) {
-				if (www.isDone)
-					break;
-				Thread.Sleep(10); //Multithreading? never heard o' her!
-			}
-			AudioClip clip = www.GetAudioClip(false);
-			clip.name = Path.GetFileName(path);
-			return clip;
-		}
+		
 		
 		public static ValueTuple<AudioClip?, bool> GetSnippet(SoundtrackManifest manifest) {
 			bool isLoop = true;
@@ -267,7 +257,7 @@ namespace TNHBGLoader.Soundtrack {
 
 			AudioClip? clip = null;
 			if(File.Exists(pathOgg))
-				clip = LoadOgg(pathOgg);
+				clip = Common.LoadClip(pathOgg);
 			return (clip, isLoop);
 		}
 	}

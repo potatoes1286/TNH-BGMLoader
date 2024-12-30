@@ -43,11 +43,11 @@ namespace TNH_BGLoader
 
 		public static AudioClip GetRandomPreview(string guid)
 		{
-			if (guid == "h3vr.default") return GetAudioFromFile(Path.Combine(PluginMain.AssemblyDirectory, "default/announcer_default.wav"));
-			if (guid == "h3vr.corrupted") return GetAudioFromFile(Path.Combine(PluginMain.AssemblyDirectory, "default/announcer_corrupted.wav"));
+			if (guid == "h3vr.default") return Common.LoadClip(Path.Combine(PluginMain.AssemblyDirectory, "default/announcer_default.wav"));
+			if (guid == "h3vr.corrupted") return Common.LoadClip(Path.Combine(PluginMain.AssemblyDirectory, "default/announcer_corrupted.wav"));
 			var manifest = GetManifestFromGUID(guid);
 			int rand = Random.Range(0, manifest.Previews.Count);
-			return GetAudioFromFile(manifest.Previews[rand]);
+			return Common.LoadClip(manifest.Previews[rand]);
 		}
 		public static AnnouncerManifest GetManifestFromYamlfest(AnnouncerYamlfest yamlfest)
 		{
@@ -128,15 +128,6 @@ namespace TNH_BGLoader
 		}
 		
 		
-		public static AudioClip GetAudioFromFile(string path) {
-			try {
-				return WavUtility.ToAudioClip(path);
-			}
-			catch (Exception e){
-				PluginMain.DebugLog.LogError($"Failed loading audio file {Path.GetFileName(path)} with reason {e}");
-				return null;
-			}
-		}
 
 		public static readonly string[] UnusedVoicelines = new[] {
 			"base_",

@@ -173,7 +173,7 @@ namespace TNHBGLoader
 				//UnityEngine.Debug.Log("Loading ID " + line.ID);
 				AudioClip sa = null;
 				//i know there's a special place in hell for my naming scheme. dont care
-				sa = AnnouncerAPI.GetAudioFromFile(line.ClipPath);
+				sa = Common.LoadClip(line.ClipPath);
 				if(sa == null) PluginMain.DebugLog.LogWarning("Failed to load from " + line.ClipPath + "!");
 				var vl = new TNH_VoiceDatabase.TNH_VoiceLine();
 				vl.ID = line.ID;
