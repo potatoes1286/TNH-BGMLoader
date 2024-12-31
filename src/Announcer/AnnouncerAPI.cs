@@ -60,7 +60,9 @@ namespace TNH_BGLoader
 			manifest.BackPadding = yamlfest.BackPadding;
 			manifest.Location = yamlfest.Location;
 			manifest.Previews = Directory.GetFiles(yamlfest.VoiceLines, "example*.wav", SearchOption.AllDirectories).ToList();
+			manifest.Previews.AddRange(Directory.GetFiles(yamlfest.VoiceLines, "example*.ogg", SearchOption.AllDirectories));
 			var files = Directory.GetFiles(yamlfest.VoiceLines, "*.wav", SearchOption.AllDirectories).ToList();
+			files.AddRange(Directory.GetFiles(yamlfest.VoiceLines, "*.ogg", SearchOption.AllDirectories));
 			foreach (var song in files) //iterate through and handle all lines found
 			{
 				VoiceLine vl = new VoiceLine();

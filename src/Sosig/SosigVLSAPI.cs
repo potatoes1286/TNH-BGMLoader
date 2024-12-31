@@ -71,6 +71,7 @@ namespace TNHBGLoader.Sosig
 			manifest.guid = yamlfest.GUID;
 			manifest.location = yamlfest.Location;
 			var files = Directory.GetFiles(yamlfest.VoiceLines, "*.wav", SearchOption.AllDirectories).ToList();
+			files.AddRange(Directory.GetFiles(yamlfest.VoiceLines, "*.ogg", SearchOption.AllDirectories));
 			InitializeLists(ref manifest.SpeechSet);
 			foreach (var vl in files) //iterate through and handle all lines found
 				AddNameToSpeechSet(ref manifest, Common.LoadClip(vl), Path.GetFileName(vl) + ", " + new FileInfo(vl).Directory.Name);
