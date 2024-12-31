@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -26,10 +27,19 @@ namespace TNHBGLoader.Soundtrack {
 		//Assemble a complete soundtrack manifest using the path of the file.
 		//Can be written as Ass Music for short, symbolizing what you're gonna do with it.
 		public static void AssembleMusicData(this SoundtrackManifest manifest) {
+
+			Stopwatch timer = new Stopwatch();
+			timer.Start();
+			
 			//Get path of the soundtrack.
 			string dirPath = Path.Combine(Path.GetDirectoryName(manifest.Path), manifest.Location);
 			//Get a list of all the folders in the soundtrack folder.
 			string[] rawSets = Directory.GetDirectories(dirPath);
+			
+			// threadpool info for loading audio from disk > audiofile
+			// if you guys didnt make 1.5gb soundtracks this wouldnt be necessary now would it
+			int tracksToLoad = 0;
+			int tracksLoaded = 0;
 			
 			//All the sets assembled.
 			var sets = new List<TrackSet>();
@@ -62,9 +72,15 @@ namespace TNHBGLoader.Soundtrack {
 					var track = new Track();
 					if (Path.GetExtension(fileName) != ".ogg")
 						PluginMain.DebugLog.LogError($"{fileName} has an invalid extension! (Valid extensions: .ogg, file extension: {Path.GetExtension(fileName)})");
-					else
-						track.Clip = Common.LoadClip(rawTrackLocation);
-					
+					else {
+						tracksToLoad++;
+						ThreadPool.QueueUserWorkItem(state =>
+						{
+							track.Clip = Common.LoadClip(rawTrackLocation);
+							Interlocked.Increment(ref tracksLoaded);
+						});
+					}
+
 					string[] splitTrackName = Path.GetFileNameWithoutExtension(rawTrackLocation).Split('_');
 					track.Type = splitTrackName[0];
 					track.Situation = set.Situation; //Copy over the set situation info into here, just in case its needed.
@@ -78,13 +94,23 @@ namespace TNHBGLoader.Soundtrack {
 					}
 					set.Tracks.Add(track);
 				}
+				
 				sets.Add(set);
+			}
+			
+			for (int t = 0; t < 3000; t++) {
+				if (tracksLoaded == tracksToLoad)
+					break;
+				Thread.Sleep(10); //Multithreading? never heard o' her!
 			}
 			
 			//logging
 			foreach (var set in sets) {
 				PluginMain.DebugLog.LogInfo($"Loading set {set.Name}, {set.Type}, {set.Tracks.Count}, {set.Situation}");
 			}
+			
+			timer.Stop();
+			PluginMain.DebugLog.LogInfo($"Loaded soundtrack in {timer.Elapsed}");
 			
 			
 			manifest.Sets = sets;
