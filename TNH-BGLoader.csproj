@@ -23,4 +23,8 @@
       <None Remove="panel.png" />
       <EmbeddedResource Include="panel.png" />
     </ItemGroup>
+    <ItemGroup>
+      <Folder Include="examples\" />
+      <Folder Include="src\" />
+    </ItemGroup>
 </Project>
