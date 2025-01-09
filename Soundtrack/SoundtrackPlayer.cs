@@ -1,11 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using FistVR;
-using FMODUnity;
-using HarmonyLib;
-using TNH_BGLoader;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace TNHBGLoader.Soundtrack {
 
@@ -33,16 +30,15 @@ namespace TNHBGLoader.Soundtrack {
 		/// <param name="set">TrackSet with tracks that can be chosen from.</param>
 		/// <param name="type">The type the track must be to be added.</param>
 		/// <param name="mandatory">If true, will throw an error if no tracks match the requirements. If false, will not.</param>
-		public virtual bool QueueRandomOfType(TrackSet set, string type, bool mandatory = true) {
+		public virtual Track? QueueRandomOfType(TrackSet set, string type, bool mandatory = true) {
 			var tracks = set.Tracks.Where(x => x.Type == type).ToArray();
 			if (tracks.Any()) {
-				QueueRandom(tracks);
-				return true;
+				return QueueRandom(tracks);
 			}
 			else {
 				if (mandatory)
 					PluginMain.DebugLog.LogError($"Track set {set.Name} did not contain mandatory track type {type}!");
-				return false;
+				return null;
 			}
 		}
 
@@ -50,8 +46,10 @@ namespace TNHBGLoader.Soundtrack {
 		/// Adds a single track from an array of tracks to the queue, selected at random by Unity's random generator.
 		/// </summary>
 		/// <param name="track">Array of tracks that can be picked from. Order not relevant.</param>
-		public virtual void QueueRandom(Track[] track) {
-			Queue(track[Random.Range(0, track.Length)]);
+		public virtual Track QueueRandom(Track[] track) {
+			var t = track[Random.Range(0, track.Length)];
+			Queue(t);
+			return t;
 		}
 		
 		/// <summary>
@@ -70,6 +68,19 @@ namespace TNHBGLoader.Soundtrack {
 		public virtual void Queue(Track track) {
 			PluginMain.DebugLog.LogInfo($"Queueing {track.Type}, {track.Name} of situation {track.Situation}");
 			SongQueue.Add(track);
+			// SongQueue.Count == 1 means this track that was just loaded is the first in the queue.
+			if (SongQueue.Count == 1) //Preload the track before it is needed to prevent tiny gaps in audio.
+				GetNotCurrentAudioSource.clip = track.Clip;
+		}
+		
+		/// <summary>
+		/// Adds a track to the song queue, position x.
+		/// </summary>
+		/// <param name="pos">Position of the queue to insert.</param>
+		/// <param name="track">Track to add to the queue.</param>
+		public virtual void QueueAt(int pos, Track track) {
+			PluginMain.DebugLog.LogInfo($"Queueing {track.Type}, {track.Name} of situation {track.Situation}");
+			SongQueue.Insert(pos, track);
 			// SongQueue.Count == 1 means this track that was just loaded is the first in the queue.
 			if (SongQueue.Count == 1) //Preload the track before it is needed to prevent tiny gaps in audio.
 				GetNotCurrentAudioSource.clip = track.Clip;
@@ -200,7 +211,7 @@ namespace TNHBGLoader.Soundtrack {
 			if (isSwitching) {
 				timeDif = Time.time - switchStartTime; //get time dif between start and now
 				float progress = timeDif / TrackFadeTime; //pcnt progress on how far into switching it is
-				float newVol = progress * Volume; //Linear progression sadly. TODO: Add easing function
+				float newVol = progress * Volume;
 				GetCurrentAudioSource.volume = newVol;
 				GetNotCurrentAudioSource.volume = Volume - newVol;
 				if (progress >= 1) {
@@ -217,6 +228,7 @@ namespace TNHBGLoader.Soundtrack {
 			if (SongQueue.Count > 0 && SongQueue[0].Metadata.Contains("dnf"))
 				timeUntilStartNextSong = 0.05f; //Otherwise the last 1.5s will be cut off.
 			//Note for a potential bug- songStartTime will NOT reset if the song is looping.
+			
 			if (timeDif <= timeUntilStartNextSong && !GetCurrentAudioSource.loop && SongQueue.Count > 0) {
 				Debug.Log($"End of song incoming. Playing next song.");
 				PlayNextSongInQueue();
