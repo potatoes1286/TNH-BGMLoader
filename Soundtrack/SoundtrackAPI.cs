@@ -101,7 +101,9 @@ namespace TNHBGLoader.Soundtrack {
 			for (int t = 0; t < 3000; t++) {
 				if (tracksLoaded == tracksToLoad)
 					break;
-				Thread.Sleep(10); //Multithreading? never heard o' her!
+				Thread.Sleep(10);
+				if(t == 2999)
+					PluginMain.DebugLog.LogError("Was not able to load all tracks on time!");
 			}
 			
 			//logging
