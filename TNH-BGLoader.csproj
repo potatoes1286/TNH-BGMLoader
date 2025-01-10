@@ -20,8 +20,8 @@
       <PackageReference Include="YamlDotNet" Version="11.2.1" />
     </ItemGroup>
     <ItemGroup>
-      <None Remove="panel.png" />
-      <EmbeddedResource Include="panel.png" />
+      <None Remove="src\panel.png" />
+      <EmbeddedResource Include="src\panel.png" />
     </ItemGroup>
     <ItemGroup>
       <Folder Include="src\" />

@@ -24,9 +24,6 @@ namespace TNHBGLoader
 		[HarmonyPrefix]
 		public static bool Sosig_Start_SetVLS(FistVR.Sosig __instance)
 		{
-			
-			
-			
 			string sname = __instance.Speech.name;
 			if (SosigVLSAPI.VLSGuidOrder.Contains(sname))
 			{
@@ -119,14 +116,13 @@ namespace TNHBGLoader
 				for (int i = 0; i < BankAPI.LoadedBankLocations.Count; i++)
 					if (Path.GetFileNameWithoutExtension(BankAPI.LoadedBankLocations[i]) == PluginMain.LastLoadedBank.Value) {
 						BankAPI.SwapBank(i);
-						bgmpanel.SetIcon();
 						break;
 					}
 			
 			if (PluginMain.IsSoundtrack.Value) {
 				SoundtrackAPI.EnableSoundtrackFromGUID(PluginMain.LastLoadedSoundtrack.Value);
-				bgmpanel.SetIcon();
 			}
+			bgmpanel.SetIcon();
 			//set last loaded announcer
 			AnnouncerAPI.CurrentAnnouncerIndex = AnnouncerAPI.GetAnnouncerIndexFromGUID(PluginMain.LastLoadedAnnouncer.Value);
 			//set last loaded SosigVLS

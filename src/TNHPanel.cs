@@ -469,16 +469,15 @@ namespace TNHBGLoader
 						PluginMain.DebugLog.LogInfo($"Setting song to index {index}, {BGMs[index].Name}");
 						BankAPI.NukeSongSnippets(); // Stop any FMOD snippets
 						if (BGMs[index].IsBank) {
-							// Handle Random option
 							BankAPI.SwapBank(index);
 							GameObject go = new GameObject();
 							if(BankAPI.LoadedBankLocations[index] != "Your Mix" && BankAPI.LoadedBankLocations[index] != "Select Random")
 								go.AddComponent(typeof(PlayFModSnippet));
 							PluginMain.DebugLog.LogInfo($"index: {index}, index bank: {BankAPI.LoadedBankLocations[index]}");
-							if (BankAPI.LoadedBankLocations[index] == "Your Mix")
+							/*if (BankAPI.LoadedBankLocations[index] == "Your Mix")
 								SoundtrackAPI.IsMix = true;
 							else
-								SoundtrackAPI.IsMix = false;
+								SoundtrackAPI.IsMix = false;*/
 						}
 						else {
 							PluginMain.IsSoundtrack.Value = true;
