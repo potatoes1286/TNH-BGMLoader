@@ -25,22 +25,24 @@ namespace TNHBGLoader
 			string streamingAssetsPath = Application.streamingAssetsPath;
 			if (Path.GetExtension(bankName) != ".bank")
 			{
-				if (Path.IsPathRooted(bankName)){
+				if (Path.IsPathRooted(bankName))
 					__result = bankName + ".bank";
-					return false;
-				} else {
+				else
 					__result = string.Format("{0}/{1}.bank", streamingAssetsPath, bankName);
-					return false;
-				}
 			}
-			
-			if (Path.IsPathRooted(bankName)) {
-				__result = bankName;
-				return false;
-			} else {
-				__result = string.Format("{0}/{1}", streamingAssetsPath, bankName);
-				return false;
+			else {
+
+				if (Path.IsPathRooted(bankName))
+					__result = bankName;
+				else
+					__result = string.Format("{0}/{1}", streamingAssetsPath, bankName);
 			}
+
+			// error handling, default to tnh
+			if (!File.Exists(__result))
+				__result = $"{streamingAssetsPath}/MX_TAH.bank";
+
+			return false;
 		}
 		
 		[HarmonyPatch(typeof(RuntimeManager))]
