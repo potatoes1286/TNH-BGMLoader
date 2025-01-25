@@ -114,16 +114,6 @@ namespace TNHBGLoader.Soundtrack {
 		}
 
 		public void FixedUpdate() {
-			
-			// handle dynamics, shittily
-
-			if (CurrentTrack.Metadata.Contains("dyn") && (!SongQueue.Any() || SongQueue[0].Type != CurrentTrack.Type && !SongQueue[0].Metadata.Contains("dyn"))) {
-				TrackSet set = TakeMusic ?? HoldMusic;
-				var dyntracks = set.Tracks.Where(x => x.Metadata.Contains("dyn") && x.Type == CurrentTrack.Type).ToArray();
-				var rand = Random.Range(0, dyntracks.Length);
-				var dyntrack = dyntracks[rand];
-				QueueAt(0, dyntrack);
-			}
 
 			// alert system
 			if (alertCooldown > 0)
@@ -192,12 +182,31 @@ namespace TNHBGLoader.Soundtrack {
 					currentlyInAlert = newAlert;
 				}
 			}
+			
+			// handle dynamics, shittily
+
+			if (CurrentTrack.Metadata.Contains("dyn") && (!SongQueue.Any() || SongQueue[0].Type != CurrentTrack.Type && !SongQueue[0].Metadata.Contains("dyn"))) {
+				TrackSet set = TakeMusic ?? HoldMusic;
+
+				var dyntracks = set.Tracks.Where(x => x.Metadata.Contains("dyn") && x.Type == CurrentTrack.Type && x != CurrentTrack).ToArray();
+				if (dyntracks.Length > 0) {
+					var rand = Random.Range(0, dyntracks.Length);
+					var dyntrack = dyntracks[rand];
+					QueueAt(0, dyntrack);
+				}
+				else {
+					QueueAt(0, CurrentTrack);
+				}
+			}
+			PluginMain.DebugLog.LogInfo("exit");
+			
 		}
 
 		public static void ChangeArea(int newArea) {
 			Instance.ClearQueue();
 			
-			HoldMusic = SoundtrackAPI.GetSetWithMetadata("hold", Level, new []{ AreaFromInt[newArea], "anyreg" });
+			HoldMusic = SoundtrackAPI.GetSetWithMetadata("hold", Level, new[] { AreaFromInt[newArea], "anyreg" });
+			TakeMusic = SoundtrackAPI.GetSetWithMetadata("take", Level, new[] { AreaFromInt[newArea], "anyreg" });
 			
 			SetOrbTouchTracks();
 			
@@ -205,7 +214,7 @@ namespace TNHBGLoader.Soundtrack {
 			if (HoldMusic.Tracks.Any(x => x.Type == "take"))
 				QueueTake(HoldMusic);
 			else //Otherwise, get a take theme.
-				QueueTake(SoundtrackAPI.GetSetWithMetadata("take", Level, new []{ AreaFromInt[newArea], "anyreg" }));
+				QueueTake(TakeMusic);
 			
 			Instance.PlayNextSongInQueue();
 		}
@@ -414,6 +423,7 @@ namespace TNHBGLoader.Soundtrack {
 				if (HoldMusic.Tracks.Any(x => x.Type == "take"))
 					QueueTake(HoldMusic);
 				else { //Otherwise, get a take theme.
+					PluginMain.DebugLog.LogInfo("TAKED!");
 					TakeMusic = SoundtrackAPI.GetSet("take", Level);
 					QueueTake(TakeMusic);
 				}
