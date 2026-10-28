@@ -121,13 +121,16 @@ namespace TNHBGLoader
 			
 			if (PluginMain.IsSoundtrack.Value) {
 				SoundtrackAPI.EnableSoundtrackFromGUID(PluginMain.LastLoadedSoundtrack.Value);
+				if (SoundtrackAPI.Soundtracks.Count == 0 || SoundtrackAPI.SelectedSoundtrackIndex < 0 || SoundtrackAPI.SelectedSoundtrackIndex >= SoundtrackAPI.Soundtracks.Count) {
+					PluginMain.IsSoundtrack.Value = false;
+					SoundtrackAPI.SelectedSoundtrackIndex = 0;
+				}
 			}
 			bgmpanel.SetIcon();
 			//set last loaded announcer
-			AnnouncerAPI.CurrentAnnouncerIndex = AnnouncerAPI.GetAnnouncerIndexFromGUID(PluginMain.LastLoadedAnnouncer.Value);
-			//set last loaded SosigVLS
-			//TODO: FIX!
-			//SosigVLSAPI.CurrentSosigVLSIndex = SosigVLSAPI.GetSosigVLSIndexFromGUID(PluginMain.LastLoadedSosigVLS.Value);
+			int announcerIndex = AnnouncerAPI.LoadedAnnouncers.FindIndex(a => a.GUID == PluginMain.LastLoadedAnnouncer.Value);
+			AnnouncerAPI.CurrentAnnouncerIndex = announcerIndex >= 0 ? announcerIndex : 0;
+			SosigVLSAPI.RestoreSosigVLSSelection(PluginMain.LastLoadedSosigVLS.Value);
 		}
 		
 		//Removes all remaining song snippets if game starts while a snippet is playing
@@ -139,6 +142,14 @@ namespace TNHBGLoader
 			return true;
 		}
 		
+		[HarmonyPatch(typeof(TNH_Manager), "LoadFromSettings")]
+		[HarmonyPostfix]
+		public static void TNH_Manager_LoadFromSettings_ForceBankAudio(TNH_Manager __instance)
+		{
+			if (!PluginMain.IsSoundtrack.Value)
+				__instance.BGAudioMode = TNH_BGAudioMode.Default;
+		}
+
 		//Loads all announcer lines into the DB. this should probably be couroutined... maybe????
 		[HarmonyPatch(typeof(TNH_Manager), "InitLibraries")]
 		[HarmonyPrefix]

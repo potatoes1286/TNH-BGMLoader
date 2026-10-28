@@ -104,6 +104,14 @@ namespace TNHBGLoader
 
 		private int _selectedVLSSet;
 
+		private AudioSource _previewSource;
+
+		public void StopPreview()
+		{
+			if (_previewSource != null)
+				_previewSource.Stop();
+		}
+
 		private void ConfigurePanel(GameObject panel)
 		{
 			GameObject canvas = panel.transform.Find("OptionsCanvas_0_Main/Canvas").gameObject;
@@ -303,15 +311,27 @@ namespace TNHBGLoader
 			switch (TNHPstate) {
 				case TNHPstates.BGM:
 					if (BGMs.Count <= 4)
-						return;
+						{
+							_firstMusicIndex = 0;
+							for (int i = 0; i < _musicButtons.Length; i++) _musicButtons[i].ButtonText.text = GetNameWithOffset(i);
+							return;
+						}
 					break;
 				case TNHPstates.Announcer:
 					if (AnnouncerAPI.LoadedAnnouncers.Count <= 4)
-						return;
+						{
+							_firstMusicIndex = 0;
+							for (int i = 0; i < _musicButtons.Length; i++) _musicButtons[i].ButtonText.text = GetNameWithOffset(i);
+							return;
+						}
 					break;
 				case TNHPstates.Sosig_Voicelines:
 					if (SosigVLSAPI.LoadedSosigVLSs.Count <= 4)
-						return;
+						{
+							_firstMusicIndex = 0;
+							for (int i = 0; i < _musicButtons.Length; i++) _musicButtons[i].ButtonText.text = GetNameWithOffset(i);
+							return;
+						}
 					break;
 			}
 
@@ -401,7 +421,15 @@ namespace TNHBGLoader
 					if(inc != 0) WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
 					break;*/
 			}
+			UpdatePreviewVolume();
 			_volumeText.Text.text = GetVolumePercent();
+		}
+
+		private void UpdatePreviewVolume()
+		{
+			if (_previewSource == null || !_previewSource.isPlaying) return;
+			if (TNHPstate == TNHPstates.Announcer)
+				_previewSource.volume = Mathf.Clamp01(0.6f * PluginMain.AnnouncerMusicVolume.Value);
 		}
 
 		//Text Getters
@@ -460,14 +488,18 @@ namespace TNHBGLoader
 			if (GM.TNH_Manager != null) WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
 			else
 			{
-				int clamp;
 				switch (TNHPstate)
 				{
 					case TNHPstates.BGM:
+						if (index < 0 || index >= BGMs.Count) {
+							WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
+							break;
+						}
 						if(BGMs[index].IsBank && BGMs[index].BankGuid == "Select Random")
 							index = UnityEngine.Random.Range(0, BGMs.Count);
 						PluginMain.DebugLog.LogInfo($"Setting song to index {index}, {BGMs[index].Name}");
 						BankAPI.NukeSongSnippets(); // Stop any FMOD snippets
+						StopPreview();
 						if (BGMs[index].IsBank) {
 							BankAPI.SwapBank(index);
 							GameObject go = new GameObject();
@@ -490,13 +522,21 @@ namespace TNHBGLoader
 
 						break;
 					case TNHPstates.Announcer:
-						clamp = Mathf.Clamp(index, 0, AnnouncerAPI.LoadedAnnouncers.Count);
-						AnnouncerAPI.SwapAnnouncer(AnnouncerAPI.LoadedAnnouncers[clamp].GUID);
+						BankAPI.NukeSongSnippets();
+						if (index < 0 || index >= AnnouncerAPI.LoadedAnnouncers.Count) {
+							WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
+							break;
+						}
+						AnnouncerAPI.SwapAnnouncer(AnnouncerAPI.LoadedAnnouncers[index].GUID);
 						PlaySnippet(AnnouncerAPI.GetRandomPreview(AnnouncerAPI.CurrentAnnouncer.GUID));
 						break;
 					case TNHPstates.Sosig_Voicelines:
-						clamp = Mathf.Clamp(index, 0, SosigVLSAPI.LoadedSosigVLSs.Count);
-						SosigVLSAPI.SwapSosigVLS(SosigVLSAPI.LoadedSosigVLSs[clamp].guid, SosigVLSAPI.VLSGuidOrder[_selectedVLSSet]);
+						BankAPI.NukeSongSnippets();
+						if (index < 0 || index >= SosigVLSAPI.LoadedSosigVLSs.Count) {
+							WristMenuAPI.Instance.Aud.PlayOneShot(WristMenuAPI.Instance.AudClip_Err);
+							break;
+						}
+						SosigVLSAPI.SwapSosigVLS(SosigVLSAPI.LoadedSosigVLSs[index].guid, SosigVLSAPI.VLSGuidOrder[_selectedVLSSet]);
 						PlaySnippet(SosigVLSAPI.GetRandomPreview(SosigVLSAPI.CurrentSosigVlsOfVlsSet(_selectedVLSSet).guid));
 						break;
 				}
@@ -505,6 +545,7 @@ namespace TNHBGLoader
 		}
 		public void PlaySnippet(AudioClip snip)
 		{
+			if (snip == null) return;
 			float pitch = 1f;
 			float vol = 0.6f;
 			switch (TNHPstate)
@@ -516,13 +557,19 @@ namespace TNHBGLoader
 					pitch = SosigVLSAPI.CurrentSosigVlsOfVlsSet(_selectedVLSSet).SpeechSet.BasePitch;
 					break;
 			}
-			//make audioevent
-			AudioEvent audioEvent = new AudioEvent();
-			audioEvent.Clips.Add(snip);
-			audioEvent.PitchRange = new Vector2(pitch, pitch);
-			audioEvent.VolumeRange = new Vector2(vol, vol);
-			//play it
-			SM.PlayGenericSound(audioEvent, GM.CurrentPlayerBody.transform.position);
+			if (_previewSource == null)
+			{
+				GameObject go = new GameObject();
+				_previewSource = go.AddComponent<AudioSource>();
+				_previewSource.playOnAwake = false;
+				_previewSource.spatialBlend = 0;
+				_previewSource.loop = false;
+			}
+			_previewSource.Stop();
+			_previewSource.clip = snip;
+			_previewSource.pitch = pitch;
+			_previewSource.volume = Mathf.Clamp01(vol);
+			_previewSource.Play();
 		}
 		
 		public void SetIcon()
@@ -533,7 +580,10 @@ namespace TNHBGLoader
 				_bankText.Text.text = "Selected:\n" + GetCurrentSelectedItemName(); //set new bank
 			
 			if (icondisplay == null) return;
-			Debug.Log($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurBank: {GetCurrentSelectedItemName()}, CurSoundtrack: {SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Guid}");
+			string soundtrackInfo = "none";
+		if (SoundtrackAPI.SelectedSoundtrackIndex >= 0 && SoundtrackAPI.SelectedSoundtrackIndex < SoundtrackAPI.Soundtracks.Count)
+			soundtrackInfo = SoundtrackAPI.Soundtracks[SoundtrackAPI.SelectedSoundtrackIndex].Guid;
+		Debug.Log($"IsMix: {SoundtrackAPI.IsMix.ToString()}, CurBank: {GetCurrentSelectedItemName()}, CurSoundtrack: {soundtrackInfo}");
 			switch (TNHPstate)
 			{
 				case TNHPstates.BGM:

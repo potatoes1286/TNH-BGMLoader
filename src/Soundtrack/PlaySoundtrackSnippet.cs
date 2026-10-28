@@ -32,11 +32,16 @@ namespace TNH_BGLoader
 			Destroy(source);
 			Destroy(gameObject);
 		}
+
+		public void OnBankChanged() { CleanUp(); }
+
+		public void OnDestroy() { BankAPI.OnBankSwapped -= OnBankChanged; }
 		
 		public void Start() {
 			if(existingSnippet != null)
 				existingSnippet.CleanUp();
 			existingSnippet = this;
+			BankAPI.OnBankSwapped += OnBankChanged;
 			source = GM.Instance.m_currentPlayerBody.Head.gameObject.AddComponent<AudioSource>();
 			source.playOnAwake = false;
 			source.priority = 0;
@@ -63,12 +68,10 @@ namespace TNH_BGLoader
 			if (!playing)
 				return;
 			curLength += Time.deltaTime; //tick forwards the time
-			if(curLength > windUpTime && IsLoop) //stop if its looping
-				return;
-			
-			curVol = GetVol(); //get the volume
+			bool holding = curLength > windUpTime && IsLoop;
+			curVol = holding ? maxVol : GetVol(); //get the volume
 			source.volume = curVol * 0.25f * PluginMain.BackgroundMusicVolume.Value; //set the volume
-			if (curLength >= maxVolLength + (windUpTime * 2)) //if volume = 0; we finished. clean up!
+			if (!holding && curLength >= maxVolLength + (windUpTime * 2)) //if volume = 0; we finished. clean up!
 				CleanUp();
 		}
 

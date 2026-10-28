@@ -52,12 +52,45 @@ namespace TNHBGLoader.Sosig
 		{
 			if (guid == "ptnhbgml.random") guid = LoadedSosigVLSs[UnityEngine.Random.Range(1, LoadedSosigVLSs.Count)].guid;
 			CurrentSosigVLSIndex[vlsSet] = GetSosigVLSIndexFromGUID(guid);
-			//TODO: Fix this!
-			//PluginMain.LastLoadedSosigVLS.Value = CurrentSosigVLS.guid;
+			PluginMain.LastLoadedSosigVLS.Value = SerializeSosigVLSSelection();
+		}
+
+		public static string SerializeSosigVLSSelection()
+		{
+			List<string> parts = new List<string>();
+			foreach (var kv in CurrentSosigVLSIndex)
+			{
+				if (kv.Value < 0 || kv.Value >= LoadedSosigVLSs.Count) continue;
+				string vguid = LoadedSosigVLSs[kv.Value].guid;
+				if (kv.Key.Contains(":") || kv.Key.Contains(";") || vguid.Contains(":") || vguid.Contains(";")) continue;
+				parts.Add(kv.Key + ":" + vguid);
+			}
+			return string.Join(";", parts.ToArray());
+		}
+
+		public static void RestoreSosigVLSSelection(string saved)
+		{
+			if (string.IsNullOrEmpty(saved)) return;
+			string[] entries = saved.Split(';');
+			for (int i = 0; i < entries.Length; i++)
+			{
+				if (string.IsNullOrEmpty(entries[i])) continue;
+				string[] kv = entries[i].Split(':');
+				if (kv.Length != 2) continue;
+				if (!CurrentSosigVLSIndex.ContainsKey(kv[0])) continue;
+				int idx = LoadedSosigVLSs.FindIndex(a => a.guid == kv[1]);
+				if (idx < 0) continue;
+				CurrentSosigVLSIndex[kv[0]] = idx;
+			}
 		}
 		
-		public static SosigManifest GetManifestFromYamlfest(SosigYamlfest yamlfest) {
+		public static SosigManifest? GetManifestFromYamlfest(SosigYamlfest yamlfest) {
+			if (string.IsNullOrEmpty(yamlfest.VoiceLines) || yamlfest.Location == null) return null;
 			yamlfest.VoiceLines = Path.Combine(Path.GetDirectoryName(yamlfest.Location), yamlfest.VoiceLines);
+			if (!Directory.Exists(yamlfest.VoiceLines)) {
+				PluginMain.DebugLog.LogError($"Voice line folder missing for sosig set {yamlfest.GUID}: {yamlfest.VoiceLines}");
+				return null;
+			}
 			SosigManifest manifest = new SosigManifest();
 			//set speechset
 			manifest.SpeechSet = ScriptableObject.CreateInstance<SosigSpeechSet>();

@@ -264,7 +264,7 @@ namespace TNHBGLoader.Soundtrack {
 		/// </summary>
 		/// <param name="types">Array of accepted types.</param>
 		public virtual void PlayNextTrackInQueueOfType(string[] types) {
-			while (!types.Contains(SongQueue[0].Type)) {
+			while (SongQueue.Count > 0 && !types.Contains(SongQueue[0].Type)) {
 				Debug.Log($"Skipping song {SongQueue[0].Name} of type {SongQueue[0].Type}");
 				SongQueue.RemoveAt(0);
 			}

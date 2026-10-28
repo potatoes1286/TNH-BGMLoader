@@ -26,6 +26,13 @@ namespace TNHBGLoader.Soundtrack {
 		// Alert info
 		public static bool   currentlyInAlert = false;
 		public static int    alertCooldown    = 0;
+		public static float  alertDwellTime;
+		public static float  alertDwellRequired = 1.5f;
+		public static float  sosigScanInterval = 0.25f;
+		public static float  lastSosigScanTime = -1000f;
+		public static int    alertedSosigCount;
+		public static float  sosigLoseSightGrace = 4f;
+		public static System.Collections.Generic.Dictionary<int, float> sosigLastSeenTime = new System.Collections.Generic.Dictionary<int, float>();
 		public static Track? storedTakeTrack;
 		public static float  storedTakeTrackPlayhead;
 		public static bool   changedAreaMidFight;
@@ -33,8 +40,79 @@ namespace TNHBGLoader.Soundtrack {
 		public static int Level;
 		
 		
+		public static bool IsFightingPlayer(FistVR.Sosig s, int playerIFF) {
+			if (s == null) return false;
+			if (s.BodyState == FistVR.Sosig.SosigBodyState.Dead) return false;
+			if (s.HeadIconState != FistVR.Sosig.SosigHeadIconState.Exclamation && s.HeadIconState != FistVR.Sosig.SosigHeadIconState.Suppressed) return false;
+			if (s.Priority == null) return false;
+			try {
+				if (s.Priority.IsTargetEntity()) {
+					var te = s.Priority.GetTargetEntity();
+					if (te != null) return te.IFFCode == playerIFF;
+				}
+			} catch { }
+			try {
+				if (s.E != null && s.E.IFFCode != playerIFF && s.E.IFFCode >= 0) return true;
+			} catch { }
+			return false;
+		}
+
+		public static int CountAlertedSosigs() {
+			if (Manager == null || Manager.Phase != FistVR.TNH_Phase.Take || GM.CurrentPlayerBody == null) {
+				alertedSosigCount = 0;
+				sosigLastSeenTime.Clear();
+				return 0;
+			}
+			if (Time.time - lastSosigScanTime < sosigScanInterval)
+				return alertedSosigCount;
+			lastSosigScanTime = Time.time;
+			int playerIFF = GM.CurrentPlayerBody.GetPlayerIFF();
+			float now = Time.time;
+			int count = 0;
+			System.Collections.Generic.HashSet<int> seen = new System.Collections.Generic.HashSet<int>();
+			foreach (var s in UnityEngine.Object.FindObjectsOfType<FistVR.Sosig>()) {
+				if (s == null) continue;
+				int id = s.GetInstanceID();
+				seen.Add(id);
+				if (s.BodyState == FistVR.Sosig.SosigBodyState.Dead) {
+					sosigLastSeenTime.Remove(id);
+					continue;
+				}
+				if (IsFightingPlayer(s, playerIFF)) {
+					sosigLastSeenTime[id] = now;
+					count++;
+				}
+				else {
+					float last;
+					if (sosigLastSeenTime.TryGetValue(id, out last)) {
+						if (now - last <= sosigLoseSightGrace) count++;
+						else sosigLastSeenTime.Remove(id);
+					}
+				}
+			}
+			System.Collections.Generic.List<int> stale = null;
+			foreach (var k in sosigLastSeenTime.Keys) {
+				if (!seen.Contains(k)) {
+					if (stale == null) stale = new System.Collections.Generic.List<int>();
+					stale.Add(k);
+				}
+			}
+			if (stale != null) {
+				foreach (var k in stale) sosigLastSeenTime.Remove(k);
+			}
+			alertedSosigCount = count;
+			return count;
+		}
+
+		public void OnDestroy() { }
+
 		public void Awake() {
-			Initialize("tnh", SoundtrackAPI.GetCurrentSoundtrack, 1.5f, PluginMain.AnnouncerMusicVolume.Value / 4f);
+			Initialize("tnh", SoundtrackAPI.GetCurrentSoundtrack, 1.5f, 0.25f * PluginMain.BackgroundMusicVolume.Value);
+			alertedSosigCount = 0;
+			sosigLastSeenTime.Clear();
+			lastSosigScanTime = -1000f;
+			alertDwellTime = 0f;
+			currentlyInAlert = false;
 			
 			ClearQueue();
 			Level = 0;
@@ -119,14 +197,26 @@ namespace TNHBGLoader.Soundtrack {
 			if (alertCooldown > 0)
 				alertCooldown--;
 			if (PluginMain.IsSoundtrack.Value) {
-				bool newAlert;
+				bool live = CountAlertedSosigs() > 0;
+				bool hot;
 				if(isInstitutionMode)
-					newAlert = (int)Manager.m_takeMusicIntensity >= 1;
+					hot = (int)Manager.m_takeMusicIntensity >= 1;
 				else
-					newAlert = (int)Manager.m_takeMusicIntensity == 2;
+					hot = (int)Manager.m_takeMusicIntensity == 2;
+				bool anyTracked = sosigLastSeenTime.Count > 0;
+				bool newAlert = live || (currentlyInAlert && hot && anyTracked);
 
 				if (alertCooldown != 0)
 					newAlert = false;
+
+				if (newAlert && !currentlyInAlert) {
+					alertDwellTime += Time.fixedDeltaTime;
+					if (alertDwellTime < alertDwellRequired)
+						newAlert = false;
+				}
+				else if (!newAlert) {
+					alertDwellTime = 0f;
+				}
 				
 				if (currentlyInAlert != newAlert) {
 					if (newAlert) { //entering alert mode
@@ -198,7 +288,6 @@ namespace TNHBGLoader.Soundtrack {
 					QueueAt(0, CurrentTrack);
 				}
 			}
-			PluginMain.DebugLog.LogInfo("exit");
 			
 		}
 

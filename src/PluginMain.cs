@@ -51,6 +51,7 @@ namespace TNHBGLoader
 		public static ConfigEntry<string> LastLoadedAnnouncer;
 		public static ConfigEntry<string> LastLoadedSosigVLS;
 		public static ConfigEntry<bool>   EnableDebugLogging;
+		public static ConfigEntry<bool>   ApplyVoicelinesOnBoot;
 		public static ConfigEntry<string> LastLoadedSoundtrack;
 		public static ConfigEntry<bool>   IsSoundtrack;
 
@@ -106,10 +107,11 @@ namespace TNHBGLoader
 		public void InitConfig()
 		{
 			EnableDebugLogging = Config.Bind("General", "Enable Debug Logs", false, "Spams your log with debug info.");
+			ApplyVoicelinesOnBoot = Config.Bind("General", "Apply voicelines on boot", true, "If true, your selected sosig voicelines are applied as soon as H3 starts, so they work everywhere. If false, they only apply once you enter the TNH lobby.");
 			BackgroundMusicVolume = Config.Bind("General", "BGM Volume", 1f, "Changes the magnitude of the BGM volume. Must be between 0 and 4.");
 			BackgroundMusicVolume.Value = Mathf.Clamp(BackgroundMusicVolume.Value, 0, 4);
 			AnnouncerMusicVolume = Config.Bind("General", "Announcer Volume", 1f, "Changes the magnitude of the Announcer volume. Must be between 0 and 20. (Please don't set the volume to 2000%.)");
-			AnnouncerMusicVolume.Value = Mathf.Clamp(BackgroundMusicVolume.Value, 0, 20);
+			AnnouncerMusicVolume.Value = Mathf.Clamp(AnnouncerMusicVolume.Value, 0, 20);
 			LastLoadedBank = Config.Bind("no touchy", "Saved Bank", "MX_TAH", "Not meant to be changed manually. This autosaves your last bank used, so you don't have to reset it every time you launch H3.");
 			LastLoadedAnnouncer = Config.Bind("no touchy", "Saved Announcer", "h3vr.default", "Not meant to be changed manually. This autosaves your last announcer used, so you don't have to reset it every time you launch H3.");
 			LastLoadedSosigVLS = Config.Bind("no touchy", "Saved Sosig VLS", "h3vr.default", "Not meant to be changed manually. This autosaves your last sosig set used, so you don't have to reset it every time you launch H3.");
@@ -150,7 +152,9 @@ namespace TNHBGLoader
 			yamlfest = _deserializer.Deserialize<SosigYamlfest>(File.ReadAllText(file.FullName));
 			DebugLog.LogInfo("Loaded Sosig Voiceline set " + yamlfest.GUID);
 			yamlfest.Location = file.FullName;
-			SosigVLSAPI.LoadedSosigVLSs.Add(SosigVLSAPI.GetManifestFromYamlfest(yamlfest));
+			var sosigManifest = SosigVLSAPI.GetManifestFromYamlfest(yamlfest);
+			if (sosigManifest == null) return new Empty();
+			SosigVLSAPI.LoadedSosigVLSs.Add(sosigManifest);
 			return new Empty();
 		}
 		
@@ -181,10 +185,12 @@ namespace TNHBGLoader
 		private void SosigVLSDefinitionSetLaod(VLSGuidToNameDefinitionsYamlfest yamlfest)
 		{
 			//DebugLog.LogInfo($"Loading {yamlfest.GuidsToNames.Length} VLS set definitions!");
+			if (yamlfest == null || yamlfest.GuidsToNames == null) return;
 			for (int i = 0; i < yamlfest.GuidsToNames.Length; i++)
 			{
 				//i love violating DRY!!!!
 				string[] kvpair = yamlfest.GuidsToNames[i].Split(':');
+				if (kvpair.Length != 2) continue;
 				DebugLog.LogInfo("Loading Sosig Voiceline Dictionary Set defining: " + kvpair[0]);
 				SosigVLSAPI.VLSGuidToName[kvpair[0]] = kvpair[1];
 				SosigVLSAPI.CurrentSosigVLSIndex[kvpair[0]] = 1; //1: Default
@@ -195,7 +201,11 @@ namespace TNHBGLoader
 			}
 		}
 
-		public override IEnumerator OnRuntime(IStageContext<IEnumerator> ctx) { yield break; }
+		public override IEnumerator OnRuntime(IStageContext<IEnumerator> ctx) {
+			if (ApplyVoicelinesOnBoot.Value)
+				SosigVLSAPI.RestoreSosigVLSSelection(LastLoadedSosigVLS.Value);
+			yield break;
+		}
 	}
 
 	internal static class PluginDetails
